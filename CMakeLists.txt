@@ -23,12 +23,23 @@ if (NOT raylib_FOUND) # If there's none, fetch and build raylib
   endif()
 endif()
 
+find_package(PkgConfig REQUIRED)
+pkg_check_modules(GLIB_PKG REQUIRED glib-2.0)
+if (GLIB_PKG_FOUND)
+    message(Found glib-2.0)
+    include_directories(${GLIB_PKG_INCLUDE_DIRS})
+endif()
+
 # Our Project
 
+#set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/helper/"
 add_executable(${PROJECT_NAME} core_basic_window.c
-        components.h)
+        sprites.h
+        components.c
+        sprites.c)
 #set(raylib_VERBOSE 1)
 target_link_libraries(${PROJECT_NAME} raylib)
+target_link_libraries(${PROJECT_NAME} ${GLIB_PKG_LINK_LIBRARIES})
 
 # Web Configurations
 if (${PLATFORM} STREQUAL "Web")

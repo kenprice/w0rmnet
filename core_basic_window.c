@@ -1,9 +1,5 @@
-
 #include "raylib.h"
 #include "components.h"
-
-
-
 
 //------------------------------------------------------------------------------------
 // Program main entry point
@@ -18,16 +14,8 @@ int main(void)
     InitWindow(screenWidth, screenHeight, "raylib [textures] example - texture to image");
 
 
-
-    //////////////
-    ComponentLists components;
-    create_entities(&components);
-    //////////////
-
-
     // NOTE: Textures MUST be loaded after Window initialization (OpenGL context is required)
-
-    Image image = LoadImage("../resources/load-balancer-128.png");  // Load image data into CPU memory (RAM)
+    Image image = LoadImage("../resources/tileset.png");  // Load image data into CPU memory (RAM)
     Texture2D texture = LoadTextureFromImage(image);       // Image converted to texture, GPU memory (RAM -> VRAM)
     UnloadImage(image);                                    // Unload image data from CPU memory (RAM)
 
@@ -37,6 +25,15 @@ int main(void)
     texture = LoadTextureFromImage(image);                 // Recreate texture from retrieved image data (RAM -> VRAM)
     UnloadImage(image);                                    // Unload retrieved image data from CPU memory (RAM)
     //---------------------------------------------------------------------------------------
+
+
+
+
+    //////////////
+    ComponentRegistry components;
+    init_component_registry(&components);
+    create_entities(&components);
+    //////////////
 
     // Main game loop
     while (!WindowShouldClose())    // Detect window close button or ESC key
@@ -50,13 +47,9 @@ int main(void)
         //----------------------------------------------------------------------------------
         BeginDrawing();
 
-        ClearBackground(RAYWHITE);
+        ClearBackground(GRAY);
 
-        device_rendering_system(&components);
-
-        DrawTexture(texture, screenWidth/2 - texture.width/2, screenHeight/2 - texture.height/2, WHITE);
-
-        DrawText("this IS a texture loaded from an image!", 300, 370, 10, GRAY);
+        device_rendering_system(texture, &components);
 
         EndDrawing();
         //----------------------------------------------------------------------------------
