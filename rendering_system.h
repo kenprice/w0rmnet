@@ -19,6 +19,25 @@ Vector2 convert_local_to_global(float iso_x_origin, float iso_y_origin, float x,
     return (Vector2){global_x, global_y};
 }
 
+Vector2 convert_global_to_local(float iso_x_origin, float iso_y_origin, float x, float y) {
+    float iso_w = (float)SPRITE_X_SCALE/2;
+    float iso_h = (float)SPRITE_Y_SCALE/2;
+    float local_x = ((y - iso_y_origin) / iso_h + (x - iso_x_origin) / iso_w) / 2;
+    float local_y = ((y - iso_y_origin) / iso_h - (x - iso_x_origin) / iso_w) / 2;
+    return (Vector2){local_x, local_y};
+}
+
+void draw_mouse_coords() {
+    Vector2 mouse_pos = GetMousePosition();
+    char buffer[1000];
+    sprintf(buffer, "Mouse Global: (%d,%d)", (int)mouse_pos.x, (int)mouse_pos.y);
+    DrawText(buffer, 3, 3, 10, WHITE);
+
+    Vector2 local_pos = convert_global_to_local(400, 0, mouse_pos.x, mouse_pos.y);
+    sprintf(buffer, "Mouse Local: (%d,%d)", (int)local_pos.x, (int)local_pos.y);
+    DrawText(buffer, 3, 15, 10, WHITE);
+}
+
 void draw_isometric_grid_tile(float x, float y) {
     int iso_w = SPRITE_X_SCALE/2;
     int iso_h = SPRITE_Y_SCALE/2;
@@ -86,6 +105,8 @@ void device_rendering_system(Texture2D texture, ComponentRegistry* registry) {
 
         DrawTextureRec(texture, sprite_rect, coord, WHITE);
     }
+
+    draw_mouse_coords();
 }
 
 #endif //EXAMPLE_RENDERING_SYSTEM_H

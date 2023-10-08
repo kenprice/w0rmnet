@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.11) # FetchContent is available in 3.11+
-project(example)
+project(w0rmnet)
 
 # Generate compile_commands.json
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
@@ -33,7 +33,7 @@ endif()
 # Our Project
 
 #set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/helper/"
-add_executable(${PROJECT_NAME} core_basic_window.c
+add_executable(${PROJECT_NAME} app.c
         sprites.h
         sprites.c
         entities.h
