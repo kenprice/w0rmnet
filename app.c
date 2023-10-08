@@ -2,7 +2,7 @@
 #include "sprites.h"
 #include "entities.h"
 #include "component_registry.h"
-#include "rendering_system.h"
+#include "systems/device_rendering_system.h"
 
 //------------------------------------------------------------------------------------
 // Program main entry point
@@ -25,15 +25,14 @@ int main(void)
     ComponentRegistry components;
     init_component_registry(&components);
     create_entities(&components);
+    initialize_device_rendering_system(screenWidth, screenHeight);
     //////////////
 
     // Main game loop
     while (!WindowShouldClose())    // Detect window close button or ESC key
     {
         // Update
-        //----------------------------------------------------------------------------------
-        // TODO: Update your variables here
-        //----------------------------------------------------------------------------------
+        update_device_rendering_system();
 
         // Draw
         //----------------------------------------------------------------------------------
@@ -41,8 +40,7 @@ int main(void)
 
         ClearBackground(GRAY);
 
-        draw_isometric_grid(screenWidth, screenHeight);
-        device_rendering_system(texture, &components);
+        render_device_rendering_system(texture, &components);
 
         EndDrawing();
         //----------------------------------------------------------------------------------
