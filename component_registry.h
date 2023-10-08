@@ -10,6 +10,7 @@ typedef struct {
     GHashTable* devices;
     GHashTable* positions;
     GHashTable* sprites;
+    GHashTable* connections;
 } ComponentRegistry;
 
 void init_component_registry(ComponentRegistry* registry);

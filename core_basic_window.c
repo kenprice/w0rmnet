@@ -2,6 +2,7 @@
 #include "sprites.h"
 #include "entities.h"
 #include "component_registry.h"
+#include "rendering_system.h"
 
 //------------------------------------------------------------------------------------
 // Program main entry point
@@ -40,6 +41,7 @@ int main(void)
 
         ClearBackground(GRAY);
 
+        draw_isometric_grid(screenWidth, screenHeight);
         device_rendering_system(texture, &components);
 
         EndDrawing();

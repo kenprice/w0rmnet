@@ -39,7 +39,9 @@ add_executable(${PROJECT_NAME} core_basic_window.c
         entities.h
         entities.c
         component_registry.h
-        component_registry.c)
+        component_registry.c
+        utils.h
+        rendering_system.h)
 #set(raylib_VERBOSE 1)
 target_link_libraries(${PROJECT_NAME} raylib)
 target_link_libraries(${PROJECT_NAME} ${GLIB_PKG_LINK_LIBRARIES})

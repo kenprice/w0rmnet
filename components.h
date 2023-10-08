@@ -3,9 +3,11 @@
 
 #include "raylib.h"
 
+#define DEVICE_ID_LEN 32
+
 // Types
 typedef struct {
-    char device_id[32];
+    char device_id[DEVICE_ID_LEN];
     char** path; // Sequence of device IDs
 } Address; // IP-like address
 
@@ -32,8 +34,8 @@ typedef struct {
 
 // Composite components
 typedef struct {
-    Device* conn_from;
-    Device* conn_to;
+    char from_device_id[DEVICE_ID_LEN];
+    char to_device_id[DEVICE_ID_LEN];
 } Connection; // Wire-like structure
 
 typedef struct {
