@@ -35,8 +35,11 @@ endif()
 #set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/helper/"
 add_executable(${PROJECT_NAME} core_basic_window.c
         sprites.h
-        components.c
-        sprites.c)
+        sprites.c
+        entities.h
+        entities.c
+        component_registry.h
+        component_registry.c)
 #set(raylib_VERBOSE 1)
 target_link_libraries(${PROJECT_NAME} raylib)
 target_link_libraries(${PROJECT_NAME} ${GLIB_PKG_LINK_LIBRARIES})

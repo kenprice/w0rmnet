@@ -11,4 +11,6 @@
 
 extern Rectangle sprite_sheet[];
 
+Texture2D load_sprite_sheet();
+
 #endif //EXAMPLE_SPRITES_H

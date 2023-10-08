@@ -1,15 +1,13 @@
-//
-// Created by Ken Price on 10/7/23.
-//
-
 #ifndef EXAMPLE_COMPONENTS_H
 #define EXAMPLE_COMPONENTS_H
 
-#include <glib.h>
-#include <stdio.h>
-#include <string.h>
 #include "raylib.h"
-#include "sprites.h"
+
+// Types
+typedef struct {
+    char device_id[32];
+    char** path; // Sequence of device IDs
+} Address; // IP-like address
 
 // Components
 typedef struct {
@@ -25,35 +23,27 @@ typedef struct {
 } Sprite;
 
 typedef struct {
+    char fingerprint[32];
+} Process; // Models a running program
+
+typedef struct {
     char id[32];
 } OperatingSystem;
 
+// Composite components
 typedef struct {
-    GHashTable* devices;
-    GHashTable* positions;
-    GHashTable* sprites;
-} ComponentRegistry;
-
-
-// Entities
-typedef struct {
-    Device device;
-    Position position;
-    Sprite sprite;
-    OperatingSystem os;
-} Machine;
+    Device* conn_from;
+    Device* conn_to;
+} Connection; // Wire-like structure
 
 typedef struct {
-    Device device;
-    Position position;
-    Sprite sprite;
-} Router;
+    Connection conns[100];
+    int max_conns;
+} NetworkInterface;
 
-void init_component_registry(ComponentRegistry* registry);
-
-void create_entities(ComponentRegistry* registry);
-
-// System
-void device_rendering_system(Texture2D texture, ComponentRegistry* registry);
+typedef struct {
+    Connection conn; // Connection this packet is currently in
+    char* message;
+} Packet;
 
 #endif //EXAMPLE_COMPONENTS_H
