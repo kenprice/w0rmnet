@@ -38,8 +38,8 @@ add_executable(${PROJECT_NAME} app.c
         sprites.c
         entities.h
         entities.c
-        component_registry.h
-        component_registry.c
+        components/component_registry.h
+        components/component_registry.c
         utils.h
         systems/device_rendering_system.h
         systems/device_rendering_system.c)

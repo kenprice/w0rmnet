@@ -1,8 +1,8 @@
 #ifndef EXAMPLE_ENTITIES_H
 #define EXAMPLE_ENTITIES_H
 
-#include "components.h"
-#include "component_registry.h"
+#include "components/components.h"
+#include "components/component_registry.h"
 
 // Entity Archetypes
 typedef struct {

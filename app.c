@@ -1,7 +1,7 @@
 #include "raylib.h"
 #include "sprites.h"
 #include "entities.h"
-#include "component_registry.h"
+#include "components/component_registry.h"
 #include "systems/device_rendering_system.h"
 
 //------------------------------------------------------------------------------------

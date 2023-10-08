@@ -132,6 +132,9 @@ void render_device_rendering_system(Texture2D texture, ComponentRegistry* regist
         Device* dev = (Device*)g_hash_table_lookup(registry->devices, key_);
 
         draw_sprite(texture, sprite_sheet[val->sprite_id], position->coord);
+
+
+        Connection* connection = (Connection*)g_hash_table_lookup(registry->devices, key_);
     }
 
     draw_mouse_coords();

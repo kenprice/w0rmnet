@@ -1,7 +1,7 @@
 #ifndef EXAMPLE_RENDERING_SYSTEM_H
 #define EXAMPLE_RENDERING_SYSTEM_H
 
-#include "../component_registry.h"
+#include "../components/component_registry.h"
 #include "raylib.h"
 #include <glib.h>
 #include <stdio.h>
