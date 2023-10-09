@@ -90,6 +90,9 @@ void draw_isometric_grid() {
 }
 
 void draw_sprite(Texture2D texture, SpriteRect sprite_rect, Vector2 coord) {
+//    Vector2 global_coord = convert_local_to_global(coord.x, coord.y);
+//    float global_x = global_coord.x;
+//    float global_y = global_coord.y;
     float iso_x = camera.offset.x;
     float iso_y = camera.offset.y;
     float iso_w = SPRITE_X_SCALE/2;
@@ -118,24 +121,40 @@ void update_device_rendering_system() {
     update_camera();
 }
 
+void render_connection(ComponentRegistry* registry, Connection connection) {
+    char* from_entity = find_device_entity_id_by_device_id(registry, connection.from_device_id);
+    char* to_entity = find_device_entity_id_by_device_id(registry, connection.to_device_id);
+
+    Position* from_pos = (Position*)g_hash_table_lookup(registry->positions, from_entity);
+    Position* to_pos = (Position*)g_hash_table_lookup(registry->positions, to_entity);
+
+    Vector2 from_coord = convert_local_to_global(from_pos->coord.x, from_pos->coord.y);
+    Vector2 to_coord = convert_local_to_global(to_pos->coord.x, to_pos->coord.y);
+
+    DrawLineEx(from_coord, to_coord, 3, WHITE);
+}
+
 void render_device_rendering_system(Texture2D texture, ComponentRegistry* registry) {
     draw_isometric_grid();
 
     GHashTableIter iter;
-    g_hash_table_iter_init(&iter, registry->sprites);
-
     guint* key_;
-    Sprite* val;
 
-    while (g_hash_table_iter_next (&iter, (gpointer) &key_, (gpointer) &val))
-    {
+//     Render connections
+    Connection* connection;
+    g_hash_table_iter_init(&iter, registry->connections);
+    while (g_hash_table_iter_next (&iter, (gpointer) &key_, (gpointer) &connection)) {
+        render_connection(registry, *connection);
+    }
+
+    Sprite* sprite;
+    g_hash_table_iter_init(&iter, registry->sprites);
+    while (g_hash_table_iter_next (&iter, (gpointer) &key_, (gpointer) &sprite)) {
+        // Render Sprite
         Position* position = (Position*)g_hash_table_lookup(registry->positions, key_);
+        draw_sprite(texture, sprite_sheet[sprite->sprite_id], position->coord);
+
         Device* dev = (Device*)g_hash_table_lookup(registry->devices, key_);
-
-        draw_sprite(texture, sprite_sheet[val->sprite_id], position->coord);
-
-
-        Connection* connection = (Connection*)g_hash_table_lookup(registry->devices, key_);
     }
 
     draw_mouse_coords();

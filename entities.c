@@ -40,7 +40,7 @@ char* create_router_full(ComponentRegistry* registry, Router router) {
     memcpy(sprite, &router.sprite, sizeof(Sprite));
     g_hash_table_insert(registry->sprites, entity_id, sprite);
 
-    Connection** connection = calloc(1, sizeof(Connection)); // calloc initializes to zeroes
+    Connection* connection = calloc(1, sizeof(Connection)); // calloc initializes to zeroes
     memcpy(connection, &router.connection, sizeof(Connection));
     g_hash_table_insert(registry->connections, entity_id, connection);
 
@@ -58,9 +58,9 @@ void create_entities(ComponentRegistry* registry) {
 
     Router router;
     router.sprite.sprite_id = SPRITE_ROUTER;
-    strncpy(machine.device.id, "route1000", DEVICE_ID_LEN);
-    router.position.coord = (Vector2){1, 1};
-    strncpy(machine.connection.from_device_id, "route1000", DEVICE_ID_LEN);
-    strncpy(machine.connection.to_device_id, "1337", DEVICE_ID_LEN);
+    strncpy(router.device.id, "route1000", DEVICE_ID_LEN);
+    router.position.coord = (Vector2){3, 3};
+    strncpy(router.connection.from_device_id, "route1000", DEVICE_ID_LEN);
+    strncpy(router.connection.to_device_id, "1337", DEVICE_ID_LEN);
     create_router_full(registry, router);
 }
