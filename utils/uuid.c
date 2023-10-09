@@ -1,4 +1,4 @@
-#include "utils.h"
+#include "uuid.h"
 
 char* generate_uuid() {
     uuid_t binuuid;

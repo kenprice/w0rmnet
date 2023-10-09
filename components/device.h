@@ -2,7 +2,7 @@
 #define W0RMNET_DEVICE_H
 
 #include "component_registry.h"
-#include "../utils.h"
+#include "../utils/uuid.h"
 
 #define DEVICE_ID_LEN 32
 

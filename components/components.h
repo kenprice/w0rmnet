@@ -3,7 +3,7 @@
 
 #include "raylib.h"
 #include "device.h"
-#include "../utils.h"
+#include "../utils/uuid.h"
 
 // Types
 typedef struct {
@@ -43,7 +43,7 @@ typedef struct {
 } NetworkInterface;
 
 typedef struct {
-    Connection conn; // Connection this packet is currently in
+    char* address;
     char* message;
 } Packet;
 

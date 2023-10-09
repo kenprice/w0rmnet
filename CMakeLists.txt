@@ -36,16 +36,21 @@ endif()
 add_executable(${PROJECT_NAME} app.c
         sprites.h
         sprites.c
-        entities.h
-        entities.c
+        entities/entities.h
+        entities/entities.c
         components/component_registry.h
         components/component_registry.c
-        utils.h
+        utils/uuid.h
         systems/device_rendering_system.h
         systems/device_rendering_system.c
         components/device.h
         components/device.c
-        utils.c)
+        utils/uuid.c
+        components/utils/device_id.h
+        components/utils/device_id_wordlist.h
+        components/utils/device_id.c
+        utils/random.h
+        utils/random.c)
 #set(raylib_VERBOSE 1)
 target_link_libraries(${PROJECT_NAME} raylib)
 target_link_libraries(${PROJECT_NAME} ${GLIB_PKG_LINK_LIBRARIES})

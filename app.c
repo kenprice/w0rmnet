@@ -1,6 +1,8 @@
+#include <stdlib.h>
+#include <time.h>
 #include "raylib.h"
 #include "sprites.h"
-#include "entities.h"
+#include "entities/entities.h"
 #include "components/component_registry.h"
 #include "systems/device_rendering_system.h"
 
@@ -11,8 +13,8 @@ int main(void)
 {
     // Initialization
     //--------------------------------------------------------------------------------------
-    const int screenWidth = 800;
-    const int screenHeight = 450;
+    const int screenWidth = 1080;
+    const int screenHeight = 800;
 
     SetConfigFlags(FLAG_WINDOW_RESIZABLE | FLAG_VSYNC_HINT);
     InitWindow(screenWidth, screenHeight, "raylib [textures] example - texture to image");
@@ -27,6 +29,8 @@ int main(void)
     create_entities(&components);
     initialize_device_rendering_system(screenWidth, screenHeight);
     //////////////
+
+    srand(time(NULL));   // Initialization, should only be called once.
 
     // Main game loop
     while (!WindowShouldClose())    // Detect window close button or ESC key
