@@ -1,4 +1,5 @@
 #include "device_rendering_system.h"
+#include "../components/components.h"
 
 Camera2D camera = { 0 };
 

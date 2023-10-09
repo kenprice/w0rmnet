@@ -22,11 +22,7 @@ typedef struct {
 
 void create_entities(ComponentRegistry* registry);
 
-void create_machine(ComponentRegistry* registry, char* id, float x, float y);
-
 char* create_machine_full(ComponentRegistry* registry, Machine machine);
-
-void create_router(ComponentRegistry* registry, char* id, float x, float y);
 
 char* create_router_full(ComponentRegistry* registry, Router router);
 

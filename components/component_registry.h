@@ -3,7 +3,6 @@
 
 #include <glib.h>
 #include "raylib.h"
-#include "components.h"
 #include "../sprites.h"
 
 typedef struct {

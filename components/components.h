@@ -2,8 +2,8 @@
 #define EXAMPLE_COMPONENTS_H
 
 #include "raylib.h"
-
-#define DEVICE_ID_LEN 32
+#include "device.h"
+#include "../utils.h"
 
 // Types
 typedef struct {
@@ -12,15 +12,14 @@ typedef struct {
 } Address; // IP-like address
 
 // Components
-typedef struct {
-    char id[32];
-} Device;
 
 typedef struct {
+    char entity_id[UUID_STR_LEN];
     Vector2 coord;
 } Position;
 
 typedef struct {
+    char entity_id[UUID_STR_LEN];
     int sprite_id;
 } Sprite;
 

@@ -1,29 +1,12 @@
 #include "entities.h"
 #include "utils.h"
 
-void create_machine(ComponentRegistry* registry, char* id, float x, float y) {
-    char buffer[100] = "machine-";
-    strcat(buffer, id);
-    char *entity_id = strdup(buffer);
-
-    Device* device = malloc(sizeof(Device));
-    strcpy(device->id, id);
-    g_hash_table_insert(registry->devices, entity_id, device);
-
-    Position* position = malloc(sizeof(Position));
-    position->coord = (Vector2){x, y};
-    g_hash_table_insert(registry->positions, entity_id, position);
-
-    Sprite* sprite = malloc(sizeof(Sprite));
-    sprite->sprite_id = SPRITE_SERVER;
-    g_hash_table_insert(registry->sprites, entity_id, sprite);
-}
-
 char* create_machine_full(ComponentRegistry* registry, Machine machine) {
     char* entity_id = generate_uuid();
 
     Device* device = calloc(1, sizeof(Device));
     memcpy(device, &(machine.device), sizeof(Device));
+    strncpy(device->entity_id, entity_id, UUID_STR_LEN);
     g_hash_table_insert(registry->devices, entity_id, device);
 
     Position* position = calloc(1, sizeof(Position));
@@ -41,29 +24,12 @@ char* create_machine_full(ComponentRegistry* registry, Machine machine) {
     return entity_id;
 }
 
-void create_router(ComponentRegistry* registry, char* id, float x, float y) {
-    char buffer[100] = "router-";
-    strcat(buffer, id);
-    char *entity_id = strdup(buffer);
-
-    Device* device = malloc(sizeof(Device));
-    strcpy(device->id, id);
-    g_hash_table_insert(registry->devices, entity_id, device);
-
-    Position* position = malloc(sizeof(Position));
-    position->coord = (Vector2){x, y};
-    g_hash_table_insert(registry->positions, entity_id, position);
-
-    Sprite* sprite = malloc(sizeof(Sprite));
-    sprite->sprite_id = SPRITE_ROUTER;
-    g_hash_table_insert(registry->sprites, entity_id, sprite);
-}
-
 char* create_router_full(ComponentRegistry* registry, Router router) {
     char* entity_id = generate_uuid();
 
     Device* device = calloc(1, sizeof(Device));
     memcpy(device, &router.device, sizeof(Device));
+    strncpy(device->entity_id, entity_id, UUID_STR_LEN);
     g_hash_table_insert(registry->devices, entity_id, device);
 
     Position* position = calloc(1, sizeof(Position));

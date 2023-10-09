@@ -42,7 +42,10 @@ add_executable(${PROJECT_NAME} app.c
         components/component_registry.c
         utils.h
         systems/device_rendering_system.h
-        systems/device_rendering_system.c)
+        systems/device_rendering_system.c
+        components/device.h
+        components/device.c
+        utils.c)
 #set(raylib_VERBOSE 1)
 target_link_libraries(${PROJECT_NAME} raylib)
 target_link_libraries(${PROJECT_NAME} ${GLIB_PKG_LINK_LIBRARIES})

@@ -6,14 +6,6 @@
 
 #define UUID_STR_LEN 37
 
-char* generate_uuid() {
-    uuid_t binuuid;
-    uuid_generate_random(binuuid);
-    char *uuid = malloc(UUID_STR_LEN);
-    uuid_unparse_lower(binuuid, uuid);
-
-    return uuid;
-}
-
+char* generate_uuid();
 
 #endif //EXAMPLE_UTILS_H
