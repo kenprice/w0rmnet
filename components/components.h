@@ -14,12 +14,10 @@ typedef struct {
 // Components
 
 typedef struct {
-    char entity_id[UUID_STR_LEN];
     Vector2 coord;
 } Position;
 
 typedef struct {
-    char entity_id[UUID_STR_LEN];
     int sprite_id;
 } Sprite;
 

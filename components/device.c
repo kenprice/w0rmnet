@@ -17,3 +17,10 @@ char* find_device_entity_id_by_device_id(ComponentRegistry* registry, char* devi
 
     return NULL;
 }
+
+void register_device(ComponentRegistry* registry, Device device, char* entity_id) {
+    Device* new_device = calloc(1, sizeof(Device));
+    memcpy(new_device, &(device), sizeof(Device));
+    strncpy(new_device->entity_id, entity_id, UUID_STR_LEN);
+    g_hash_table_insert(registry->devices, entity_id, new_device);
+}

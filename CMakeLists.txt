@@ -50,7 +50,11 @@ add_executable(${PROJECT_NAME} app.c
         components/utils/device_id_wordlist.h
         components/utils/device_id.c
         utils/random.h
-        utils/random.c)
+        utils/random.c
+        entities/machine.h
+        entities/machine.c
+        entities/router.h
+        entities/router.c)
 #set(raylib_VERBOSE 1)
 target_link_libraries(${PROJECT_NAME} raylib)
 target_link_libraries(${PROJECT_NAME} ${GLIB_PKG_LINK_LIBRARIES})
