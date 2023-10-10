@@ -14,6 +14,4 @@ typedef struct {
 
 char* create_machine_full(ComponentRegistry* registry, Machine machine);
 
-char* create_machine(Vector2 coord);
-
 #endif //W0RMNET_MACHINE_H

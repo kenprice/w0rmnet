@@ -1,32 +1,40 @@
 #include "entities.h"
-#include "../components/utils/device_id.h"
 #include "../entities/machine.h"
 #include "../entities/router.h"
 
 void create_entities(ComponentRegistry* registry) {
+    Machine machine1;
     char* machine_id1 = generate_device_id();
-    char* machine_id2 = generate_device_id();
-    char* router_id1 = generate_device_id();
-    Machine machine;
-    machine.sprite.sprite_id = SPRITE_SERVER;
-    strncpy(machine.device.id, machine_id1, DEVICE_ID_LEN);
-    machine.position.coord = (Vector2){0, 0};
-    strncpy(machine.connection.from_device_id, machine_id1, DEVICE_ID_LEN);
-    strncpy(machine.connection.to_device_id, router_id1, DEVICE_ID_LEN);
-    create_machine_full(registry, machine);
+    machine1.sprite.sprite_id = SPRITE_SERVER;
+    strncpy(machine1.device.id, machine_id1, DEVICE_ID_LEN);
+    machine1.position.coord = (Vector2){0, 0};
+    strncpy(machine1.connection.from_device_id, machine_id1, DEVICE_ID_LEN);
+    machine1.connection.max_conns = 1;
+    machine1.connection.num_conns = 0;
+    char* entity1 = create_machine_full(registry, machine1);
 
-    machine.sprite.sprite_id = SPRITE_SERVER;
-    strncpy(machine.device.id, machine_id2, DEVICE_ID_LEN);
-    machine.position.coord = (Vector2){1, 5};
-    strncpy(machine.connection.from_device_id, machine_id2, DEVICE_ID_LEN);
-    strncpy(machine.connection.to_device_id, router_id1, DEVICE_ID_LEN);
-    create_machine_full(registry, machine);
+    Machine machine2;
+    char* machine_id2 = generate_device_id();
+    machine2.sprite.sprite_id = SPRITE_SERVER;
+    strncpy(machine2.device.id, machine_id2, DEVICE_ID_LEN);
+    machine2.position.coord = (Vector2){1, 5};
+    strncpy(machine2.connection.from_device_id, machine_id2, DEVICE_ID_LEN);
+    machine2.connection.max_conns = 1;
+    machine2.connection.num_conns = 0;
+    char* entity2 = create_machine_full(registry, machine2);
 
     Router router;
+    char* router_id1 = generate_device_id();
     router.sprite.sprite_id = SPRITE_ROUTER;
     strncpy(router.device.id, router_id1, DEVICE_ID_LEN);
     router.position.coord = (Vector2){3, 3};
     strncpy(router.connection.from_device_id, router_id1, DEVICE_ID_LEN);
-    strncpy(router.connection.to_device_id, machine_id1, DEVICE_ID_LEN);
-    create_router_full(registry, router);
+    router.connection.max_conns = 1;
+    router.connection.num_conns = 0;
+    char* entity3 = create_router_full(registry, router);
+
+    add_device_to_connection(registry, entity1, router_id1);
+    add_device_to_connection(registry, entity2, router_id1);
+    add_device_to_connection(registry, entity3, machine_id1);
+    add_device_to_connection(registry, entity3, machine_id2);
 }

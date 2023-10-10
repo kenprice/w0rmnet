@@ -3,8 +3,7 @@
 
 #include "component_registry.h"
 #include "../utils/uuid.h"
-
-#define DEVICE_ID_LEN 11
+#include "utils/device_id.h"
 
 typedef struct {
     char entity_id[UUID_STR_LEN];

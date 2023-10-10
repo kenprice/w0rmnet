@@ -2,8 +2,9 @@
 #define EXAMPLE_COMPONENTS_H
 
 #include "raylib.h"
-#include "device.h"
 #include "../utils/uuid.h"
+#include "connection.h"
+#include "device.h"
 
 // Types
 typedef struct {
@@ -28,17 +29,6 @@ typedef struct {
 typedef struct {
     char id[32];
 } OperatingSystem;
-
-// Composite components
-typedef struct {
-    char from_device_id[DEVICE_ID_LEN];
-    char to_device_id[DEVICE_ID_LEN];
-} Connection; // Wire-like structure
-
-typedef struct {
-    Connection conns[100];
-    int max_conns;
-} NetworkInterface;
 
 typedef struct {
     char* address;

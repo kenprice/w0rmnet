@@ -122,17 +122,20 @@ void update_device_rendering_system() {
 
 void render_connection(ComponentRegistry* registry, Connection connection) {
     char* from_entity = find_device_entity_id_by_device_id(registry, connection.from_device_id);
-    char* to_entity = find_device_entity_id_by_device_id(registry, connection.to_device_id);
 
-    Position* from_pos = (Position*)g_hash_table_lookup(registry->positions, from_entity);
-    Position* to_pos = (Position*)g_hash_table_lookup(registry->positions, to_entity);
+    for (int i = 0; i < connection.num_conns; i++) {
+        char* to_entity = find_device_entity_id_by_device_id(registry, connection.to_device_id[i]);
 
-    Vector2 from_coord = convert_local_to_global(from_pos->coord.x, from_pos->coord.y);
-    from_coord.y += SPRITE_Y_SCALE/2;
-    Vector2 to_coord = convert_local_to_global(to_pos->coord.x, to_pos->coord.y);
-    to_coord.y += SPRITE_Y_SCALE/2;
+        Position* from_pos = (Position*)g_hash_table_lookup(registry->positions, from_entity);
+        Position* to_pos = (Position*)g_hash_table_lookup(registry->positions, to_entity);
 
-    DrawLineEx(from_coord, to_coord, 3, WHITE);
+        Vector2 from_coord = convert_local_to_global(from_pos->coord.x, from_pos->coord.y);
+        from_coord.y += SPRITE_Y_SCALE/2;
+        Vector2 to_coord = convert_local_to_global(to_pos->coord.x, to_pos->coord.y);
+        to_coord.y += SPRITE_Y_SCALE/2;
+
+        DrawLineEx(from_coord, to_coord, 3, WHITE);
+    }
 }
 
 void render_device_rendering_system(Texture2D texture, ComponentRegistry* registry) {
