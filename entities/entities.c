@@ -7,6 +7,7 @@ void create_entities(ComponentRegistry* registry) {
     char* machine_id1 = generate_device_id();
     machine1.sprite.sprite_id = SPRITE_SERVER;
     strncpy(machine1.device.id, machine_id1, DEVICE_ID_LEN);
+    machine1.device.type = DEVICE_TYPE_GENERIC;
     machine1.position.coord = (Vector2){0, 0};
     strncpy(machine1.connection.from_device_id, machine_id1, DEVICE_ID_LEN);
     machine1.connection.max_conns = 1;
@@ -17,6 +18,7 @@ void create_entities(ComponentRegistry* registry) {
     char* machine_id2 = generate_device_id();
     machine2.sprite.sprite_id = SPRITE_SERVER;
     strncpy(machine2.device.id, machine_id2, DEVICE_ID_LEN);
+    machine2.device.type = DEVICE_TYPE_GENERIC;
     machine2.position.coord = (Vector2){1, 5};
     strncpy(machine2.connection.from_device_id, machine_id2, DEVICE_ID_LEN);
     machine2.connection.max_conns = 1;
@@ -27,9 +29,10 @@ void create_entities(ComponentRegistry* registry) {
     char* router_id1 = generate_device_id();
     router.sprite.sprite_id = SPRITE_ROUTER;
     strncpy(router.device.id, router_id1, DEVICE_ID_LEN);
+    router.device.type = DEVICE_TYPE_ROUTER;
     router.position.coord = (Vector2){3, 3};
     strncpy(router.connection.from_device_id, router_id1, DEVICE_ID_LEN);
-    router.connection.max_conns = 1;
+    router.connection.max_conns = 10;
     router.connection.num_conns = 0;
     char* entity3 = create_router_full(registry, router);
 

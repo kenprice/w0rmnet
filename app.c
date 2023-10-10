@@ -5,6 +5,7 @@
 #include "entities/entities.h"
 #include "components/component_registry.h"
 #include "systems/device_rendering_system.h"
+#include "systems/packet_routing_system.h"
 
 //------------------------------------------------------------------------------------
 // Program main entry point
@@ -37,6 +38,7 @@ int main(void)
     {
         // Update
         update_device_rendering_system();
+        update_packet_routing_system(&components);
 
         // Draw
         //----------------------------------------------------------------------------------

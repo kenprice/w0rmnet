@@ -60,7 +60,9 @@ add_executable(${PROJECT_NAME} app.c
         systems/packet_routing_system.h
         systems/packet_routing_system.c
         components/packet.h
-        components/packet.c)
+        components/packet.c
+        systems/utils/rendering.h
+        systems/utils/rendering.c)
 #set(raylib_VERBOSE 1)
 target_link_libraries(${PROJECT_NAME} raylib)
 target_link_libraries(${PROJECT_NAME} ${GLIB_PKG_LINK_LIBRARIES})

@@ -1,24 +1,6 @@
 #include "device_rendering_system.h"
 #include "../components/components.h"
-
-Camera2D camera = { 0 };
-
-void initialize_camera(int screen_width, int screen_height) {
-    camera.target = (Vector2){0, 0};
-    camera.offset = (Vector2){ screen_width/2.0f, screen_height/2.0f };
-    camera.rotation = 0.0f;
-    camera.zoom = 1.0f;
-}
-
-void update_camera() {
-    int offset = 10;
-
-    if (IsKeyDown(KEY_RIGHT)) camera.offset.x -= offset;
-    else if (IsKeyDown(KEY_LEFT)) camera.offset.x += offset;
-
-    if (IsKeyDown(KEY_UP)) camera.offset.y += offset;
-    else if (IsKeyDown(KEY_DOWN)) camera.offset.y -= offset;
-}
+#include "utils/rendering.h"
 
 /**
  * Isometric coord ("local") to "global" coord.
@@ -89,6 +71,17 @@ void draw_isometric_grid() {
     }
 }
 
+void initialize_device_rendering_system() {
+    int screen_width = GetScreenWidth();
+    int screen_height = GetScreenHeight();
+
+    initialize_camera(screen_width, screen_height);
+}
+
+void update_device_rendering_system() {
+    update_camera();
+}
+
 void draw_sprite(Texture2D texture, SpriteRect sprite_rect, Vector2 coord) {
     Vector2 global_coord = convert_local_to_global(coord.x, coord.y);
     float global_x = global_coord.x;
@@ -109,15 +102,32 @@ void draw_device_id(Device device, Vector2 coord) {
     DrawText(device.id, global_coord.x, global_coord.y, 10, GREEN);
 }
 
-void initialize_device_rendering_system() {
-    int screen_width = GetScreenWidth();
-    int screen_height = GetScreenHeight();
+void render_packets(ComponentRegistry* registry) {
+    GHashTableIter iter;
+    guint* key_;
 
-    initialize_camera(screen_width, screen_height);
-}
+    PacketBuffer* packet_buffer;
+    g_hash_table_iter_init(&iter, registry->packet_buffers);
+    while (g_hash_table_iter_next (&iter, (gpointer) &key_, (gpointer) &packet_buffer)) {
+        Position* from_pos = (Position*)g_hash_table_lookup(registry->positions, packet_buffer->entity_id);
+        Vector2 global_coord = convert_local_to_global(from_pos->coord.x, from_pos->coord.y);
 
-void update_device_rendering_system() {
-    update_camera();
+        // Render SEND packets
+        Packet* packet = packet_buffer->send_q.packets[packet_buffer->send_q.tail];
+        if (packet) {
+            char* message = packet->message;
+            DrawRectangle(global_coord.x-1, global_coord.y+12, MeasureText(message, 10)+2, 10, BLACK);
+            DrawText(message, global_coord.x, global_coord.y+12, 10, GREEN);
+        }
+
+        // Render RECV packets
+        packet = packet_buffer->recv_q.packets[packet_buffer->recv_q.tail];
+        if (packet) {
+            char* message = packet->message;
+            DrawRectangle(global_coord.x-1, global_coord.y+12, MeasureText(message, 10)+2, 10, BLACK);
+            DrawText(message, global_coord.x, global_coord.y+12, 10, BLUE);
+        }
+    }
 }
 
 void render_connection(ComponentRegistry* registry, Connection connection) {
@@ -160,6 +170,8 @@ void render_device_rendering_system(Texture2D texture, ComponentRegistry* regist
         Device* dev = (Device*)g_hash_table_lookup(registry->devices, key_);
         draw_device_id(*dev, position->coord);
     }
+
+    render_packets(registry);
 
     draw_mouse_coords();
 }

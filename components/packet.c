@@ -1,6 +1,9 @@
 #include <string.h>
 #include "packet.h"
 
+// simple fifo queue
+// https://gist.github.com/ryankurte/61f95dc71133561ed055ff62b33585f8
+
 Packet* packet_alloc(char* from_address, char* to_address, char* message) {
     Packet* packet = calloc(1, sizeof(Packet));
     packet->from_address = calloc(1, sizeof(char) * strlen(from_address));
