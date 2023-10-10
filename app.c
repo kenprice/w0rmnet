@@ -29,6 +29,7 @@ int main(void)
     init_component_registry(&components);
     create_entities(&components);
     initialize_device_rendering_system(screenWidth, screenHeight);
+    initialize_packet_routing_system();
     //////////////
 
     srand(time(NULL));   // Initialization, should only be called once.

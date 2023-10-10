@@ -1,5 +1,6 @@
 #include "packet_routing_system.h"
 #include "../components/components.h"
+#include "../utils/timer.h"
 
 /**
  * returns 0 if error, 1 if success
@@ -58,9 +59,18 @@ void update_packet_buffers(ComponentRegistry* registry) {
     }
 }
 
+Timer timer;
+void initialize_packet_routing_system() {
+    StartTimer(&timer, 1);
+}
+
 void update_packet_routing_system(ComponentRegistry* registry) {
+    if (!TimerDone(timer)) return;
+
     update_packet_buffers(registry);
     update_routers(registry);
+
+    StartTimer(&timer, 1);
 }
 
 void render_packet_routing_system(ComponentRegistry* registry) {
