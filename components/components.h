@@ -2,9 +2,9 @@
 #define EXAMPLE_COMPONENTS_H
 
 #include "raylib.h"
-#include "../utils/uuid.h"
 #include "connection.h"
 #include "device.h"
+#include "packet.h"
 
 // Types
 typedef struct {
@@ -22,17 +22,15 @@ typedef struct {
     int sprite_id;
 } Sprite;
 
+// Operating System Components
+
 typedef struct {
-    char fingerprint[32];
+    char fingerprint[32]; // Identifies the program being run
+    char name[32]; // Name of program
 } Process; // Models a running program
 
 typedef struct {
     char id[32];
 } OperatingSystem;
-
-typedef struct {
-    char* address;
-    char* message;
-} Packet;
 
 #endif //EXAMPLE_COMPONENTS_H

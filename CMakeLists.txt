@@ -56,7 +56,11 @@ add_executable(${PROJECT_NAME} app.c
         entities/router.h
         entities/router.c
         components/connection.c
-        components/connection.h)
+        components/connection.h
+        systems/packet_routing_system.h
+        systems/packet_routing_system.c
+        components/packet.h
+        components/packet.c)
 #set(raylib_VERBOSE 1)
 target_link_libraries(${PROJECT_NAME} raylib)
 target_link_libraries(${PROJECT_NAME} ${GLIB_PKG_LINK_LIBRARIES})

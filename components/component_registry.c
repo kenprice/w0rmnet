@@ -5,4 +5,5 @@ void init_component_registry(ComponentRegistry* registry) {
     registry->positions = g_hash_table_new_full(g_str_hash, g_str_equal, g_free, free);
     registry->sprites = g_hash_table_new_full(g_str_hash, g_str_equal, g_free, free);
     registry->connections = g_hash_table_new_full(g_str_hash, g_str_equal, g_free, free);
+    registry->packet_buffers = g_hash_table_new_full(g_str_hash, g_str_equal, g_free, free);
 }

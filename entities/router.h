@@ -8,7 +8,8 @@ typedef struct {
     Device device;
     Position position;
     Sprite sprite;
-    Connection connection; // TODO: Extend to many connections
+    Connection connection;
+    PacketBuffer packet_buffer;
 } Router;
 
 char* create_router_full(ComponentRegistry* registry, Router router);

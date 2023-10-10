@@ -10,6 +10,7 @@ typedef struct {
     Sprite sprite;
     OperatingSystem os;
     Connection connection;
+    PacketBuffer packet_buffer;
 } Machine;
 
 char* create_machine_full(ComponentRegistry* registry, Machine machine);

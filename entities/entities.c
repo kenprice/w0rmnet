@@ -33,8 +33,16 @@ void create_entities(ComponentRegistry* registry) {
     router.connection.num_conns = 0;
     char* entity3 = create_router_full(registry, router);
 
+    // Create test connections
     add_device_to_connection(registry, entity1, router_id1);
     add_device_to_connection(registry, entity2, router_id1);
     add_device_to_connection(registry, entity3, machine_id1);
     add_device_to_connection(registry, entity3, machine_id2);
+
+    PacketBuffer* packet_buffer = (PacketBuffer*)g_hash_table_lookup(registry->packet_buffers, entity1);
+    packet_queue_write(&packet_buffer->send_q, packet_alloc(machine_id1, machine_id2, "Hello!"));
+//    packet_buffer = (PacketBuffer*)g_hash_table_lookup(registry->packet_buffers, entity2);
+//    packet_queue_write(packet_buffer->send_q, packet_alloc(machine_id2, machine_id1, "Good day!!"));
+
+//    packet_queue_write();
 }
