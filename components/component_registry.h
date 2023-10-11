@@ -3,7 +3,7 @@
 
 #include <glib.h>
 #include "raylib.h"
-#include "../sprites.h"
+#include "../graphics/sprites.h"
 
 typedef struct {
     GHashTable* devices;

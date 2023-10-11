@@ -1,7 +1,7 @@
 #include <stdlib.h>
 #include <time.h>
 #include "raylib.h"
-#include "sprites.h"
+#include "graphics/sprites.h"
 #include "entities/entities.h"
 #include "components/component_registry.h"
 #include "systems/device_rendering_system.h"

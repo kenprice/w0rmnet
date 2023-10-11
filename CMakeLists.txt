@@ -34,8 +34,8 @@ endif()
 
 #set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/helper/"
 add_executable(${PROJECT_NAME} app.c
-        sprites.h
-        sprites.c
+        graphics/sprites.h
+        graphics/sprites.c
         entities/entities.h
         entities/entities.c
         components/component_registry.h
