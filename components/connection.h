@@ -2,7 +2,6 @@
 #define W0RMNET_CONNECTION_H
 
 #include "utils/device_id.h"
-#include "component_registry.h"
 
 typedef struct {
     char from_device_id[DEVICE_ID_LEN];
@@ -11,6 +10,6 @@ typedef struct {
     int max_conns;
 } Connection; // Wire-like structure
 
-int add_device_to_connection(ComponentRegistry* registry, char* entity_id, char* device_id);
+int add_device_to_connection(char* entity_id, char* device_id);
 
 #endif //W0RMNET_CONNECTION_H

@@ -25,9 +25,8 @@ int main(void)
 
 
     //////////////
-    ComponentRegistry components;
-    init_component_registry(&components);
-    create_entities(&components);
+    init_component_registry();
+    create_entities();
     initialize_device_rendering_system(screenWidth, screenHeight);
     initialize_packet_routing_system();
     //////////////
@@ -39,7 +38,7 @@ int main(void)
     {
         // Update
         update_device_rendering_system();
-        update_packet_routing_system(&components);
+        update_packet_routing_system();
 
         // Draw
         //----------------------------------------------------------------------------------
@@ -47,7 +46,7 @@ int main(void)
 
         ClearBackground(GRAY);
 
-        render_device_rendering_system(texture, &components);
+        render_device_rendering_system(texture);
 
         EndDrawing();
         //----------------------------------------------------------------------------------

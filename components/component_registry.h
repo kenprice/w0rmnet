@@ -13,6 +13,8 @@ typedef struct {
     GHashTable* packet_buffers;
 } ComponentRegistry;
 
-void init_component_registry(ComponentRegistry* registry);
+extern ComponentRegistry component_registry;
+
+void init_component_registry();
 
 #endif //EXAMPLE_COMPONENT_REGISTRY_H

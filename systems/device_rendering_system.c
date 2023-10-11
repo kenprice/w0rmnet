@@ -102,14 +102,14 @@ void draw_device_id(Device device, Vector2 coord) {
     DrawText(device.id, global_coord.x, global_coord.y, 10, GREEN);
 }
 
-void render_packets(ComponentRegistry* registry) {
+void render_packets() {
     GHashTableIter iter;
     guint* key_;
 
     PacketBuffer* packet_buffer;
-    g_hash_table_iter_init(&iter, registry->packet_buffers);
+    g_hash_table_iter_init(&iter, component_registry.packet_buffers);
     while (g_hash_table_iter_next (&iter, (gpointer) &key_, (gpointer) &packet_buffer)) {
-        Position* from_pos = (Position*)g_hash_table_lookup(registry->positions, packet_buffer->entity_id);
+        Position* from_pos = (Position*)g_hash_table_lookup(component_registry.positions, packet_buffer->entity_id);
         Vector2 global_coord = convert_local_to_global(from_pos->coord.x, from_pos->coord.y);
 
         // Render SEND packets
@@ -134,14 +134,14 @@ void render_packets(ComponentRegistry* registry) {
     }
 }
 
-void render_connection(ComponentRegistry* registry, Connection connection) {
-    char* from_entity = find_device_entity_id_by_device_id(registry, connection.from_device_id);
+void render_connection(Connection connection) {
+    char* from_entity = find_device_entity_id_by_device_id(connection.from_device_id);
 
     for (int i = 0; i < connection.num_conns; i++) {
-        char* to_entity = find_device_entity_id_by_device_id(registry, connection.to_device_id[i]);
+        char* to_entity = find_device_entity_id_by_device_id(connection.to_device_id[i]);
 
-        Position* from_pos = (Position*)g_hash_table_lookup(registry->positions, from_entity);
-        Position* to_pos = (Position*)g_hash_table_lookup(registry->positions, to_entity);
+        Position* from_pos = (Position*)g_hash_table_lookup(component_registry.positions, from_entity);
+        Position* to_pos = (Position*)g_hash_table_lookup(component_registry.positions, to_entity);
 
         Vector2 from_coord = convert_local_to_global(from_pos->coord.x, from_pos->coord.y);
         from_coord.y += SPRITE_Y_SCALE/2;
@@ -152,30 +152,30 @@ void render_connection(ComponentRegistry* registry, Connection connection) {
     }
 }
 
-void render_device_rendering_system(Texture2D texture, ComponentRegistry* registry) {
+void render_device_rendering_system(Texture2D texture) {
     draw_isometric_grid();
 
     GHashTableIter iter;
     guint* key_;
 
     Connection* connection;
-    g_hash_table_iter_init(&iter, registry->connections);
+    g_hash_table_iter_init(&iter, component_registry.connections);
     while (g_hash_table_iter_next (&iter, (gpointer) &key_, (gpointer) &connection)) {
-        render_connection(registry, *connection);
+        render_connection(*connection);
     }
 
     Sprite* sprite;
-    g_hash_table_iter_init(&iter, registry->sprites);
+    g_hash_table_iter_init(&iter, component_registry.sprites);
     while (g_hash_table_iter_next (&iter, (gpointer) &key_, (gpointer) &sprite)) {
         // Render Sprite
-        Position* position = (Position*)g_hash_table_lookup(registry->positions, key_);
+        Position* position = (Position*)g_hash_table_lookup(component_registry.positions, key_);
         draw_sprite(texture, sprite_sheet[sprite->sprite_id], position->coord);
 
-        Device* dev = (Device*)g_hash_table_lookup(registry->devices, key_);
+        Device* dev = (Device*)g_hash_table_lookup(component_registry.devices, key_);
         draw_device_id(*dev, position->coord);
     }
 
-    render_packets(registry);
+    render_packets();
 
     draw_mouse_coords();
 }

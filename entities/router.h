@@ -2,7 +2,6 @@
 #define W0RMNET_ROUTER_H
 
 #include "../components/components.h"
-#include "../components/component_registry.h"
 
 typedef struct {
     Device device;
@@ -12,6 +11,6 @@ typedef struct {
     PacketBuffer packet_buffer;
 } Router;
 
-char* create_router_full(ComponentRegistry* registry, Router router);
+char* create_router_full(Router router);
 
 #endif //W0RMNET_ROUTER_H

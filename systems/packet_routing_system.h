@@ -1,12 +1,10 @@
 #ifndef W0RMNET_PACKET_ROUTING_SYSTEM_H
 #define W0RMNET_PACKET_ROUTING_SYSTEM_H
 
-#include "../components/component_registry.h"
-
 void initialize_packet_routing_system();
 
-void update_packet_routing_system(ComponentRegistry* registry);
+void update_packet_routing_system();
 
-void render_packet_routing_system(ComponentRegistry* registry);
+void render_packet_routing_system();
 
 #endif //W0RMNET_PACKET_ROUTING_SYSTEM_H

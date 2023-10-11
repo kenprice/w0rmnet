@@ -12,6 +12,6 @@ void initialize_device_rendering_system();
 
 void update_device_rendering_system();
 
-void render_device_rendering_system(Texture2D texture, ComponentRegistry* registry);
+void render_device_rendering_system(Texture2D texture);
 
 #endif //EXAMPLE_RENDERING_SYSTEM_H

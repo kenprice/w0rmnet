@@ -2,8 +2,7 @@
 #define EXAMPLE_ENTITIES_H
 
 #include "../components/components.h"
-#include "../components/component_registry.h"
 
-void create_entities(ComponentRegistry* registry);
+void create_entities();
 
 #endif //EXAMPLE_ENTITIES_H
