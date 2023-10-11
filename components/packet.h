@@ -30,4 +30,6 @@ Packet* packet_queue_read(PacketQueue* queue);
 
 int packet_queue_write(PacketQueue *queue, Packet* packet);
 
+void iterate_packet_buffers(void (*cb)(char*,PacketBuffer *));
+
 #endif //W0RMNET_PACKET_H

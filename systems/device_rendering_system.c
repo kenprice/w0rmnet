@@ -68,35 +68,28 @@ void draw_device_id(Device device, Vector2 coord) {
     DrawText(device.id, global_coord.x, global_coord.y, 10, GREEN);
 }
 
-void render_packets() {
-    GHashTableIter iter;
-    guint* key_;
+void render_packet(char* entity_id, PacketBuffer* packet_buffer) {
+    Position* from_pos = (Position*)g_hash_table_lookup(component_registry.positions, entity_id);
+    Vector2 global_coord = convert_local_to_global(from_pos->coord.x, from_pos->coord.y);
 
-    PacketBuffer* packet_buffer;
-    g_hash_table_iter_init(&iter, component_registry.packet_buffers);
-    while (g_hash_table_iter_next (&iter, (gpointer) &key_, (gpointer) &packet_buffer)) {
-        Position* from_pos = (Position*)g_hash_table_lookup(component_registry.positions, packet_buffer->entity_id);
-        Vector2 global_coord = convert_local_to_global(from_pos->coord.x, from_pos->coord.y);
-
-        // Render SEND packets
-        PacketQueue q = packet_buffer->send_q;
-        int offset = 12;
-        for (int i = q.tail; i < q.head; i++) {
-            Packet* packet = q.packets[i];
-            char* message = packet->message;
-            DrawRectangle(global_coord.x-1, global_coord.y+offset, MeasureText(message, 10)+2, 10, BLACK);
-            DrawText(message, global_coord.x, global_coord.y+offset, 10, GREEN);
-            offset += 12;
-        }
-        // Render RECV packets
-        q = packet_buffer->recv_q;
-        for (int i = q.tail; i < q.head; i++) {
-            Packet* packet = q.packets[i];
-            char* message = packet->message;
-            DrawRectangle(global_coord.x-1, global_coord.y+offset, MeasureText(message, 10)+2, 10, BLACK);
-            DrawText(message, global_coord.x, global_coord.y+offset, 10, BLUE);
-            offset += 12;
-        }
+    // Render SEND packets
+    PacketQueue q = packet_buffer->send_q;
+    int offset = 12;
+    for (int i = q.tail; i < q.head; i++) {
+        Packet* packet = q.packets[i];
+        char* message = packet->message;
+        DrawRectangle(global_coord.x-1, global_coord.y+offset, MeasureText(message, 10)+2, 10, BLACK);
+        DrawText(message, global_coord.x, global_coord.y+offset, 10, GREEN);
+        offset += 12;
+    }
+    // Render RECV packets
+    q = packet_buffer->recv_q;
+    for (int i = q.tail; i < q.head; i++) {
+        Packet* packet = q.packets[i];
+        char* message = packet->message;
+        DrawRectangle(global_coord.x-1, global_coord.y+offset, MeasureText(message, 10)+2, 10, BLACK);
+        DrawText(message, global_coord.x, global_coord.y+offset, 10, BLUE);
+        offset += 12;
     }
 }
 
@@ -133,8 +126,7 @@ void render_device_rendering_system() {
 
     iterate_connections(render_connection);
     iterate_devices(render_device_sprite);
-
-    render_packets();
+    iterate_packet_buffers(render_packet);
 
     draw_mouse_coords();
 }

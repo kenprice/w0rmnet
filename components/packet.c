@@ -1,4 +1,5 @@
 #include <string.h>
+#include "component_registry.h"
 #include "packet.h"
 
 // simple fifo queue
@@ -41,4 +42,15 @@ PacketQueue* packet_queue_alloc(size_t size) {
     queue->size = size;
     queue->packets = calloc(size, sizeof(Packet*));
     return queue;
+}
+
+void iterate_packet_buffers(void (*cb)(char*,PacketBuffer *)) {
+    GHashTableIter iter;
+    char* entity_id;
+    PacketBuffer* packet_buffer;
+
+    g_hash_table_iter_init(&iter, component_registry.packet_buffers);
+    while (g_hash_table_iter_next (&iter, (gpointer) &entity_id, (gpointer) &packet_buffer)) {
+        (*cb)(entity_id, packet_buffer);
+    }
 }

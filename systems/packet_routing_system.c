@@ -53,20 +53,17 @@ void update_routers() {
     }
 }
 
+void update_packet_buffer(char* entity_id, PacketBuffer* packet_buffer) {
+    // Pop one and send
+    Packet* packet = packet_queue_read(&packet_buffer->send_q);
+    if (!packet) return;
+    Connection* connection = (Connection*) g_hash_table_lookup(component_registry.connections, entity_id);
+
+    send_packet(packet, connection);
+}
+
 void update_packet_buffers() {
-    GHashTableIter iter;
-    guint* key_;
-
-    PacketBuffer* packet_buffer;
-    g_hash_table_iter_init(&iter, component_registry.packet_buffers);
-    while (g_hash_table_iter_next (&iter, (gpointer) &key_, (gpointer) &packet_buffer)) {
-        // Pop one and send
-        Packet* packet = packet_queue_read(&packet_buffer->send_q);
-        if (!packet) continue;
-        Connection* connection = (Connection*) g_hash_table_lookup(component_registry.connections, key_);
-
-        send_packet(packet, connection);
-    }
+    iterate_packet_buffers(update_packet_buffer);
 }
 
 Timer timer;
