@@ -5,6 +5,7 @@
 #include "connection.h"
 #include "device.h"
 #include "packet.h"
+#include "sprite.h"
 
 // Types
 typedef struct {
@@ -17,10 +18,6 @@ typedef struct {
 typedef struct {
     Vector2 coord;
 } Position;
-
-typedef struct {
-    int sprite_id;
-} Sprite;
 
 // Operating System Components
 

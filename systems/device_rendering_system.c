@@ -2,6 +2,8 @@
 #include "../components/components.h"
 #include "utils/rendering.h"
 
+Texture2D texture;
+
 void draw_isometric_grid_tile(float x, float y) {
     int iso_w = SPRITE_X_SCALE/2;
     int iso_h = SPRITE_Y_SCALE/2;
@@ -33,11 +35,13 @@ void draw_isometric_grid() {
     }
 }
 
-void initialize_device_rendering_system() {
+void initialize_device_rendering_system(Texture2D loaded_texture) {
     int screen_width = GetScreenWidth();
     int screen_height = GetScreenHeight();
 
     initialize_camera(screen_width, screen_height);
+
+    texture = loaded_texture;
 }
 
 void update_device_rendering_system() {
@@ -96,11 +100,11 @@ void render_packets() {
     }
 }
 
-void render_connection(Connection connection) {
-    char* from_entity = find_device_entity_id_by_device_id(connection.from_device_id);
+void render_connection(char* _entity_id, Connection* connection) {
+    char* from_entity = _entity_id;
 
-    for (int i = 0; i < connection.num_conns; i++) {
-        char* to_entity = find_device_entity_id_by_device_id(connection.to_device_id[i]);
+    for (int i = 0; i < connection->num_conns; i++) {
+        char* to_entity = find_device_entity_id_by_device_id(connection->to_device_id[i]);
 
         Position* from_pos = (Position*)g_hash_table_lookup(component_registry.positions, from_entity);
         Position* to_pos = (Position*)g_hash_table_lookup(component_registry.positions, to_entity);
@@ -114,28 +118,21 @@ void render_connection(Connection connection) {
     }
 }
 
-void render_device_rendering_system(Texture2D texture) {
+void render_device_sprite(char* entity_id, Device* device) {
+    Sprite* sprite = (Sprite*)g_hash_table_lookup(component_registry.sprites, entity_id);
+
+    // Render Sprite
+    Position* position = (Position*)g_hash_table_lookup(component_registry.positions, entity_id);
+    draw_sprite(texture, sprite_sheet[sprite->sprite_id], position->coord);
+
+    draw_device_id(*device, position->coord);
+}
+
+void render_device_rendering_system() {
     draw_isometric_grid();
 
-    GHashTableIter iter;
-    guint* key_;
-
-    Connection* connection;
-    g_hash_table_iter_init(&iter, component_registry.connections);
-    while (g_hash_table_iter_next (&iter, (gpointer) &key_, (gpointer) &connection)) {
-        render_connection(*connection);
-    }
-
-    Sprite* sprite;
-    g_hash_table_iter_init(&iter, component_registry.sprites);
-    while (g_hash_table_iter_next (&iter, (gpointer) &key_, (gpointer) &sprite)) {
-        // Render Sprite
-        Position* position = (Position*)g_hash_table_lookup(component_registry.positions, key_);
-        draw_sprite(texture, sprite_sheet[sprite->sprite_id], position->coord);
-
-        Device* dev = (Device*)g_hash_table_lookup(component_registry.devices, key_);
-        draw_device_id(*dev, position->coord);
-    }
+    iterate_connections(render_connection);
+    iterate_devices(render_device_sprite);
 
     render_packets();
 

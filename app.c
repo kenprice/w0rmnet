@@ -27,7 +27,7 @@ int main(void)
     //////////////
     init_component_registry();
     create_entities();
-    initialize_device_rendering_system(screenWidth, screenHeight);
+    initialize_device_rendering_system(texture);
     initialize_packet_routing_system();
     //////////////
 
@@ -46,7 +46,7 @@ int main(void)
 
         ClearBackground(GRAY);
 
-        render_device_rendering_system(texture);
+        render_device_rendering_system();
 
         EndDrawing();
         //----------------------------------------------------------------------------------

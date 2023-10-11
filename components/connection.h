@@ -12,4 +12,6 @@ typedef struct {
 
 int add_device_to_connection(char* entity_id, char* device_id);
 
+void iterate_connections(void (*cb)(char*,Connection*));
+
 #endif //W0RMNET_CONNECTION_H

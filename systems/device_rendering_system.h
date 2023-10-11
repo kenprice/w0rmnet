@@ -8,10 +8,10 @@
 
 extern Camera2D camera;
 
-void initialize_device_rendering_system();
+void initialize_device_rendering_system(Texture2D texture);
 
 void update_device_rendering_system();
 
-void render_device_rendering_system(Texture2D texture);
+void render_device_rendering_system();
 
 #endif //EXAMPLE_RENDERING_SYSTEM_H

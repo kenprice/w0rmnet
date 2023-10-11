@@ -25,3 +25,14 @@ void register_device(Device device, char* entity_id) {
     strncpy(new_device->entity_id, entity_id, UUID_STR_LEN);
     g_hash_table_insert(component_registry.devices, entity_id, new_device);
 }
+
+void iterate_devices(void (*cb)(char*,Device*)) {
+    GHashTableIter iter;
+    char* entity_id;
+    Device* device;
+
+    g_hash_table_iter_init(&iter, component_registry.devices);
+    while (g_hash_table_iter_next (&iter, (gpointer) &entity_id, (gpointer) &device)) {
+        (*cb)(entity_id, device);
+    }
+}

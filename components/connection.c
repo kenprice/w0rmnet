@@ -15,3 +15,14 @@ int add_device_to_connection(char* entity_id, char* device_id) {
     connection->num_conns++;
     return connection->num_conns;
 }
+
+void iterate_connections(void (*cb)(char*,Connection*)) {
+    GHashTableIter iter;
+    char* entity_id;
+    Connection* connection;
+
+    g_hash_table_iter_init(&iter, component_registry.connections);
+    while (g_hash_table_iter_next (&iter, (gpointer) &entity_id, (gpointer) &connection)) {
+        (*cb)(entity_id, connection);
+    }
+}

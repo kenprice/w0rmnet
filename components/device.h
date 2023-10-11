@@ -19,4 +19,6 @@ char* find_device_entity_id_by_device_id(char* device_id);
 
 void register_device(Device device, char* entity_id);
 
+void iterate_devices(void (*cb)(char*,Device*));
+
 #endif //W0RMNET_DEVICE_H
