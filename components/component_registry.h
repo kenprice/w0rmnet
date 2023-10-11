@@ -11,6 +11,7 @@ typedef struct {
     GHashTable* sprites;
     GHashTable* connections;
     GHashTable* packet_buffers;
+    GHashTable* route_tables;
 } ComponentRegistry;
 
 extern ComponentRegistry component_registry;

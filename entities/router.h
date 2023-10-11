@@ -9,6 +9,7 @@ typedef struct {
     Sprite sprite;
     Connection connection;
     PacketBuffer packet_buffer;
+    RouteTable route_table;
 } Router;
 
 char* create_router_full(Router router);

@@ -68,6 +68,11 @@ void draw_device_id(Device device, Vector2 coord) {
     DrawText(device.id, global_coord.x, global_coord.y, 10, GREEN);
 }
 
+void draw_popover(int x, int y, char* message) {
+    DrawRectangle(x-1, y-12, MeasureText(message, 10)+2, 10, BLACK);
+    DrawText(message, x, y-12, 10, GREEN);
+}
+
 void render_packet(char* entity_id, PacketBuffer* packet_buffer) {
     Position* from_pos = (Position*)g_hash_table_lookup(component_registry.positions, entity_id);
     Vector2 global_coord = convert_local_to_global(from_pos->coord.x, from_pos->coord.y);
@@ -121,12 +126,28 @@ void render_device_sprite(char* entity_id, Device* device) {
     draw_device_id(*device, position->coord);
 }
 
+void detect_mouse_collision() {
+    Vector2 mouse_pos = GetMousePosition();
+    Vector2 current_tile = convert_global_to_local(mouse_pos.x, mouse_pos.y);
+
+    Device* device = find_device_by_coord(current_tile.x, current_tile.y);
+    if (device != NULL) {
+        device = find_device_by_coord(current_tile.x, current_tile.y);
+        char message[100];
+        sprintf(message, "test");
+        draw_popover(mouse_pos.x, mouse_pos.y, message);
+    }
+
+//    mouse_pos.x;
+}
+
 void render_device_rendering_system() {
     draw_isometric_grid();
 
     iterate_connections(render_connection);
     iterate_devices(render_device_sprite);
     iterate_packet_buffers(render_packet);
+    detect_mouse_collision();
 
     draw_mouse_coords();
 }

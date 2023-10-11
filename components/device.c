@@ -2,6 +2,7 @@
 #include <string.h>
 #include "device.h"
 #include "component_registry.h"
+#include "components.h"
 
 char* find_device_entity_id_by_device_id(char* device_id) {
     GHashTableIter iter;
@@ -13,6 +14,22 @@ char* find_device_entity_id_by_device_id(char* device_id) {
     while (g_hash_table_iter_next (&iter, (gpointer) &key_, (gpointer) &device)) {
         if (strcmp(device->id, device_id) == 0) {
             return device->entity_id;
+        }
+    }
+
+    return NULL;
+}
+
+Device* find_device_by_coord(int x, int y) {
+    GHashTableIter iter;
+    char* entity_id;
+    Device* device;
+
+    g_hash_table_iter_init(&iter, component_registry.devices);
+    while (g_hash_table_iter_next (&iter, (gpointer) &entity_id, (gpointer) &device)) {
+        Position* position = (Position*)g_hash_table_lookup(component_registry.positions, entity_id);
+        if (position->coord.x == x && position->coord.y == y) {
+            return device;
         }
     }
 

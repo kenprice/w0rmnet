@@ -24,5 +24,9 @@ char* create_router_full(Router router) {
     strcpy(packet_buffer->entity_id, entity_id);
     g_hash_table_insert(component_registry.packet_buffers, entity_id, packet_buffer);
 
+    RouteTable* route_table = calloc(1, sizeof(RouteTable));
+    route_table->num_records = 0;
+    route_table->max_records = 10;
+
     return entity_id;
 }

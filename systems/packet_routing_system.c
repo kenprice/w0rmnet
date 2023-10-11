@@ -62,10 +62,6 @@ void update_packet_buffer(char* entity_id, PacketBuffer* packet_buffer) {
     send_packet(packet, connection);
 }
 
-void update_packet_buffers() {
-    iterate_packet_buffers(update_packet_buffer);
-}
-
 Timer timer;
 void initialize_packet_routing_system() {
     StartTimer(&timer, 1);
@@ -74,7 +70,7 @@ void initialize_packet_routing_system() {
 void update_packet_routing_system() {
     if (!TimerDone(timer)) return;
 
-    update_packet_buffers();
+    iterate_packet_buffers(update_packet_buffer);
     update_routers();
 
     StartTimer(&timer, 1);
