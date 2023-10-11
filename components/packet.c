@@ -15,6 +15,8 @@ Packet* packet_alloc(char* from_address, char* to_address, char* message) {
     return packet;
 }
 
+// TODO: Packet free
+
 Packet* packet_queue_read(PacketQueue* queue) {
     if (queue->tail == queue->head) {
         return NULL;

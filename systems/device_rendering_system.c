@@ -113,19 +113,23 @@ void render_packets(ComponentRegistry* registry) {
         Vector2 global_coord = convert_local_to_global(from_pos->coord.x, from_pos->coord.y);
 
         // Render SEND packets
-        Packet* packet = packet_buffer->send_q.packets[packet_buffer->send_q.tail];
-        if (packet) {
+        PacketQueue q = packet_buffer->send_q;
+        int offset = 12;
+        for (int i = q.tail; i < q.head; i++) {
+            Packet* packet = q.packets[i];
             char* message = packet->message;
-            DrawRectangle(global_coord.x-1, global_coord.y+12, MeasureText(message, 10)+2, 10, BLACK);
-            DrawText(message, global_coord.x, global_coord.y+12, 10, GREEN);
+            DrawRectangle(global_coord.x-1, global_coord.y+offset, MeasureText(message, 10)+2, 10, BLACK);
+            DrawText(message, global_coord.x, global_coord.y+offset, 10, GREEN);
+            offset += 12;
         }
-
         // Render RECV packets
-        packet = packet_buffer->recv_q.packets[packet_buffer->recv_q.tail];
-        if (packet) {
+        q = packet_buffer->recv_q;
+        for (int i = q.tail; i < q.head; i++) {
+            Packet* packet = q.packets[i];
             char* message = packet->message;
-            DrawRectangle(global_coord.x-1, global_coord.y+12, MeasureText(message, 10)+2, 10, BLACK);
-            DrawText(message, global_coord.x, global_coord.y+12, 10, BLUE);
+            DrawRectangle(global_coord.x-1, global_coord.y+offset, MeasureText(message, 10)+2, 10, BLACK);
+            DrawText(message, global_coord.x, global_coord.y+offset, 10, BLUE);
+            offset += 12;
         }
     }
 }

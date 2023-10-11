@@ -44,6 +44,9 @@ void create_entities(ComponentRegistry* registry) {
 
     PacketBuffer* packet_buffer = (PacketBuffer*)g_hash_table_lookup(registry->packet_buffers, entity1);
     packet_queue_write(&packet_buffer->send_q, packet_alloc(machine_id1, machine_id2, "Hello!"));
+    packet_queue_write(&packet_buffer->send_q, packet_alloc(machine_id1, machine_id2, "Hello2!"));
+    packet_buffer = (PacketBuffer*)g_hash_table_lookup(registry->packet_buffers, entity2);
+    packet_queue_write(&packet_buffer->send_q, packet_alloc(machine_id2, machine_id1, "Good Bye!!"));
 //    packet_buffer = (PacketBuffer*)g_hash_table_lookup(registry->packet_buffers, entity2);
 //    packet_queue_write(packet_buffer->send_q, packet_alloc(machine_id2, machine_id1, "Good day!!"));
 
