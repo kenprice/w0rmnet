@@ -7,8 +7,8 @@
 
 Packet* packet_alloc(char* from_address, char* to_address, char* message) {
     Packet* packet = calloc(1, sizeof(Packet));
-    packet->from_address = calloc(1, sizeof(char) * strlen(from_address) + 1);
-    strcpy(packet->from_address, from_address);
+    packet->from_address = calloc(1, sizeof(char) * 110);
+    packet->from_address[0] = '\0';
     packet->to_address = calloc(1, sizeof(char) * strlen(to_address) + 1);
     strcpy(packet->to_address, to_address);
     packet->message = calloc(1, sizeof(char) * strlen(message) + 1);

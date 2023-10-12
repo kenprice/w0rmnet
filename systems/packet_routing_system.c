@@ -23,7 +23,15 @@ int send_packet(char* entity_id, Packet* packet, Connection* connection) {
         char* cur_part = path[0];
         Device* cur_device = (Device*)g_hash_table_lookup(component_registry.devices, entity_id);
 
+        // Shitty prepend, update from address
+        char from_address[110];
+        strcpy(from_address, cur_device->id);
+        strcat(from_address, ".");
+        strcat(from_address, packet->from_address);
+        strcpy(packet->from_address, from_address);
+
         if (strcmp(cur_part, cur_device->id) == 0) {
+            // End search! Found!
             packet->top_level_found = true;
         } else {
             // If some machine, send to router (assuming max one router connected)
