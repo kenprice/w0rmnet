@@ -4,6 +4,7 @@
 #include "../components/components.h"
 
 typedef struct {
+    char* entity_id;
     Device device;
     Position position;
     Sprite sprite;
@@ -12,6 +13,8 @@ typedef struct {
     RouteTable route_table;
 } Router;
 
-char* create_router_full(Router router);
+Router entity_router_create_blank();
+
+char* entity_router_register_components(Router router);
 
 #endif //W0RMNET_ROUTER_H

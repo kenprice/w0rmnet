@@ -18,7 +18,7 @@ int main(void)
     const int screenHeight = 800;
 
     SetConfigFlags(FLAG_WINDOW_RESIZABLE | FLAG_VSYNC_HINT);
-    InitWindow(screenWidth, screenHeight, "raylib [textures] example - texture to image");
+    InitWindow(screenWidth, screenHeight, "w0rmnet");
 
     // NOTE: Textures MUST be loaded after Window initialization (OpenGL context is required)
     Texture2D texture = load_sprite_sheet();

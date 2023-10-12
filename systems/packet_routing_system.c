@@ -6,8 +6,78 @@
 /**
  * returns 0 if error, 1 if success
  */
-int send_packet(Packet* packet, Connection* connection) {
-    // Find best recipient and send.
+int send_packet(char* entity_id, Packet* packet, Connection* connection) {
+    char buffer[200];
+    strcpy(buffer, packet->to_address);
+    char* token = strtok(buffer, ".");
+    char path[10][11];
+    int parts = 0;
+    while (token != NULL) {
+        strcpy(path[parts], token);
+        token = strtok(NULL, ".");
+        parts++;
+    }
+
+    // Searching for top
+    if (!packet->top_level_found) {
+        char* cur_part = path[0];
+        Device* cur_device = (Device*)g_hash_table_lookup(component_registry.devices, entity_id);
+
+        if (strcmp(cur_part, cur_device->id) == 0) {
+            packet->top_level_found = true;
+        } else {
+            // If some machine, send to router (assuming max one router connected)
+            if (cur_device->type != DEVICE_TYPE_ROUTER) {
+                for (int i = 0; i < connection->num_conns; i++) {
+                    char* to_entity = find_device_entity_id_by_device_id(connection->to_device_id[i]);
+
+                    Device* device = (Device*)g_hash_table_lookup(component_registry.devices, to_entity);
+                    if (device->type != DEVICE_TYPE_ROUTER) continue;
+
+                    PacketBuffer* to_packet_buffer = (PacketBuffer*)g_hash_table_lookup(component_registry.packet_buffers, to_entity);
+                    if (!to_packet_buffer) return 0;
+
+                    packet_queue_write(&to_packet_buffer->recv_q, packet);
+                    return 1;
+                }
+            }
+            // If router, send to parent
+            if (cur_device->type == DEVICE_TYPE_ROUTER) {
+                RouteTable* route_table = (RouteTable*)g_hash_table_lookup(component_registry.route_tables, entity_id);
+                if (route_table != NULL && strlen(route_table->gateway) > 0) {
+                    char* to_entity = find_device_entity_id_by_device_id(route_table->gateway);
+                    PacketBuffer* to_packet_buffer = (PacketBuffer*)g_hash_table_lookup(component_registry.packet_buffers, to_entity);
+                    if (!to_packet_buffer) return 0;
+
+                    packet_queue_write(&to_packet_buffer->recv_q, packet);
+                }
+            }
+        }
+    }
+    if (packet->top_level_found) {
+        // Top found, traverse back down
+        packet->hops++;
+
+        if (packet->hops < parts) { // More hops to go
+            char* cur_part = path[packet->hops];
+            for (int i = 0; i < connection->num_conns; i++) {
+                char* to_entity = find_device_entity_id_by_device_id(cur_part);
+
+                if (strcmp(cur_part, connection->to_device_id[i]) == 0) {
+                    PacketBuffer* to_packet_buffer = (PacketBuffer*)g_hash_table_lookup(component_registry.packet_buffers, to_entity);
+                    packet_queue_write(&to_packet_buffer->recv_q, packet);
+                    return 1;
+                }
+            }
+            // Not found!
+            return 0;
+        }
+    }
+    return 0;
+
+
+
+
     // First, see if destination address is in next hop
     for (int i = 0; i < connection->num_conns; i++) {
         char* to_entity = find_device_entity_id_by_device_id(connection->to_device_id[i]);
@@ -59,7 +129,7 @@ void update_packet_buffer(char* entity_id, PacketBuffer* packet_buffer) {
     if (!packet) return;
     Connection* connection = (Connection*) g_hash_table_lookup(component_registry.connections, entity_id);
 
-    send_packet(packet, connection);
+    send_packet(entity_id, packet, connection);
 }
 
 Timer timer;

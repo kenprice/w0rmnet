@@ -82,7 +82,10 @@ void render_packet(char* entity_id, PacketBuffer* packet_buffer) {
     int offset = 12;
     for (int i = q.tail; i < q.head; i++) {
         Packet* packet = q.packets[i];
-        char* message = packet->message;
+        char message[100] = "";
+        strcat(message, packet->message);
+        strcat(message, " to ");
+        strcat(message, packet->to_address);
         DrawRectangle(global_coord.x-1, global_coord.y+offset, MeasureText(message, 10)+2, 10, BLACK);
         DrawText(message, global_coord.x, global_coord.y+offset, 10, GREEN);
         offset += 12;
@@ -113,6 +116,17 @@ void render_connection(char* _entity_id, Connection* connection) {
         to_coord.y += SPRITE_Y_SCALE/2;
 
         DrawLineEx(from_coord, to_coord, 3, WHITE);
+    }
+
+    RouteTable* route_table = (RouteTable*)g_hash_table_lookup(component_registry.route_tables, from_entity);
+    if (route_table != NULL && strlen(route_table->gateway) > 0) {
+        char* to_entity = find_device_entity_id_by_device_id(route_table->gateway);
+        if (to_entity != NULL) {
+            Position* to_pos = (Position*)g_hash_table_lookup(component_registry.positions, to_entity);
+            Vector2 to_coord = convert_local_to_global(to_pos->coord.x, to_pos->coord.y);
+
+//            DrawCircle(to_coord.x, to_coord.y, 100, BLUE);
+        }
     }
 }
 

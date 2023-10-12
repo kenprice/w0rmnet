@@ -7,12 +7,14 @@
 
 Packet* packet_alloc(char* from_address, char* to_address, char* message) {
     Packet* packet = calloc(1, sizeof(Packet));
-    packet->from_address = calloc(1, sizeof(char) * strlen(from_address));
+    packet->from_address = calloc(1, sizeof(char) * strlen(from_address) + 1);
     strcpy(packet->from_address, from_address);
-    packet->to_address = calloc(1, sizeof(char) * strlen(to_address));
+    packet->to_address = calloc(1, sizeof(char) * strlen(to_address) + 1);
     strcpy(packet->to_address, to_address);
-    packet->message = calloc(1, sizeof(char) * strlen(message));
+    packet->message = calloc(1, sizeof(char) * strlen(message) + 1);
     strcpy(packet->message, message);
+    packet->hops = 0;
+    packet->top_level_found = false;
     return packet;
 }
 
@@ -37,10 +39,12 @@ int packet_queue_write(PacketQueue *queue, Packet* packet) {
     return 0;
 }
 
-PacketQueue* packet_queue_alloc(size_t size) {
-    PacketQueue* queue = calloc(1, sizeof(PacketQueue));
-    queue->size = size;
-    queue->packets = calloc(size, sizeof(Packet*));
+PacketQueue packet_queue_alloc(size_t size) {
+    PacketQueue queue;
+    queue.size = size;
+    queue.tail = 0;
+    queue.head = 0;
+    queue.packets = calloc(size, sizeof(Packet*));
     return queue;
 }
 

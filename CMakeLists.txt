@@ -66,7 +66,9 @@ add_executable(${PROJECT_NAME} app.c
         utils/timer.h
         utils/timer.c
         components/sprite.h
-        components/sprite.c)
+        components/sprite.c
+        components/route_table.h
+        components/route_table.c)
 #set(raylib_VERBOSE 1)
 target_link_libraries(${PROJECT_NAME} raylib)
 target_link_libraries(${PROJECT_NAME} ${GLIB_PKG_LINK_LIBRARIES})

@@ -4,80 +4,63 @@
 #include "../entities/router.h"
 
 void create_entities() {
-    Machine machine1;
-    char* machine_id1 = generate_device_id();
-    machine1.sprite.sprite_id = SPRITE_SERVER;
-    strncpy(machine1.device.id, machine_id1, DEVICE_ID_LEN);
-    machine1.device.type = DEVICE_TYPE_GENERIC;
-    machine1.position.coord = (Vector2){0, 3};
-    strncpy(machine1.connection.from_device_id, machine_id1, DEVICE_ID_LEN);
-    machine1.connection.max_conns = 1;
-    machine1.connection.num_conns = 0;
-    char* machine1_eid = create_machine_full(machine1);
+    // Top-level
+    Router gateway_router = entity_router_create_blank();;
+    gateway_router.position.coord = (Vector2){3, 0};
 
-    Machine machine2;
-    char* machine_id2 = generate_device_id();
-    machine2.sprite.sprite_id = SPRITE_SERVER;
-    strncpy(machine2.device.id, machine_id2, DEVICE_ID_LEN);
-    machine2.device.type = DEVICE_TYPE_GENERIC;
-    machine2.position.coord = (Vector2){6, 6};
-    strncpy(machine2.connection.from_device_id, machine_id2, DEVICE_ID_LEN);
-    machine2.connection.max_conns = 1;
-    machine2.connection.num_conns = 0;
-    char* machine2_eid = create_machine_full(machine2);
+    // LANs
+    Router router1 = entity_router_create_blank();
+    router1.position.coord = (Vector2){0, 0};
 
-    Router router;
-    char* router_id1 = generate_device_id();
-    router.sprite.sprite_id = SPRITE_ROUTER;
-    strncpy(router.device.id, router_id1, DEVICE_ID_LEN);
-    router.device.type = DEVICE_TYPE_ROUTER;
-    router.position.coord = (Vector2){0, 0};
-    strncpy(router.connection.from_device_id, router_id1, DEVICE_ID_LEN);
-    router.connection.max_conns = 10;
-    router.connection.num_conns = 0;
-    char* router1_eid = create_router_full(router);
-
-    Router router2;
-    char* router_id2 = generate_device_id();
-    router2.sprite.sprite_id = SPRITE_ROUTER;
-    strncpy(router2.device.id, router_id2, DEVICE_ID_LEN);
-    router2.device.type = DEVICE_TYPE_ROUTER;
+    Router router2 = entity_router_create_blank();;
     router2.position.coord = (Vector2){6, 0};
-    strncpy(router2.connection.from_device_id, router_id2, DEVICE_ID_LEN);
-    router2.connection.max_conns = 10;
-    router2.connection.num_conns = 0;
-    char* router2_eid = create_router_full(router2);
 
-    Router router3;
-    char* router_id3 = generate_device_id();
-    router3.sprite.sprite_id = SPRITE_ROUTER;
-    strncpy(router3.device.id, router_id3, DEVICE_ID_LEN);
-    router3.device.type = DEVICE_TYPE_ROUTER;
-    router3.position.coord = (Vector2){3, 0};
-    strncpy(router3.connection.from_device_id, router_id3, DEVICE_ID_LEN);
-    router3.connection.max_conns = 10;
-    router3.connection.num_conns = 0;
-    char* router3_eid = create_router_full(router3);
+    // Machines within LANs
+    Machine* machine1 = entity_machine_create_blank();
+    machine1->position.coord = (Vector2){0, 3};
+    entity_machine_register_components(*machine1);
+
+    Machine* machine2 = entity_machine_create_blank();
+    machine2->position.coord = (Vector2){6, 6};
+    entity_machine_register_components(*machine2);
+
+    strncpy(router1.route_table.gateway, gateway_router.device.id, DEVICE_ID_LEN);
+    strncpy(router2.route_table.gateway, gateway_router.device.id, DEVICE_ID_LEN);
+
+    entity_router_register_components(router1);
+    entity_router_register_components(router2);
+    entity_router_register_components(gateway_router);
 
     // Create test connections
-    add_device_to_connection(machine1_eid, router_id1);
-    add_device_to_connection(router1_eid, machine_id1);
-    add_device_to_connection(machine2_eid, router_id2);
-    add_device_to_connection(router2_eid, machine_id2);
+    add_device_to_connection(machine1->entity_id, router1.device.id);
+    add_device_to_connection(router1.entity_id, machine1->device.id);
+    add_device_to_connection(machine2->entity_id, router2.device.id);
+    add_device_to_connection(router2.entity_id, machine2->device.id);
 
-    add_device_to_connection(router1_eid, router_id3);
-    add_device_to_connection(router2_eid, router_id3);
+    add_device_to_connection(router1.entity_id, gateway_router.device.id);
+    add_device_to_connection(router2.entity_id, gateway_router.device.id);
 
-    add_device_to_connection(router3_eid, router_id1);
-    add_device_to_connection(router3_eid, router_id2);
+    add_device_to_connection(gateway_router.entity_id, router1.device.id);
+    add_device_to_connection(gateway_router.entity_id, router2.device.id);
 
-    PacketBuffer* packet_buffer = (PacketBuffer*)g_hash_table_lookup(component_registry.packet_buffers, machine1_eid);
-    packet_queue_write(&packet_buffer->send_q, packet_alloc(machine_id1, machine_id2, "Hello!"));
-    packet_queue_write(&packet_buffer->send_q, packet_alloc(machine_id1, machine_id2, "Hello2!"));
-    packet_buffer = (PacketBuffer*)g_hash_table_lookup(component_registry.packet_buffers, machine2_eid);
-    packet_queue_write(&packet_buffer->send_q, packet_alloc(machine_id2, machine_id1, "Good Bye!!"));
-//    packet_buffer = (PacketBuffer*)g_hash_table_lookup(component_registry.packet_buffers, machine2_eid);
-//    packet_queue_write(packet_buffer->send_q, packet_alloc(machine_id2, machine_id1, "Good day!!"));
+    char address_buff[100] = "";
+    strcat(address_buff, gateway_router.device.id);
+    strcat(address_buff, ".");
+    strcat(address_buff, router2.device.id);
+    strcat(address_buff, ".");
+    strcat(address_buff, machine2->device.id);
 
-//    packet_queue_write();
+    PacketBuffer* packet_buffer = (PacketBuffer*)g_hash_table_lookup(component_registry.packet_buffers, machine1->entity_id);
+    packet_queue_write(&packet_buffer->send_q, packet_alloc(machine1->device.id, address_buff, "Hello!"));
+    packet_queue_write(&packet_buffer->send_q, packet_alloc(machine1->device.id, address_buff, "Hello2!"));
+
+    address_buff[0] = '\0';
+    strcat(address_buff, gateway_router.device.id);
+    strcat(address_buff, ".");
+    strcat(address_buff, router1.device.id);
+    strcat(address_buff, ".");
+    strcat(address_buff, machine1->device.id);
+
+    packet_buffer = (PacketBuffer*)g_hash_table_lookup(component_registry.packet_buffers, machine2->entity_id);
+    packet_queue_write(&packet_buffer->send_q, packet_alloc(machine2->device.id, address_buff, "Good Bye!!"));
 }
