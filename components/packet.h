@@ -24,11 +24,13 @@ typedef struct {
     PacketQueue recv_q;
 } PacketBuffer;
 
-Packet* packet_alloc(char* from_address, char* to_address, char* message);
+Packet* packet_alloc(char* to_address, char* message);
 
 PacketQueue packet_queue_alloc(size_t size);
 
 Packet* packet_queue_read(PacketQueue* queue);
+
+Packet* packet_queue_peek(PacketQueue* queue);
 
 int packet_queue_write(PacketQueue *queue, Packet* packet);
 

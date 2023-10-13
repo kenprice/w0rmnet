@@ -68,7 +68,11 @@ add_executable(${PROJECT_NAME} app.c
         components/sprite.h
         components/sprite.c
         components/route_table.h
-        components/route_table.c)
+        components/route_table.c
+        components/process.h
+        components/process.c
+        systems/process_running_system.h
+        systems/process_running_system.c)
 #set(raylib_VERBOSE 1)
 target_link_libraries(${PROJECT_NAME} raylib)
 target_link_libraries(${PROJECT_NAME} ${GLIB_PKG_LINK_LIBRARIES})

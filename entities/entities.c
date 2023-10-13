@@ -51,8 +51,7 @@ void create_entities() {
     strcat(address_buff, machine2->device.id);
 
     PacketBuffer* packet_buffer = (PacketBuffer*)g_hash_table_lookup(component_registry.packet_buffers, machine1->entity_id);
-    packet_queue_write(&packet_buffer->send_q, packet_alloc(machine1->device.id, address_buff, "Hello!"));
-    packet_queue_write(&packet_buffer->send_q, packet_alloc(machine1->device.id, address_buff, "Hello2!"));
+    packet_queue_write(&packet_buffer->send_q, packet_alloc(address_buff, "Ping?"));
 
     address_buff[0] = '\0';
     strcat(address_buff, gateway_router.device.id);
@@ -62,5 +61,16 @@ void create_entities() {
     strcat(address_buff, machine1->device.id);
 
     packet_buffer = (PacketBuffer*)g_hash_table_lookup(component_registry.packet_buffers, machine2->entity_id);
-    packet_queue_write(&packet_buffer->send_q, packet_alloc(machine2->device.id, address_buff, "Good Bye!!"));
+    packet_queue_write(&packet_buffer->send_q, packet_alloc(address_buff, "Ping?"));
+
+    ProcessManager process_manager;
+    process_manager.max_procs = 10;
+    process_manager.num_procs = 1;
+    process_manager.processes[0].type = PROCESS_TYPE_PING;
+    register_process_manager(process_manager, machine1->entity_id);
+
+    process_manager.max_procs = 10;
+    process_manager.num_procs = 1;
+    process_manager.processes[0].type = PROCESS_TYPE_PING;
+    register_process_manager(process_manager, machine2->entity_id);
 }

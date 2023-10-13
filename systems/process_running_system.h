@@ -1,0 +1,6 @@
+#ifndef W0RMNET_PROCESS_RUNNING_SYSTEM_H
+#define W0RMNET_PROCESS_RUNNING_SYSTEM_H
+
+void update_process_running_system();
+
+#endif //W0RMNET_PROCESS_RUNNING_SYSTEM_H

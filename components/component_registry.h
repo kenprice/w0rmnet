@@ -12,6 +12,7 @@ typedef struct {
     GHashTable* connections;
     GHashTable* packet_buffers;
     GHashTable* route_tables;
+    GHashTable* process_managers;
 } ComponentRegistry;
 
 extern ComponentRegistry component_registry;

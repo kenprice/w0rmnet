@@ -5,7 +5,7 @@
 // simple fifo queue
 // https://gist.github.com/ryankurte/61f95dc71133561ed055ff62b33585f8
 
-Packet* packet_alloc(char* from_address, char* to_address, char* message) {
+Packet* packet_alloc(char* to_address, char* message) {
     Packet* packet = calloc(1, sizeof(Packet));
     packet->from_address = calloc(1, sizeof(char) * 110);
     packet->from_address[0] = '\0';
@@ -27,6 +27,14 @@ Packet* packet_queue_read(PacketQueue* queue) {
     void* handle = queue->packets[queue->tail];
     queue->packets[queue->tail] = NULL;
     queue->tail = (queue->tail + 1) % queue->size;
+    return handle;
+}
+
+Packet* packet_queue_peek(PacketQueue* queue) {
+    if (queue->tail == queue->head) {
+        return NULL;
+    }
+    void* handle = queue->packets[queue->tail];
     return handle;
 }
 
