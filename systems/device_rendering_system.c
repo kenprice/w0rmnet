@@ -1,6 +1,7 @@
 #include "device_rendering_system.h"
 #include "../components/components.h"
 #include "utils/rendering.h"
+#include "../world/world_map.h"
 
 Texture2D texture;
 
@@ -14,8 +15,8 @@ void draw_isometric_grid_tile(float x, float y) {
 }
 
 void draw_isometric_grid() {
-    float iso_x = camera.offset.x;
-    float iso_y = camera.offset.y;
+    float iso_x = 0;
+    float iso_y = 0;
     int iso_w = SPRITE_X_SCALE/2;
     int iso_h = SPRITE_Y_SCALE/2;
 
@@ -59,18 +60,6 @@ void draw_sprite(Texture2D texture, SpriteRect sprite_rect, Vector2 coord) {
     Vector2 position = (Vector2){global_x+offset.x, global_y+offset.y};
 
     DrawTextureRec(texture, rect, position, WHITE);
-}
-
-void draw_device_id(Device device, Vector2 coord) {
-    Vector2 global_coord = convert_local_to_global(coord.x, coord.y);
-    int width = MeasureText(device.id, 10);
-    DrawRectangle(global_coord.x-1, global_coord.y, width+2, 10, BLACK);
-    DrawText(device.id, global_coord.x, global_coord.y, 10, GREEN);
-}
-
-void draw_popover(int x, int y, char* message) {
-    DrawRectangle(x-1, y-12, MeasureText(message, 10)+2, 10, BLACK);
-    DrawText(message, x, y-12, 10, GREEN);
 }
 
 void render_packet(char* entity_id, PacketBuffer* packet_buffer) {
@@ -136,32 +125,33 @@ void render_device_sprite(char* entity_id, Device* device) {
     // Render Sprite
     Position* position = (Position*)g_hash_table_lookup(component_registry.positions, entity_id);
     draw_sprite(texture, sprite_sheet[sprite->sprite_id], position->coord);
-
-    draw_device_id(*device, position->coord);
-}
-
-void detect_mouse_collision() {
-    Vector2 mouse_pos = GetMousePosition();
-    Vector2 current_tile = convert_global_to_local(mouse_pos.x, mouse_pos.y);
-
-    Device* device = find_device_by_coord(current_tile.x, current_tile.y);
-    if (device != NULL) {
-        device = find_device_by_coord(current_tile.x, current_tile.y);
-        char message[100];
-        sprintf(message, "test");
-        draw_popover(mouse_pos.x, mouse_pos.y, message);
-    }
-
-//    mouse_pos.x;
 }
 
 void render_device_rendering_system() {
+    BeginMode2D(camera);
     draw_isometric_grid();
 
-    iterate_connections(render_connection);
-    iterate_devices(render_device_sprite);
-    iterate_packet_buffers(render_packet);
-    detect_mouse_collision();
+    Area current_area = area_registry[area_current];
 
-    draw_mouse_coords();
+    for (int i = 0; i < current_area.num_entities; i++) {
+        char* entity_id = current_area.entities[i];
+        Connection* conn = (Connection*)g_hash_table_lookup(component_registry.connections, entity_id);
+        if (conn == NULL) continue;
+        render_connection(entity_id, conn);
+    }
+
+    for (int i = 0; i < current_area.num_entities; i++) {
+        char* entity_id = current_area.entities[i];
+        Device* device = (Device*)g_hash_table_lookup(component_registry.devices, entity_id);
+        if (device == NULL) continue;
+        render_device_sprite(entity_id, device);
+    }
+
+    for (int i = 0; i < current_area.num_entities; i++) {
+        char* entity_id = current_area.entities[i];
+        PacketBuffer* pbuffer = (PacketBuffer*)g_hash_table_lookup(component_registry.packet_buffers, entity_id);
+        if (pbuffer == NULL) continue;
+        render_packet(entity_id, pbuffer);
+    }
+    EndMode2D();
 }

@@ -6,8 +6,6 @@
 #include <glib.h>
 #include <stdio.h>
 
-extern Camera2D camera;
-
 void initialize_device_rendering_system(Texture2D texture);
 
 void update_device_rendering_system();

@@ -9,8 +9,9 @@
 #define SPRITE_X_SCALE 64
 #define SPRITE_Y_SCALE 32
 
-#define SPRITE_ROUTER 0
-#define SPRITE_SERVER 1
+#define SPRITE_SELECTED 0
+#define SPRITE_ROUTER 1
+#define SPRITE_SERVER 2
 
 typedef struct {
     Rectangle rect; // Section of the spritesheet

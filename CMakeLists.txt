@@ -72,7 +72,11 @@ add_executable(${PROJECT_NAME} app.c
         components/process.h
         components/process.c
         systems/process_running_system.h
-        systems/process_running_system.c)
+        systems/process_running_system.c
+        systems/device_ui_system.h
+        systems/device_ui_system.c
+        world/world_map.h
+        world/world_map.c)
 #set(raylib_VERBOSE 1)
 target_link_libraries(${PROJECT_NAME} raylib)
 target_link_libraries(${PROJECT_NAME} ${GLIB_PKG_LINK_LIBRARIES})

@@ -14,11 +14,11 @@ void initialize_camera(int screen_width, int screen_height) {
 void update_camera() {
     int offset = 10;
 
-    if (IsKeyDown(KEY_RIGHT)) camera.offset.x -= offset;
-    else if (IsKeyDown(KEY_LEFT)) camera.offset.x += offset;
+    if (IsKeyDown(KEY_D)) camera.offset.x -= offset;
+    else if (IsKeyDown(KEY_A)) camera.offset.x += offset;
 
-    if (IsKeyDown(KEY_UP)) camera.offset.y += offset;
-    else if (IsKeyDown(KEY_DOWN)) camera.offset.y -= offset;
+    if (IsKeyDown(KEY_W)) camera.offset.y += offset;
+    else if (IsKeyDown(KEY_S)) camera.offset.y -= offset;
 }
 
 /**
@@ -26,8 +26,8 @@ void update_camera() {
  * https://yal.cc/understanding-isometric-grids/
  */
 Vector2 convert_local_to_global(float x, float y) {
-    float iso_x = camera.offset.x;
-    float iso_y = camera.offset.y;
+    float iso_x = 0;
+    float iso_y = 0;
     float iso_w = (float)SPRITE_X_SCALE/2;
     float iso_h = (float)SPRITE_Y_SCALE/2;
     float global_x = iso_x + (x - y) * iso_w;
