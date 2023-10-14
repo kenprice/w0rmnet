@@ -5,8 +5,10 @@
 // simple fifo queue
 // https://gist.github.com/ryankurte/61f95dc71133561ed055ff62b33585f8
 
-Packet* packet_alloc(char* to_address, char* message) {
+Packet* packet_alloc(char* from_entity_id, char* to_address, char* message) {
     Packet* packet = calloc(1, sizeof(Packet));
+    packet->from_entity_id = calloc(1, sizeof(char) * strlen(from_entity_id));
+    strcpy(packet->from_entity_id, from_entity_id);
     packet->from_address = calloc(1, sizeof(char) * 110);
     packet->from_address[0] = '\0';
     packet->to_address = calloc(1, sizeof(char) * strlen(to_address) + 1);

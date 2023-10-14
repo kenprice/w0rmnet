@@ -4,6 +4,7 @@
 #include "../utils/uuid.h"
 
 typedef struct {
+    char* from_entity_id;
     char* from_address; // ex. w0odyv3rs0.un1tyd1zzy.d34dlyd3uce
     char* to_address; // ex. w0odyv3rs0.un1tyd1zzy.d34dlyd3uce
     char* message;
@@ -24,7 +25,7 @@ typedef struct {
     PacketQueue recv_q;
 } PacketBuffer;
 
-Packet* packet_alloc(char* to_address, char* message);
+Packet* packet_alloc(char* from_entity_id, char* to_address, char* message);
 
 PacketQueue packet_queue_alloc(size_t size);
 

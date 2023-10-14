@@ -153,7 +153,13 @@ void render_device_sprite(char* entity_id, Device* device) {
 
     // Render Sprite
     Position* position = (Position*)g_hash_table_lookup(component_registry.positions, entity_id);
-    draw_sprite(sprite_sheet[sprite->sprite_id], position->coord);
+
+    if (!device->visible) {
+        draw_sprite(sprite_sheet[SPRITE_UNKNOWN], position->coord);
+        return;
+    } else {
+        draw_sprite(sprite_sheet[sprite->sprite_id], position->coord);
+    }
 
     if (device->owner != DEVICE_OWNER_PLAYER) {
         Vector2 global_coord = convert_local_to_global(position->coord.x, position->coord.y);

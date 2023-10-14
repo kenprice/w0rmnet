@@ -11,6 +11,12 @@ void draw_popover(int x, int y, char* message) {
     DrawText(message, x, y-12, 10, GREEN);
 }
 
+void draw_label(char* label, Vector2 coord) {
+    int width = MeasureText(label, 10);
+    DrawRectangle(coord.x-1, coord.y-11, width+2, 10, BLACK);
+    DrawText(label, coord.x, coord.y-11, 10, GREEN);
+}
+
 void draw_device_id(Device device, Vector2 coord) {
     int width = MeasureText(device.id, 10);
     DrawRectangle(coord.x-1, coord.y-11, width+2, 10, BLACK);
@@ -23,9 +29,11 @@ void detect_mouse_collision() {
 
     Device* device = find_device_by_coord(current_tile.x, current_tile.y);
     if (device != NULL) {
-        device = find_device_by_coord(current_tile.x, current_tile.y);
-
-        draw_device_id(*device, mouse_pos);
+        if (device->visible) {
+            draw_device_id(*device, mouse_pos);
+        } else {
+            draw_label("???", mouse_pos);
+        }
     }
 }
 
@@ -147,8 +155,10 @@ void update_device_ui_system() {
 
         Device* device = find_device_by_coord(clicked_tile.x, clicked_tile.y);
 
-        if (device != NULL) {
+        if (device != NULL && device->visible) {
             selected_device = device;
+        } else {
+            selected_device = NULL;
         }
     }
 }

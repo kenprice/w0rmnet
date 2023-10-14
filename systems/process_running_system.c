@@ -5,9 +5,25 @@
 void proc_ping_handle_packet(char* entity_id, Packet* packet) {
     if (packet == NULL) return;
 
+    bool isValid = false;
+
     if (strcmp(packet->message, "Ping?") == 0) {
         PacketBuffer* packet_buffer = (PacketBuffer*)g_hash_table_lookup(component_registry.packet_buffers, entity_id);
-        packet_queue_write(&packet_buffer->send_q, packet_alloc(packet->from_address, "Pong!"));
+        packet_queue_write(&packet_buffer->send_q, packet_alloc(entity_id, packet->from_address, "Pong!"));
+        isValid = true;
+    }
+
+    if (strcmp(packet->message, "Pong!") == 0) {
+        isValid = true;
+    }
+
+    // Received packet is valid ping-pong packet, make sender visible if not already
+    if (isValid) {
+        char* from_entity_id = packet->from_entity_id;
+        Device* device = (Device*)g_hash_table_lookup(component_registry.devices, from_entity_id);
+        if (device && !device->visible) {
+            device->visible = true;
+        }
     }
 }
 
@@ -18,7 +34,7 @@ void proc_ping_handle_message(char* entity_id, ProcMessage* message) {
     // Sends Ping to address specified by args
     char* address = message->args;
     PacketBuffer* packet_buffer = (PacketBuffer*)g_hash_table_lookup(component_registry.packet_buffers, entity_id);
-    packet_queue_write(&packet_buffer->send_q, packet_alloc(address, "Ping?"));
+    packet_queue_write(&packet_buffer->send_q, packet_alloc(entity_id, address, "Ping?"));
 }
 
 void send_packet_to_proc(char* entity_id, Process* process, Packet* packet) {

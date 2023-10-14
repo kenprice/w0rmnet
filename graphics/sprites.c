@@ -6,6 +6,7 @@ SpriteRect sprite_sheet[] = {
     (SpriteRect){(Rectangle){0, 0, 64, 64},(Vector2){0, 32}},
     (SpriteRect){(Rectangle){64, 0, 64, 64},(Vector2){0, 32}},
     (SpriteRect){(Rectangle){128, 0, 64, 64},(Vector2){0, 32}},
+    (SpriteRect){(Rectangle){192, 0, 64, 64},(Vector2){0, 32}},
 };
 
 Texture2D load_sprite_sheet() {

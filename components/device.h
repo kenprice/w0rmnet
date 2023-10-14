@@ -23,6 +23,7 @@ typedef struct {
     DeviceType type;
     int owner; // 0 for nobody, 1 for player
     int pwned; // 0 for not pwned, 1 for pwned;
+    int visible; // 0 for not visible, 1 for visible
 } Device;
 
 char* find_device_entity_id_by_device_id(char* device_id);

@@ -12,16 +12,19 @@ void init_player_area() {
     Router gateway_router = entity_router_create_blank();
     gateway_router.position.coord = (Vector2){4, 1};
     gateway_router.device.owner = DEVICE_OWNER_PLAYER;
+    gateway_router.device.visible = 1;
 
     // LANs
     Router router = entity_router_create_blank();
     router.position.coord = (Vector2){7, 4};
     router.device.owner = DEVICE_OWNER_PLAYER;
+    router.device.visible = 1;
 
     // Machines within LANs
     Machine* machine1 = entity_machine_create_blank();
     machine1->position.coord = (Vector2){2, 3};
     machine1->device.owner = DEVICE_OWNER_PLAYER;
+    machine1->device.visible = 1;
     entity_machine_register_components(*machine1);
 
     Machine* machine2 = entity_machine_create_blank();
