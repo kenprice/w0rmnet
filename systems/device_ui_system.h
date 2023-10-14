@@ -6,7 +6,7 @@
 
 extern
 
-void initialize_device_ui_system(Texture2D loaded_texture, Shader loaded_shader_outline);
+void initialize_device_ui_system();
 
 void update_device_ui_system();
 

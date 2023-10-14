@@ -5,6 +5,9 @@
 
 #define AREA_ID_SPECIAL_PLAYER 0
 
+#define MAP_TILE_HEIGHT 16
+#define MAP_TILE_WIDTH 32
+
 /*
  * World Map is separated into three layers:
  * Region

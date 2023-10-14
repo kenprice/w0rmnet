@@ -37,7 +37,6 @@ add_executable(${PROJECT_NAME} app.c
         graphics/sprites.h
         graphics/sprites.c
         entities/entities.h
-        entities/entities.c
         components/component_registry.h
         components/component_registry.c
         utils/uuid.h

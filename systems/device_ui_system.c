@@ -3,9 +3,6 @@
 #include "utils/rendering.h"
 #include "../components/component_registry.h"
 
-Texture2D texture;
-Shader shader_outline;
-
 Device* selected_device;
 
 void draw_popover(int x, int y, char* message) {
@@ -51,21 +48,20 @@ void render_selected_device() {
 
     BeginMode2D(camera);
 
-    DrawTextureRec(texture, sprite_sheet[SPRITE_SELECTED].rect, (Vector2){global_x+offset.x, global_y+offset.y}, WHITE);
-    DrawTextureRec(texture, sprite_rect.rect, (Vector2){global_x+offset.x, global_y+offset.y}, WHITE);
+    DrawTextureRec(texture_sprite_sheet, sprite_sheet[SPRITE_SELECTED].rect, (Vector2){global_x+offset.x, global_y+offset.y}, WHITE);
+    DrawTextureRec(texture_sprite_sheet, sprite_rect.rect, (Vector2){global_x+offset.x, global_y+offset.y}, WHITE);
 
     EndMode2D();
 }
 
-void initialize_device_ui_system(Texture2D loaded_texture, Shader loaded_shader_outline) {
-    texture = loaded_texture;
+void initialize_device_ui_system() {
     selected_device = NULL;
-    shader_outline = loaded_shader_outline;
 }
 
 void update_device_ui_system() {
     if (IsMouseButtonPressed(MOUSE_BUTTON_LEFT)) {
         Vector2 mouse_pos = GetMousePosition();
+
         Vector2 clicked_tile = convert_global_to_local(mouse_pos.x, mouse_pos.y);
 
         Device* device = find_device_by_coord(clicked_tile.x, clicked_tile.y);

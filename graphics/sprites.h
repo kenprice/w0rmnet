@@ -1,8 +1,5 @@
-//
-// Created by Ken Price on 10/7/23.
-//
-#ifndef EXAMPLE_SPRITES_H
-#define EXAMPLE_SPRITES_H
+#ifndef W0RMNET_SPRITES_H
+#define W0RMNET_SPRITES_H
 
 #include "raylib.h"
 
@@ -20,6 +17,8 @@ typedef struct {
 
 extern SpriteRect sprite_sheet[];
 
+extern Texture2D texture_sprite_sheet;
+
 Texture2D load_sprite_sheet();
 
-#endif //EXAMPLE_SPRITES_H
+#endif //W0RMNET_SPRITES_H

@@ -1,9 +1,7 @@
 #include "device_rendering_system.h"
 #include "../components/components.h"
-#include "utils/rendering.h"
 #include "../world/world_map.h"
-
-Texture2D texture;
+#include "utils/rendering.h"
 
 void draw_isometric_grid_tile(float x, float y) {
     int iso_w = SPRITE_X_SCALE/2;
@@ -36,20 +34,20 @@ void draw_isometric_grid() {
     }
 }
 
-void initialize_device_rendering_system(Texture2D loaded_texture) {
+void initialize_device_rendering_system() {
     int screen_width = GetScreenWidth();
     int screen_height = GetScreenHeight();
 
-    initialize_camera(screen_width, screen_height);
+    float map_offset = (float)(area_registry[area_current].width + area_registry[area_current].height) * (MAP_TILE_HEIGHT) / 2;
 
-    texture = loaded_texture;
+    initialize_camera((float)screen_width/2, (float)screen_height/2 - map_offset);
 }
 
 void update_device_rendering_system() {
     update_camera();
 }
 
-void draw_sprite(Texture2D texture, SpriteRect sprite_rect, Vector2 coord) {
+void draw_sprite(SpriteRect sprite_rect, Vector2 coord) {
     Vector2 global_coord = convert_local_to_global(coord.x, coord.y);
     float global_x = global_coord.x;
     float global_y = global_coord.y;
@@ -59,7 +57,7 @@ void draw_sprite(Texture2D texture, SpriteRect sprite_rect, Vector2 coord) {
     offset = (Vector2){-rect.width/2-offset.x, -offset.y};
     Vector2 position = (Vector2){global_x+offset.x, global_y+offset.y};
 
-    DrawTextureRec(texture, rect, position, WHITE);
+    DrawTextureRec(texture_sprite_sheet, rect, position, WHITE);
 }
 
 void render_packet(char* entity_id, PacketBuffer* packet_buffer) {
@@ -124,7 +122,7 @@ void render_device_sprite(char* entity_id, Device* device) {
 
     // Render Sprite
     Position* position = (Position*)g_hash_table_lookup(component_registry.positions, entity_id);
-    draw_sprite(texture, sprite_sheet[sprite->sprite_id], position->coord);
+    draw_sprite(sprite_sheet[sprite->sprite_id], position->coord);
 }
 
 void render_device_rendering_system() {

@@ -6,7 +6,7 @@
 #include <glib.h>
 #include <stdio.h>
 
-void initialize_device_rendering_system(Texture2D texture);
+void initialize_device_rendering_system();
 
 void update_device_rendering_system();
 

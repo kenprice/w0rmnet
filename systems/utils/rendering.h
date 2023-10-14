@@ -5,7 +5,7 @@
 
 extern Camera2D camera;
 
-void initialize_camera(int screen_width, int screen_height);
+void initialize_camera(float x_offset, float y_offset);
 
 void update_camera();
 

@@ -4,9 +4,9 @@
 
 Camera2D camera = { 0 };
 
-void initialize_camera(int screen_width, int screen_height) {
+void initialize_camera(float x_offset, float y_offset) {
     camera.target = (Vector2){0, 0};
-    camera.offset = (Vector2){ screen_width/2.0f, screen_height/2.0f };
+    camera.offset = (Vector2){x_offset, y_offset};
     camera.rotation = 0.0f;
     camera.zoom = 1.0f;
 }
