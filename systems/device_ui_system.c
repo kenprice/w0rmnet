@@ -44,13 +44,61 @@ void render_device_info() {
 
     int top_pos = y+6;
     int left_pad = 6;
+    int text_width = 0;
     char buffer[100] = "";
-    sprintf(buffer, "Device ID: %s    Device Type: %s", selected_device->id, DeviceTypeLabel[selected_device->type]);
-    DrawText(buffer, left_pad, top_pos, 20, BLUE);
+
+    // Device ID: h3ll0w0rld
+    sprintf(buffer, "Device ID: ");
+    text_width = MeasureText(buffer, 20);
+    DrawText(buffer, left_pad, top_pos, 20, WHITE);
+    sprintf(buffer, "%s", selected_device->id);
+    DrawText(buffer, left_pad+text_width, top_pos, 20, BLUE);
+    top_pos += 23;
+
+    sprintf(buffer, "Device Type: ");
+    text_width = MeasureText(buffer, 20);
+    DrawText(buffer, left_pad, top_pos, 20, WHITE);
+    sprintf(buffer, "%s", DeviceTypeLabel[selected_device->type]);
+    DrawText(buffer, left_pad+text_width, top_pos, 20, BLUE);
+    top_pos += 23;
+
+    bool player_owned = selected_device->owner == DEVICE_OWNER_PLAYER;
+    sprintf(buffer, "Owner: ");
+    text_width = MeasureText(buffer, 20);
+    DrawText(buffer, left_pad, top_pos, 20, WHITE);
+    sprintf(buffer, "%s", player_owned ? "You" : "???");
+    DrawText(buffer, left_pad+text_width, top_pos, 20, player_owned ? GREEN : GRAY);
+    top_pos += 23;
 
     char* entity_id = selected_device->entity_id;
+    if (selected_device->type == DEVICE_TYPE_GENERIC) {
+        Connection* conn = (Connection*)g_hash_table_lookup(component_registry.connections, entity_id);
+        if (conn != NULL && strlen(conn->to_device_id[0]) > 0) {
+            sprintf(buffer, "Network: ");
+            text_width = MeasureText(buffer, 20);
+            DrawText(buffer, left_pad, top_pos, 20, WHITE);
+            sprintf(buffer, "%s", conn->to_device_id[0]);
+            DrawText(buffer, left_pad+text_width, top_pos, 20, BLUE);
+            top_pos += 23;
+        }
+    } else if (selected_device->type == DEVICE_TYPE_ROUTER) {
+        RouteTable* route_table = (RouteTable*)g_hash_table_lookup(component_registry.route_tables, entity_id);
+        if (route_table != NULL && strlen(route_table->gateway) > 0) {
+            sprintf(buffer, "Network: ");
+            text_width = MeasureText(buffer, 20);
+            DrawText(buffer, left_pad, top_pos, 20, WHITE);
+            sprintf(buffer, "%s", route_table->gateway);
+            DrawText(buffer, left_pad+text_width, top_pos, 20, BLUE);
+            top_pos += 23;
+        }
+    }
+
+    // Next column
+    top_pos = y+6;
+    left_pad = panel_width/3;
+
+
     Connection* conn = (Connection*)g_hash_table_lookup(component_registry.connections, entity_id);
-    top_pos += 23;
     sprintf(buffer, "Connections (%d):", conn->num_conns);
     DrawText(buffer, left_pad, top_pos, 20, BLUE);
     for (int i = 0; i < conn->num_conns; i++) {
