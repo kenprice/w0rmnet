@@ -95,7 +95,7 @@ void render_packet(char* entity_id, PacketBuffer* packet_buffer) {
     Position* from_pos = (Position*)g_hash_table_lookup(component_registry.positions, entity_id);
     Vector2 global_coord = convert_local_to_global(from_pos->coord.x, from_pos->coord.y);
 
-    // Render SEND packets
+    // Render SEND messages
     PacketQueue q = packet_buffer->send_q;
     int offset = 12;
     for (int i = q.tail; i < q.head; i++) {
@@ -108,7 +108,7 @@ void render_packet(char* entity_id, PacketBuffer* packet_buffer) {
         DrawText(message, global_coord.x, global_coord.y+offset, 10, GREEN);
         offset += 12;
     }
-    // Render RECV packets
+    // Render RECV messages
     q = packet_buffer->recv_q;
     for (int i = q.tail; i < q.head; i++) {
         Packet* packet = q.packets[i];

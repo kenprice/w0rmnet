@@ -2,7 +2,7 @@
 #include "../components/components.h"
 #include "../components/component_registry.h"
 
-void run_ping(char* entity_id, Packet* packet) {
+void proc_ping_handle_packet(char* entity_id, Packet* packet) {
     if (packet == NULL) return;
 
     if (strcmp(packet->message, "Ping?") == 0) {
@@ -11,10 +11,28 @@ void run_ping(char* entity_id, Packet* packet) {
     }
 }
 
-void update_process(char* entity_id, Process* process, Packet* packet) {
+void proc_ping_handle_message(char* entity_id, ProcMessage* message) {
+    if (message == NULL) return;
+    if (strlen(message->args) == 0) return;
+
+    // Sends Ping to address specified by args
+    char* address = message->args;
+    PacketBuffer* packet_buffer = (PacketBuffer*)g_hash_table_lookup(component_registry.packet_buffers, entity_id);
+    packet_queue_write(&packet_buffer->send_q, packet_alloc(address, "Ping?"));
+}
+
+void send_packet_to_proc(char* entity_id, Process* process, Packet* packet) {
     switch (process->type) {
         case PROCESS_TYPE_PING:
-            run_ping(entity_id, packet);
+            proc_ping_handle_packet(entity_id, packet);
+            break;
+    }
+}
+
+void send_message_to_proc(char* entity_id, Process* process, ProcMessage* message) {
+    switch (process->type) {
+        case PROCESS_TYPE_PING:
+            proc_ping_handle_message(entity_id, message);
             break;
     }
 }
@@ -27,9 +45,21 @@ void update_process_manager(char* entity_id, ProcessManager* process_manager) {
     if (packet_buffer != NULL) {
         packet = packet_queue_read(&packet_buffer->recv_q);
     }
-
     for (int i = 0; i < process_manager->num_procs; i++) {
-        update_process(entity_id, &process_manager->processes[i], packet);
+        send_packet_to_proc(entity_id, &process_manager->processes[i], packet);
+    }
+
+    // Then, go through IPC proc msg Q and send messages to procs
+    ProcMessageQueue* procMessageQueue = (ProcMessageQueue*)g_hash_table_lookup(component_registry.proc_msg_queues, entity_id);
+    ProcMessage* message = NULL;
+    if (procMessageQueue != NULL) {
+        message = proc_msg_queue_read(procMessageQueue);
+        if (message != NULL) {
+            Process proc = process_manager->processes[message->pid];
+            if (proc.invokable) {
+                send_message_to_proc(entity_id, &proc, message);
+            }
+        }
     }
 }
 
