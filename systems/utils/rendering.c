@@ -11,16 +11,6 @@ void initialize_camera(float x_offset, float y_offset) {
     camera.zoom = 1.0f;
 }
 
-void update_camera() {
-    int offset = 10;
-
-    if (IsKeyDown(KEY_D)) camera.offset.x -= offset;
-    else if (IsKeyDown(KEY_A)) camera.offset.x += offset;
-
-    if (IsKeyDown(KEY_W)) camera.offset.y += offset;
-    else if (IsKeyDown(KEY_S)) camera.offset.y -= offset;
-}
-
 /**
  * Isometric coord ("local") to "global" coord.
  * https://yal.cc/understanding-isometric-grids/

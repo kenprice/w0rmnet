@@ -4,15 +4,25 @@
 #include "../utils/uuid.h"
 #include "utils/device_id.h"
 
+#define DEVICE_OWNER_NOBODY 0
+#define DEVICE_OWNER_PLAYER 1
+
+#define DEVICE_NOT_PWNED 0
+#define DEVICE_PWNED 1
+
 typedef enum {
-    DEVICE_TYPE_GENERIC,
-    DEVICE_TYPE_ROUTER,
+    DEVICE_TYPE_GENERIC = 0,
+    DEVICE_TYPE_ROUTER = 1,
 } DeviceType ;
+
+extern const char* DeviceTypeLabel[2];
 
 typedef struct {
     char entity_id[UUID_STR_LEN];
     char id[DEVICE_ID_LEN];
     DeviceType type;
+    int owner; // 0 for nobody, 1 for player
+    int pwned; // 0 for not pwned, 1 for pwned;
 } Device;
 
 char* find_device_entity_id_by_device_id(char* device_id);

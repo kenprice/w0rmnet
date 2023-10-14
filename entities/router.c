@@ -8,6 +8,8 @@ Router entity_router_create_blank() {
 
     char *device_id = generate_device_id();
     router.device.type = DEVICE_TYPE_ROUTER;
+    router.device.owner = DEVICE_OWNER_NOBODY;
+    router.device.pwned = DEVICE_NOT_PWNED;
     strncpy(router.device.entity_id, entity_id, UUID_STR_LEN);
     strncpy(router.device.id, device_id, DEVICE_ID_LEN);
 

@@ -11,17 +11,17 @@ void init_player_area() {
     // Top-level
     Router gateway_router = entity_router_create_blank();
     gateway_router.position.coord = (Vector2){4, 1};
+    gateway_router.device.owner = DEVICE_OWNER_PLAYER;
 
     // LANs
-//    Router router1 = entity_router_create_blank();
-//    router1.position.coord = (Vector2){0, 0};
-
     Router router = entity_router_create_blank();
     router.position.coord = (Vector2){7, 4};
+    router.device.owner = DEVICE_OWNER_PLAYER;
 
     // Machines within LANs
     Machine* machine1 = entity_machine_create_blank();
     machine1->position.coord = (Vector2){2, 3};
+    machine1->device.owner = DEVICE_OWNER_PLAYER;
     entity_machine_register_components(*machine1);
 
     Machine* machine2 = entity_machine_create_blank();
@@ -84,16 +84,19 @@ void init_player_area() {
     process_manager.max_procs = 10;
     process_manager.num_procs = 1;
     process_manager.processes[0].type = PROCESS_TYPE_PING;
+    process_manager.processes[0].invokable = true;
     register_process_manager(process_manager, machine1->entity_id);
 
     process_manager.max_procs = 10;
     process_manager.num_procs = 1;
     process_manager.processes[0].type = PROCESS_TYPE_PING;
+    process_manager.processes[0].invokable = true;
     register_process_manager(process_manager, machine2->entity_id);
 
     process_manager.max_procs = 10;
     process_manager.num_procs = 1;
     process_manager.processes[0].type = PROCESS_TYPE_PING;
+    process_manager.processes[0].invokable = true;
     register_process_manager(process_manager, machine3->entity_id);
 
     player_area.height = 12;

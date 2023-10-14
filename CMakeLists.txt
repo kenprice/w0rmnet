@@ -36,7 +36,6 @@ endif()
 add_executable(${PROJECT_NAME} app.c
         graphics/sprites.h
         graphics/sprites.c
-        entities/entities.h
         components/component_registry.h
         components/component_registry.c
         utils/uuid.h
@@ -75,7 +74,9 @@ add_executable(${PROJECT_NAME} app.c
         systems/device_ui_system.h
         systems/device_ui_system.c
         world/world_map.h
-        world/world_map.c)
+        world/world_map.c
+        graphics/tiles.h
+        graphics/tiles.c)
 #set(raylib_VERBOSE 1)
 target_link_libraries(${PROJECT_NAME} raylib)
 target_link_libraries(${PROJECT_NAME} ${GLIB_PKG_LINK_LIBRARIES})

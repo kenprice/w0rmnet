@@ -4,6 +4,11 @@
 #include "component_registry.h"
 #include "components.h"
 
+const char* DeviceTypeLabel[2] = {
+        "Machine",
+        "Router"
+};
+
 char* find_device_entity_id_by_device_id(char* device_id) {
     GHashTableIter iter;
     g_hash_table_iter_init(&iter, component_registry.devices);

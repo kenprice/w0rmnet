@@ -1,3 +1,4 @@
+#include <stdio.h>
 #include "glib.h"
 #include "device_ui_system.h"
 #include "utils/rendering.h"
@@ -28,6 +29,35 @@ void detect_mouse_collision() {
     }
 }
 
+void render_device_info() {
+    int screen_height = GetScreenHeight();
+    int screen_width = GetScreenWidth();
+
+    int panel_width = screen_width;
+    int panel_height = 200;
+
+    int x = 0;
+    int y = screen_height - panel_height;
+
+    DrawRectangle(x, y, panel_width, panel_height, BLACK);
+    DrawRectangleLinesEx((Rectangle){x, y, panel_width, panel_height}, 3, RAYWHITE);
+
+    int top_pos = y+6;
+    int left_pad = 6;
+    char buffer[100] = "";
+    sprintf(buffer, "Device ID: %s    Device Type: %s", selected_device->id, DeviceTypeLabel[selected_device->type]);
+    DrawText(buffer, left_pad, top_pos, 20, BLUE);
+
+    char* entity_id = selected_device->entity_id;
+    Connection* conn = (Connection*)g_hash_table_lookup(component_registry.connections, entity_id);
+    top_pos += 23;
+    sprintf(buffer, "Connections (%d):", conn->num_conns);
+    DrawText(buffer, left_pad, top_pos, 20, BLUE);
+    for (int i = 0; i < conn->num_conns; i++) {
+        conn->to_device_id[i];
+    }
+}
+
 void render_selected_device() {
     if (selected_device == NULL) return;
 
@@ -52,6 +82,8 @@ void render_selected_device() {
     DrawTextureRec(texture_sprite_sheet, sprite_rect.rect, (Vector2){global_x+offset.x, global_y+offset.y}, WHITE);
 
     EndMode2D();
+
+    render_device_info();
 }
 
 void initialize_device_ui_system() {
@@ -59,12 +91,14 @@ void initialize_device_ui_system() {
 }
 
 void update_device_ui_system() {
+    // Selection
     if (IsMouseButtonPressed(MOUSE_BUTTON_LEFT)) {
         Vector2 mouse_pos = GetMousePosition();
 
         Vector2 clicked_tile = convert_global_to_local(mouse_pos.x, mouse_pos.y);
 
         Device* device = find_device_by_coord(clicked_tile.x, clicked_tile.y);
+
         if (device != NULL) {
             selected_device = device;
         }

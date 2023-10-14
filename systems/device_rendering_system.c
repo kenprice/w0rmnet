@@ -1,6 +1,7 @@
 #include "device_rendering_system.h"
 #include "../components/components.h"
 #include "../world/world_map.h"
+#include "../graphics/tiles.h"
 #include "utils/rendering.h"
 
 void draw_isometric_grid_tile(float x, float y) {
@@ -34,17 +35,47 @@ void draw_isometric_grid() {
     }
 }
 
+void draw_area() {
+    float iso_x = 0;
+    float iso_y = 0;
+    int iso_w = SPRITE_X_SCALE/2;
+    int iso_h = SPRITE_Y_SCALE/2;
+
+    Area area = area_registry[area_current];
+    int num_x_tiles = area.width;
+    int num_y_tiles = area.height;
+
+    for (int y = 0; y < num_y_tiles; y++) {
+        for (int x = 0; x < num_x_tiles; x++) {
+            int global_x = iso_x + (x - y) * iso_w;
+            int global_y = iso_y + (x + y) * iso_h;
+
+            Vector2 offset = tile_sheet[0].offset;
+            offset = (Vector2){-tile_sheet[0].rect.width/2-offset.x, -offset.y};
+
+            DrawTextureRec(texture_tile_sheet, tile_sheet[0].rect, (Vector2){global_x+offset.x, global_y+offset.y}, WHITE);
+        }
+    }
+
+}
+
 void initialize_device_rendering_system() {
     int screen_width = GetScreenWidth();
     int screen_height = GetScreenHeight();
 
-    float map_offset = (float)(area_registry[area_current].width + area_registry[area_current].height) * (MAP_TILE_HEIGHT) / 2;
+    float map_offset = (float)(area_registry[area_current].width + area_registry[area_current].height) * (MAP_TILE_HEIGHT/2) / 2;
 
     initialize_camera((float)screen_width/2, (float)screen_height/2 - map_offset);
 }
 
 void update_device_rendering_system() {
-    update_camera();
+    int offset = 10;
+
+    if (IsKeyDown(KEY_D)) camera.offset.x -= offset;
+    else if (IsKeyDown(KEY_A)) camera.offset.x += offset;
+
+    if (IsKeyDown(KEY_W)) camera.offset.y += offset;
+    else if (IsKeyDown(KEY_S)) camera.offset.y -= offset;
 }
 
 void draw_sprite(SpriteRect sprite_rect, Vector2 coord) {
@@ -123,11 +154,19 @@ void render_device_sprite(char* entity_id, Device* device) {
     // Render Sprite
     Position* position = (Position*)g_hash_table_lookup(component_registry.positions, entity_id);
     draw_sprite(sprite_sheet[sprite->sprite_id], position->coord);
+
+    if (device->owner != DEVICE_OWNER_PLAYER) {
+        Vector2 global_coord = convert_local_to_global(position->coord.x, position->coord.y);
+        float global_x = global_coord.x;
+        float global_y = global_coord.y;
+        DrawText("L", global_x, global_y, 10, BLUE);
+    }
 }
 
 void render_device_rendering_system() {
     BeginMode2D(camera);
-    draw_isometric_grid();
+//    draw_isometric_grid();
+    draw_area();
 
     Area current_area = area_registry[area_current];
 

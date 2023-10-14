@@ -11,6 +11,8 @@ Machine* entity_machine_create_blank() {
 
     char* device_id = generate_device_id();
     machine->device.type = DEVICE_TYPE_GENERIC;
+    machine->device.owner = DEVICE_OWNER_NOBODY;
+    machine->device.pwned = DEVICE_NOT_PWNED;
     strncpy(machine->device.entity_id, entity_id, UUID_STR_LEN);
     strncpy(machine->device.id, device_id, DEVICE_ID_LEN);
 

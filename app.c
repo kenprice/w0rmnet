@@ -2,6 +2,7 @@
 #include <time.h>
 #include "raylib.h"
 #include "graphics/sprites.h"
+#include "graphics/tiles.h"
 #include "components/component_registry.h"
 #include "systems/device_rendering_system.h"
 #include "systems/device_ui_system.h"
@@ -18,14 +19,15 @@ int main(void)
 {
     // Initialization
     //--------------------------------------------------------------------------------------
-    const int screenWidth = 1900;
-    const int screenHeight = 1200;
+    const int screenWidth = 1024;
+    const int screenHeight = 768;
 
     SetConfigFlags(FLAG_WINDOW_RESIZABLE | FLAG_VSYNC_HINT);
     InitWindow(screenWidth, screenHeight, "w0rmnet");
 
     // NOTE: Textures MUST be loaded after Window initialization (OpenGL context is required)
     load_sprite_sheet();
+    load_tile_sheet();
     Shader shader_outline = LoadShader(0, TextFormat("resources/shaders/outline.fs", GLSL_VERSION));
 
     //////////////
@@ -52,7 +54,7 @@ int main(void)
         //----------------------------------------------------------------------------------
         BeginDrawing();
 
-        ClearBackground(GRAY);
+        ClearBackground(BLACK);
 
         render_device_rendering_system();
         render_device_ui_system();
