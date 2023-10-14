@@ -7,6 +7,7 @@ typedef enum {
 } ProcessType ;
 
 #define PROCESS_ARGS_LEN 100
+#define PROCESS_STATE_LEN 100
 
 typedef struct {
     char fingerprint[32]; // Identifies the program being run
@@ -15,6 +16,7 @@ typedef struct {
 
     bool invokable; // Can be invoked by owner of device, invocation is done via message Q ipc
     char args[PROCESS_ARGS_LEN];     // Set if player or something else has invoked, with args
+    char state[PROCESS_STATE_LEN];   // Proces state containing arbitrary bytes.
 } Process; // Models a running program
 
 typedef struct {

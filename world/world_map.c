@@ -80,6 +80,7 @@ void init_player_area() {
     process_manager.processes[0].type = PROCESS_TYPE_PING;
     process_manager.processes[0].invokable = true;
     process_manager.processes[0].args[0] = '\0';
+    memset(process_manager.processes[0].state, '\0', PROCESS_STATE_LEN);
     register_process_manager(process_manager, machine1->entity_id);
     ProcMessageQueue machine1_pmq = proc_msg_queue_alloc(10);
     register_proc_msg_queue(machine1_pmq, machine1->entity_id);
@@ -91,14 +92,20 @@ void init_player_area() {
     process_manager.processes[0].type = PROCESS_TYPE_PING;
     process_manager.processes[0].invokable = true;
     process_manager.processes[0].args[0] = '\0';
+    memset(process_manager.processes[0].state, '\0', PROCESS_STATE_LEN);
+    process_manager.processes[0].state[0] = 1;
     register_process_manager(process_manager, machine2->entity_id);
-    register_proc_msg_queue(proc_msg_queue_alloc(10), machine2->entity_id);
+    ProcMessageQueue machine2_pmq = proc_msg_queue_alloc(10);
+    register_proc_msg_queue(machine2_pmq, machine2->entity_id);
+    msg = proc_msg_alloc(0, address_buff);
+    proc_msg_queue_write(g_hash_table_lookup(component_registry.proc_msg_queues, machine2->entity_id), msg);
 
     process_manager.max_procs = 10;
     process_manager.num_procs = 1;
     process_manager.processes[0].type = PROCESS_TYPE_PING;
     process_manager.processes[0].invokable = true;
     process_manager.processes[0].args[0] = '\0';
+    memset(process_manager.processes[0].state, '\0', PROCESS_STATE_LEN);
     register_process_manager(process_manager, machine3->entity_id);
     register_proc_msg_queue(proc_msg_queue_alloc(10), machine3->entity_id);
 

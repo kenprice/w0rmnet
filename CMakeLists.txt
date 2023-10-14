@@ -76,7 +76,11 @@ add_executable(${PROJECT_NAME} app.c
         world/world_map.h
         world/world_map.c
         graphics/tiles.h
-        graphics/tiles.c)
+        graphics/tiles.c
+        systems/process_runner/ping_runner.h
+        systems/process_runner/ping_runner.c
+        systems/process_runner/proc_runner_table.h
+        systems/process_runner/proc_runner_table.c)
 #set(raylib_VERBOSE 1)
 target_link_libraries(${PROJECT_NAME} raylib)
 target_link_libraries(${PROJECT_NAME} ${GLIB_PKG_LINK_LIBRARIES})
