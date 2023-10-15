@@ -26,7 +26,11 @@ DeviceInfoWindowState init_device_info_window(Device* device) {
 
     // Device info data
     state.device = device;
-    strcpy(state.deviceInfoText, "#181#whoa");
+    state.activeToggleGroup = 0;
+
+    // Progs
+    state.progScrollIndex = 0;
+    state.progActiveIndex = 0;
 
     return state;
 }
@@ -70,18 +74,12 @@ int update_device_info_window(DeviceInfoWindowState* state) {
     return CheckCollisionPointRec(mousePosition, state->windowBounds);
 }
 
-int render_device_info_window(DeviceInfoWindowState* state) {
-    if (!state->windowActive) return 0;
-
-    state->windowActive = !GuiWindowBox(state->windowBounds, state->windowTitle);
-
+void render_info_panel(DeviceInfoWindowState* state) {
     Rectangle groupBoxRect = (Rectangle){
-        state->windowBounds.x+UI_COMPONENT_PADDING,
-        state->windowBounds.y + TITLEBAR_HEIGHT + UI_COMPONENT_PADDING,
-        200, state->windowBounds.height - TITLEBAR_HEIGHT - (UI_COMPONENT_PADDING * 2) - STATUSBAR_HEIGHT
+            state->windowBounds.x+UI_COMPONENT_PADDING,
+            state->windowBounds.y + (TITLEBAR_HEIGHT*2) + (UI_COMPONENT_PADDING*2),
+            200, state->windowBounds.height - (TITLEBAR_HEIGHT*2) - (UI_COMPONENT_PADDING*3) - STATUSBAR_HEIGHT
     };
-
-    if (!state->device) return 0;
 
     GuiGroupBox(groupBoxRect, "Info");
 
@@ -95,12 +93,95 @@ int render_device_info_window(DeviceInfoWindowState* state) {
     GuiLabel(infoTextRect, buffer);
     infoTextRect.y += 16;
 
-    sprintf(buffer, "#181#Type: %s", DeviceTypeLabel[state->device->type]);
+    sprintf(buffer, "%sType: %s", state->device->type == DEVICE_TYPE_ROUTER ? "#225#" : "#224#", DeviceTypeLabel[state->device->type]);
     GuiLabel(infoTextRect, buffer);
     infoTextRect.y += 16;
 
-//    sprintf(buffer, "#172#Connections: %d", state->device->);
-//    GuiLabel(infoTextRect, buffer);
+    char* network = NULL;
+    if (state->device->type == DEVICE_TYPE_ROUTER) {
+        RouteTable* route_table = (RouteTable*)g_hash_table_lookup(component_registry.route_tables, state->device->entity_id);
+        if (route_table != NULL && strlen(route_table->gateway) > 0) {
+            network = route_table->gateway;
+        }
+    } else {
+        Connection* conn = (Connection*)g_hash_table_lookup(component_registry.connections, state->device->entity_id);
+        if (conn != NULL && strlen(conn->to_device_id[0]) > 0) {
+            network = conn->to_device_id[0];
+        }
+    }
+    if (network) {
+        sprintf(buffer, "#241#Network: %s", network);
+        GuiLabel(infoTextRect, buffer);
+    }
+}
+
+void render_progs_ping_options(DeviceInfoWindowState* state) {
+    Rectangle groupBoxRect = (Rectangle){
+            state->windowBounds.x+100+(UI_COMPONENT_PADDING*2),
+            state->windowBounds.y + (TITLEBAR_HEIGHT*2) + (UI_COMPONENT_PADDING*2),
+            200, state->windowBounds.height - (TITLEBAR_HEIGHT*2) - (UI_COMPONENT_PADDING*3) - STATUSBAR_HEIGHT
+    };
+
+    GuiGroupBox(groupBoxRect, "Info");
+}
+
+void render_progs_panel(DeviceInfoWindowState* state) {
+    ProcessManager* processManager = (ProcessManager *)g_hash_table_lookup(component_registry.process_managers, state->device->entity_id);
+    if (!processManager) {
+        return;
+    }
+
+    Rectangle listviewRect = (Rectangle){
+            state->windowBounds.x+UI_COMPONENT_PADDING,
+            state->windowBounds.y + (TITLEBAR_HEIGHT*2) + (UI_COMPONENT_PADDING*2),
+            100, state->windowBounds.height - (TITLEBAR_HEIGHT*2) - (UI_COMPONENT_PADDING*3) - STATUSBAR_HEIGHT
+    };
+
+    char buffer[100] = "";
+    if (processManager->num_procs > 0) {
+        for (int i=0; i<processManager->num_procs; i++) {
+            strcat(buffer, ProcessTypeLabel[processManager->processes[i].type]);
+            strcat(buffer, ";");
+        }
+        buffer[strlen(buffer)-1] = 0;
+    }
+
+    GuiListView(listviewRect, buffer, &state->progScrollIndex, &state->progActiveIndex);
+
+    if (state->progActiveIndex >= processManager->num_procs || processManager->num_procs == 0) {
+        return;
+    }
+
+    switch(processManager->processes[state->progActiveIndex].type) {
+        case PROCESS_TYPE_PING:
+            render_progs_ping_options(state);
+            break;
+    }
+}
+
+int render_device_window(DeviceInfoWindowState* state) {
+    if (!state->windowActive) return 0;
+
+    state->windowActive = !GuiWindowBox(state->windowBounds, state->windowTitle);
+
+    Rectangle toggleGroupRect = (Rectangle){
+        state->windowBounds.x+UI_COMPONENT_PADDING,
+        state->windowBounds.y + TITLEBAR_HEIGHT + UI_COMPONENT_PADDING,
+        (state->windowBounds.width-(UI_COMPONENT_PADDING*2)-3)/3, TITLEBAR_HEIGHT
+    };
+
+    GuiToggleGroup(toggleGroupRect, "INFO;LOGS;PROGS", &state->activeToggleGroup);
+
+    if (!state->device) return 0;
+
+    switch(state->activeToggleGroup) {
+        case 0:
+            render_info_panel(state);
+            break;
+        case 2:
+            render_progs_panel(state);
+            break;
+    }
 
     GuiStatusBar((Rectangle){
             state->windowBounds.x, state->windowBounds.y + state->windowBounds.height - STATUSBAR_HEIGHT,

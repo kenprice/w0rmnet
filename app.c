@@ -32,7 +32,7 @@ int main(void)
     const int screenWidth = 1024;
     const int screenHeight = 768;
 
-    SetConfigFlags(FLAG_VSYNC_HINT);
+    SetConfigFlags(FLAG_WINDOW_RESIZABLE | FLAG_VSYNC_HINT);
     InitWindow(screenWidth, screenHeight, "w0rmnet");
 
     // NOTE: Textures MUST be loaded after Window initialization (OpenGL context is required)

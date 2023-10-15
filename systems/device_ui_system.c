@@ -175,7 +175,8 @@ void update_device_ui_system() {
         if (device != NULL && device->visible) {
             selectedDevice = device;
 
-            char buffer[50] = "#181#";
+            char buffer[50] = "";
+            strcat(buffer, (device == NULL || device->type != DEVICE_TYPE_ROUTER) ? "#224#" : "#225#");
             deviceInfoWindowState.device = device;
             strcat(buffer, (device != NULL ? device->id : "Device"));
             strcpy(deviceInfoWindowState.windowTitle, buffer);
@@ -190,7 +191,7 @@ void render_device_ui_system() {
     render_device_mouseover_hover();
     draw_mouse_coords();
 
-    if (render_device_info_window(&deviceInfoWindowState)) {
+    if (render_device_window(&deviceInfoWindowState)) {
         selectedDevice = NULL;
     }
 }

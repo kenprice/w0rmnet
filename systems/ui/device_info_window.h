@@ -16,7 +16,11 @@ typedef struct {
     // Device info variables
     Device* device;
     Rectangle infoPanelBounds;
-    char deviceInfoText[1000];
+    int activeToggleGroup;
+
+    // Progs
+    int progScrollIndex;
+    int progActiveIndex;
 } DeviceInfoWindowState;
 
 DeviceInfoWindowState init_device_info_window(Device* device);
@@ -26,6 +30,6 @@ int update_device_info_window(DeviceInfoWindowState* state);
 /**
  * Returns 1 when transitioning from active to closed
  */
-int render_device_info_window(DeviceInfoWindowState* state);
+int render_device_window(DeviceInfoWindowState* state);
 
 #endif //W0RMNET_DEVICE_INFO_WINDOW_H
