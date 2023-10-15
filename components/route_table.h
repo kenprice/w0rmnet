@@ -10,7 +10,6 @@ typedef struct {
 } RouteTableRecord;
 
 typedef struct {
-    char gateway[DEVICE_ID_LEN]; // Device ID of next router up the hierarchy, can be NULL
     RouteTableRecord records[100];
     int num_records;
     int max_records;

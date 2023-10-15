@@ -5,6 +5,8 @@
 
 Timer timer;
 
+#define TIME_PACKET_SEND 1.0
+
 /**
  * returns 0 if error, 1 if success
  */
@@ -38,32 +40,13 @@ int send_packet(char* entity_id, Packet* packet, Connection* connection) {
             // End search! Found!
             packet->top_level_found = true;
         } else {
-            // If some machine, send to router (assuming max one router connected)
-            if (cur_device->type != DEVICE_TYPE_ROUTER) {
-                for (int i = 0; i < connection->num_conns; i++) {
-                    char* to_entity = find_device_entity_id_by_device_id(connection->to_device_id[i]);
+            char* to_entity = find_device_entity_id_by_device_id(connection->parent_device_id);
 
-                    Device* device = (Device*)g_hash_table_lookup(component_registry.devices, to_entity);
-                    if (device->type != DEVICE_TYPE_ROUTER) continue;
+            PacketBuffer* to_packet_buffer = (PacketBuffer*)g_hash_table_lookup(component_registry.packet_buffers, to_entity);
+            if (!to_packet_buffer) return 0;
 
-                    PacketBuffer* to_packet_buffer = (PacketBuffer*)g_hash_table_lookup(component_registry.packet_buffers, to_entity);
-                    if (!to_packet_buffer) return 0;
-
-                    packet_queue_write(&to_packet_buffer->recv_q, packet);
-                    return 1;
-                }
-            }
-            // If router, send to parent
-            if (cur_device->type == DEVICE_TYPE_ROUTER) {
-                RouteTable* route_table = (RouteTable*)g_hash_table_lookup(component_registry.route_tables, entity_id);
-                if (route_table != NULL && strlen(route_table->gateway) > 0) {
-                    char* to_entity = find_device_entity_id_by_device_id(route_table->gateway);
-                    PacketBuffer* to_packet_buffer = (PacketBuffer*)g_hash_table_lookup(component_registry.packet_buffers, to_entity);
-                    if (!to_packet_buffer) return 0;
-
-                    packet_queue_write(&to_packet_buffer->recv_q, packet);
-                }
-            }
+            packet_queue_write(&to_packet_buffer->recv_q, packet);
+            return 1;
         }
     }
     if (packet->top_level_found) {
@@ -125,7 +108,7 @@ void update_packet_routing_system() {
     iterate_packet_buffers(update_packet_buffer);
     update_routers();
 
-    StartTimer(&timer, 0.1);
+    StartTimer(&timer, TIME_PACKET_SEND);
 }
 
 void render_packet_routing_system() {

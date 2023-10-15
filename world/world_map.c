@@ -9,10 +9,10 @@ int area_current = 0;
 
 void init_player_area() {
     // Top-level
-    Router gateway_router = entity_router_create_blank();
-    gateway_router.position.coord = (Vector2){4, 1};
-    gateway_router.device.owner = DEVICE_OWNER_PLAYER;
-    gateway_router.device.visible = 1;
+    Router area_router = entity_router_create_blank();
+    area_router.position.coord = (Vector2){4, 1};
+    area_router.device.owner = DEVICE_OWNER_PLAYER;
+    area_router.device.visible = 1;
 
     // LANs
     Router router = entity_router_create_blank();
@@ -35,37 +35,38 @@ void init_player_area() {
     machine3->position.coord = (Vector2){9, 6};
     entity_machine_register_components(*machine3);
 
-    strncpy(router.route_table.gateway, gateway_router.device.id, DEVICE_ID_LEN);
-
     entity_router_register_components(router);
-    entity_router_register_components(gateway_router);
+    entity_router_register_components(area_router);
 
     // Create connections
-    add_device_to_connection(machine1->entity_id, gateway_router.device.id);
-    add_device_to_connection(gateway_router.entity_id, machine1->device.id);
-    add_device_to_connection(machine2->entity_id, router.device.id);
-    add_device_to_connection(router.entity_id, machine2->device.id);
-    add_device_to_connection(machine3->entity_id, router.device.id);
-    add_device_to_connection(router.entity_id, machine3->device.id);
+    connection_add_device(machine1->entity_id, area_router.device.id);
+    connection_add_device(area_router.entity_id, machine1->device.id);
+    connection_add_device(machine2->entity_id, router.device.id);
+    connection_add_device(router.entity_id, machine2->device.id);
+    connection_add_device(machine3->entity_id, router.device.id);
+    connection_add_device(router.entity_id, machine3->device.id);
+    connection_add_device(router.entity_id, area_router.device.id);
+    connection_add_device(area_router.entity_id, router.device.id);
 
-    add_device_to_connection(router.entity_id, gateway_router.device.id);
-
-    add_device_to_connection(gateway_router.entity_id, router.device.id);
+    connection_set_parent(machine1->entity_id, area_router.device.id);
+    connection_set_parent(machine2->entity_id, router.device.id);
+    connection_set_parent(machine3->entity_id, router.device.id);
+    connection_set_parent(router.entity_id, area_router.device.id);
 
     char address_buff[100] = "";
-    strcat(address_buff, gateway_router.device.id);
+    strcat(address_buff, area_router.device.id);
     strcat(address_buff, ".");
     strcat(address_buff, router.device.id);
     strcat(address_buff, ".");
     strcat(address_buff, machine2->device.id);
 
     address_buff[0] = '\0';
-    strcat(address_buff, gateway_router.device.id);
+    strcat(address_buff, area_router.device.id);
     strcat(address_buff, ".");
     strcat(address_buff, machine1->device.id);
 
     address_buff[0] = '\0';
-    strcat(address_buff, gateway_router.device.id);
+    strcat(address_buff, area_router.device.id);
     strcat(address_buff, ".");
     strcat(address_buff, router.device.id);
     strcat(address_buff, ".");
@@ -87,7 +88,7 @@ void init_player_area() {
     ProcMessageQueue machine1_pmq = proc_msg_queue_alloc(10);
     register_proc_msg_queue(machine1_pmq, machine1->entity_id);
     address_buff[0] = '\0';
-    strcat(address_buff, gateway_router.device.id);
+    strcat(address_buff, area_router.device.id);
     strcat(address_buff, ".");
     strcat(address_buff, router.device.id);
     ProcMessage* msg = proc_msg_alloc(1, address_buff);
@@ -121,7 +122,7 @@ void init_player_area() {
     strncpy(player_area.entities[1], machine2->entity_id, UUID_STR_LEN);
     strncpy(player_area.entities[2], machine3->entity_id, UUID_STR_LEN);
     strncpy(player_area.entities[3], router.entity_id, UUID_STR_LEN);
-    strncpy(player_area.entities[4], gateway_router.entity_id, UUID_STR_LEN);
+    strncpy(player_area.entities[4], area_router.entity_id, UUID_STR_LEN);
     area_current = 0;
     area_registry[area_current] = player_area;
 }

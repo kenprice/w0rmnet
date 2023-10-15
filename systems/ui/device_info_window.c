@@ -98,16 +98,9 @@ void render_info_panel(DeviceInfoWindowState* state) {
     infoTextRect.y += 16;
 
     char* network = NULL;
-    if (state->device->type == DEVICE_TYPE_ROUTER) {
-        RouteTable* route_table = (RouteTable*)g_hash_table_lookup(component_registry.route_tables, state->device->entity_id);
-        if (route_table != NULL && strlen(route_table->gateway) > 0) {
-            network = route_table->gateway;
-        }
-    } else {
-        Connection* conn = (Connection*)g_hash_table_lookup(component_registry.connections, state->device->entity_id);
-        if (conn != NULL && strlen(conn->to_device_id[0]) > 0) {
-            network = conn->to_device_id[0];
-        }
+    Connection* conn = (Connection*)g_hash_table_lookup(component_registry.connections, state->device->entity_id);
+    if (conn != NULL && strlen(conn->parent_device_id) > 0) {
+        network = conn->parent_device_id;
     }
     if (network) {
         sprintf(buffer, "#241#Network: %s", network);

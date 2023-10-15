@@ -26,7 +26,6 @@ Router entity_router_create_blank() {
     router.packet_buffer.send_q = packet_queue_alloc(50);
     router.packet_buffer.recv_q = packet_queue_alloc(50);
 
-    memset(router.route_table.gateway, 0, DEVICE_ID_LEN);
     router.route_table.max_records = 100;
     router.route_table.num_records = 0;
 

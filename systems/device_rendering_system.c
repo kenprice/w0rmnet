@@ -91,30 +91,18 @@ void render_packet(char* entity_id, PacketBuffer* packet_buffer) {
 void render_connection(char* _entity_id, Connection* connection) {
     char* from_entity = _entity_id;
 
-    for (int i = 0; i < connection->num_conns; i++) {
-        char* to_entity = find_device_entity_id_by_device_id(connection->to_device_id[i]);
+    char* to_entity = find_device_entity_id_by_device_id(connection->parent_device_id);
+    if (!to_entity) return;
 
-        Position* from_pos = (Position*)g_hash_table_lookup(component_registry.positions, from_entity);
-        Position* to_pos = (Position*)g_hash_table_lookup(component_registry.positions, to_entity);
+    Position* from_pos = (Position*)g_hash_table_lookup(component_registry.positions, from_entity);
+    Position* to_pos = (Position*)g_hash_table_lookup(component_registry.positions, to_entity);
 
-        Vector2 from_coord = convert_local_to_global(from_pos->coord.x, from_pos->coord.y);
-        from_coord.y += SPRITE_Y_SCALE/2;
-        Vector2 to_coord = convert_local_to_global(to_pos->coord.x, to_pos->coord.y);
-        to_coord.y += SPRITE_Y_SCALE/2;
+    Vector2 from_coord = convert_local_to_global(from_pos->coord.x, from_pos->coord.y);
+    from_coord.y += SPRITE_Y_SCALE/2;
+    Vector2 to_coord = convert_local_to_global(to_pos->coord.x, to_pos->coord.y);
+    to_coord.y += SPRITE_Y_SCALE/2;
 
-        DrawLineEx(from_coord, to_coord, 3, WHITE);
-    }
-
-    RouteTable* route_table = (RouteTable*)g_hash_table_lookup(component_registry.route_tables, from_entity);
-    if (route_table != NULL && strlen(route_table->gateway) > 0) {
-        char* to_entity = find_device_entity_id_by_device_id(route_table->gateway);
-        if (to_entity != NULL) {
-            Position* to_pos = (Position*)g_hash_table_lookup(component_registry.positions, to_entity);
-            Vector2 to_coord = convert_local_to_global(to_pos->coord.x, to_pos->coord.y);
-
-//            DrawCircle(to_coord.x, to_coord.y, 100, BLUE);
-        }
-    }
+    DrawLineEx(from_coord, to_coord, 3, WHITE);
 }
 
 void render_device_sprite(char* entity_id, Device* device) {

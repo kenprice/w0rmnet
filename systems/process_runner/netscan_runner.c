@@ -34,9 +34,8 @@ void proc_netscan_handle_message(char* entity_id, Process* process, ProcMessage*
 
     // Perform a ping scan against target router's connections
     Connection* connection = (Connection*)g_hash_table_lookup(component_registry.connections, found_entity_id);
-    RouteTable* routeTable = (RouteTable*)g_hash_table_lookup(component_registry.route_tables, found_entity_id);
     for (int i = 0; i < connection->num_conns; i++) {
-        if (strcmp(routeTable->gateway, connection->to_device_id[i]) == 0) continue;
+        if (strcmp(connection->to_device_id[i], connection->parent_device_id) == 0) continue;
 
         char to_address[110];
         strcpy(to_address, target_router_address);
