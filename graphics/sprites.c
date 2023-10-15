@@ -10,7 +10,7 @@ SpriteRect sprite_sheet[] = {
 };
 
 Texture2D load_sprite_sheet() {
-    Image image = LoadImage("../resources/tileset.png");  // Load image data into CPU memory (RAM)
+    Image image = LoadImage("resources/tileset.png");  // Load image data into CPU memory (RAM)
     texture_sprite_sheet = LoadTextureFromImage(image);       // Image converted to texture, GPU memory (RAM -> VRAM)
     UnloadImage(image);                                    // Unload image data from CPU memory (RAM)
 

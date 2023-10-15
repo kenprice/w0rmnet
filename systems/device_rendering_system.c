@@ -4,37 +4,6 @@
 #include "../graphics/tiles.h"
 #include "utils/rendering.h"
 
-void draw_isometric_grid_tile(float x, float y) {
-    int iso_w = SPRITE_X_SCALE/2;
-    int iso_h = SPRITE_Y_SCALE/2;
-    DrawLine(x, y, x+iso_w, y+iso_h, WHITE);
-    DrawLine(x, y, x-iso_w, y+iso_h, WHITE);
-    DrawLine(x, y+(iso_h*2), x+iso_w, y+iso_h, WHITE);
-    DrawLine(x, y+(iso_h*2), x-iso_w, y+iso_h, WHITE);
-}
-
-void draw_isometric_grid() {
-    float iso_x = 0;
-    float iso_y = 0;
-    int iso_w = SPRITE_X_SCALE/2;
-    int iso_h = SPRITE_Y_SCALE/2;
-
-    int num_x_tiles = 12;
-    int num_y_tiles = 12;
-
-    for (int y = 0; y < num_y_tiles; y++) {
-        for (int x = 0; x < num_x_tiles; x++) {
-            int global_x = iso_x + (x - y) * iso_w;
-            int global_y = iso_y + (x + y) * iso_h;
-            draw_isometric_grid_tile(global_x, global_y);
-
-            char buffer[100];
-            sprintf(buffer, "%d,%d", x, y);
-            DrawText(buffer, global_x, global_y+10, 10, BLACK);
-        }
-    }
-}
-
 void draw_area() {
     float iso_x = 0;
     float iso_y = 0;

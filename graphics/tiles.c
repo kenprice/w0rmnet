@@ -7,7 +7,7 @@ TileRect tile_sheet[] = {
 };
 
 Texture2D load_tile_sheet() {
-    Image image = LoadImage("../resources/map_tiles.png");  // Load image data into CPU memory (RAM)
+    Image image = LoadImage("resources/map_tiles.png");  // Load image data into CPU memory (RAM)
     texture_tile_sheet = LoadTextureFromImage(image);       // Image converted to texture, GPU memory (RAM -> VRAM)
     UnloadImage(image);                                    // Unload image data from CPU memory (RAM)
 

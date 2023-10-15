@@ -3,6 +3,8 @@
 #include "../components/component_registry.h"
 #include "../utils/timer.h"
 
+Timer timer;
+
 /**
  * returns 0 if error, 1 if success
  */
@@ -113,7 +115,6 @@ void update_packet_buffer(char* entity_id, PacketBuffer* packet_buffer) {
     send_packet(entity_id, packet, connection);
 }
 
-Timer timer;
 void initialize_packet_routing_system() {
     StartTimer(&timer, 1);
 }

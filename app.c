@@ -1,6 +1,16 @@
 #include <stdlib.h>
 #include <time.h>
 #include "raylib.h"
+
+
+#define RAYGUI_IMPLEMENTATION
+#define RAYGUI_CUSTOM_ICONS
+#include "gui_icons.h"
+static unsigned int *guiIconsPtr = guiIcons;
+#include "lib/raygui.h"
+#include "lib/style_cyber.h"       // raygui style: cyber
+#undef RAYGUI_IMPLEMENTATION            // Avoid including raygui implementation again
+
 #include "graphics/sprites.h"
 #include "graphics/tiles.h"
 #include "components/component_registry.h"
@@ -22,13 +32,15 @@ int main(void)
     const int screenWidth = 1024;
     const int screenHeight = 768;
 
-    SetConfigFlags(FLAG_WINDOW_RESIZABLE | FLAG_VSYNC_HINT);
+    SetConfigFlags(FLAG_VSYNC_HINT);
     InitWindow(screenWidth, screenHeight, "w0rmnet");
 
     // NOTE: Textures MUST be loaded after Window initialization (OpenGL context is required)
     load_sprite_sheet();
     load_tile_sheet();
-    Shader shader_outline = LoadShader(0, TextFormat("resources/shaders/outline.fs", GLSL_VERSION));
+
+    // RayGui
+    GuiLoadStyleCyber();
 
     //////////////
     init_component_registry();

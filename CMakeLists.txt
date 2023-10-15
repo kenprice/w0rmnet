@@ -84,7 +84,10 @@ add_executable(${PROJECT_NAME} app.c
         systems/process_runner/netscan_runner.h
         systems/process_runner/netscan_runner.c
         systems/utils/routing.h
-        systems/utils/routing.c)
+        systems/utils/routing.c
+        lib/style_cyber.h
+        systems/ui/device_info_window.h
+        systems/ui/device_info_window.c)
 #set(raylib_VERBOSE 1)
 target_link_libraries(${PROJECT_NAME} raylib)
 target_link_libraries(${PROJECT_NAME} ${GLIB_PKG_LINK_LIBRARIES})

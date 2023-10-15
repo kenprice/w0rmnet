@@ -1,12 +1,15 @@
 #include <stdio.h>
+#include "../lib/raygui.h"
 #include "glib.h"
 #include "device_ui_system.h"
+#include "ui/device_info_window.h"
 #include "utils/rendering.h"
 #include "../components/component_registry.h"
 
 #define PANEL_HEIGHT 200
 
-Device* selected_device;
+Device* selectedDevice;
+DeviceInfoWindowState deviceInfoWindowState;
 
 void draw_popover(int x, int y, char* message) {
     DrawRectangle(x-1, y-12, MeasureText(message, 10)+2, 10, BLACK);
@@ -26,6 +29,8 @@ void draw_device_id(Device device, Vector2 coord) {
 }
 
 void render_device_info() {
+    return;
+
     int screen_height = GetScreenHeight();
     int screen_width = GetScreenWidth();
 
@@ -46,18 +51,18 @@ void render_device_info() {
     sprintf(buffer, "Device ID: ");
     text_width = MeasureText(buffer, 20);
     DrawText(buffer, left_pad, top_pos, 20, WHITE);
-    sprintf(buffer, "%s", selected_device->id);
+    sprintf(buffer, "%s", selectedDevice->id);
     DrawText(buffer, left_pad+text_width, top_pos, 20, BLUE);
     top_pos += 23;
 
     sprintf(buffer, "Device Type: ");
     text_width = MeasureText(buffer, 20);
     DrawText(buffer, left_pad, top_pos, 20, WHITE);
-    sprintf(buffer, "%s", DeviceTypeLabel[selected_device->type]);
+    sprintf(buffer, "%s", DeviceTypeLabel[selectedDevice->type]);
     DrawText(buffer, left_pad+text_width, top_pos, 20, BLUE);
     top_pos += 23;
 
-    bool player_owned = selected_device->owner == DEVICE_OWNER_PLAYER;
+    bool player_owned = selectedDevice->owner == DEVICE_OWNER_PLAYER;
     sprintf(buffer, "Owner: ");
     text_width = MeasureText(buffer, 20);
     DrawText(buffer, left_pad, top_pos, 20, WHITE);
@@ -65,8 +70,8 @@ void render_device_info() {
     DrawText(buffer, left_pad+text_width, top_pos, 20, player_owned ? GREEN : GRAY);
     top_pos += 23;
 
-    char* entity_id = selected_device->entity_id;
-    if (selected_device->type == DEVICE_TYPE_GENERIC) {
+    char* entity_id = selectedDevice->entity_id;
+    if (selectedDevice->type == DEVICE_TYPE_GENERIC) {
         Connection* conn = (Connection*)g_hash_table_lookup(component_registry.connections, entity_id);
         if (conn != NULL && strlen(conn->to_device_id[0]) > 0) {
             sprintf(buffer, "Network: ");
@@ -76,7 +81,7 @@ void render_device_info() {
             DrawText(buffer, left_pad+text_width, top_pos, 20, BLUE);
             top_pos += 23;
         }
-    } else if (selected_device->type == DEVICE_TYPE_ROUTER) {
+    } else if (selectedDevice->type == DEVICE_TYPE_ROUTER) {
         RouteTable* route_table = (RouteTable*)g_hash_table_lookup(component_registry.route_tables, entity_id);
         if (route_table != NULL && strlen(route_table->gateway) > 0) {
             sprintf(buffer, "Network: ");
@@ -107,9 +112,9 @@ void render_device_info() {
 }
 
 void render_selected_device() {
-    if (selected_device == NULL) return;
+    if (selectedDevice == NULL) return;
 
-    char* entity_id = selected_device->entity_id;
+    char* entity_id = selectedDevice->entity_id;
     Sprite* sprite = (Sprite*)g_hash_table_lookup(component_registry.sprites, entity_id);
 
     // Render Sprite
@@ -134,16 +139,12 @@ void render_selected_device() {
     render_device_info();
 }
 
-void panel_mouse_collision() {
-
-}
-
 void render_device_mouseover_hover() {
     int screen_height = GetScreenHeight();
     Vector2 mouse_pos = GetMousePosition();
     Vector2 current_tile = convert_global_to_local(mouse_pos.x, mouse_pos.y);
 
-    if (selected_device && mouse_pos.y > (screen_height-PANEL_HEIGHT)) {
+    if (selectedDevice && mouse_pos.y > (screen_height - PANEL_HEIGHT)) {
         return;
     }
 
@@ -158,27 +159,27 @@ void render_device_mouseover_hover() {
 }
 
 void initialize_device_ui_system() {
-    selected_device = NULL;
+    selectedDevice = NULL;
+    deviceInfoWindowState = init_device_info_window(selectedDevice);
 }
 
 void update_device_ui_system() {
-    int screen_height = GetScreenHeight();
-    Vector2 mouse_pos = GetMousePosition();
+    if (update_device_info_window(&deviceInfoWindowState)) return;
 
-    if (selected_device && mouse_pos.y > (screen_height-PANEL_HEIGHT)) {
-        panel_mouse_collision();
-        return;
-    }
-    // Selection
+    Vector2 mouse_pos = GetMousePosition();
 
     if (IsMouseButtonPressed(MOUSE_BUTTON_LEFT)) {
         Vector2 clicked_tile = convert_global_to_local(mouse_pos.x, mouse_pos.y);
         Device* device = find_device_by_coord(clicked_tile.x, clicked_tile.y);
 
         if (device != NULL && device->visible) {
-            selected_device = device;
-        } else {
-            selected_device = NULL;
+            selectedDevice = device;
+
+            char buffer[50] = "#181#";
+            deviceInfoWindowState.device = device;
+            strcat(buffer, (device != NULL ? device->id : "Device"));
+            strcpy(deviceInfoWindowState.windowTitle, buffer);
+            deviceInfoWindowState.windowActive = true;
         }
     }
 }
@@ -188,5 +189,9 @@ void render_device_ui_system() {
 
     render_device_mouseover_hover();
     draw_mouse_coords();
+
+    if (render_device_info_window(&deviceInfoWindowState)) {
+        selectedDevice = NULL;
+    }
 }
 
