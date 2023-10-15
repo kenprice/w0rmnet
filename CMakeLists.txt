@@ -80,7 +80,11 @@ add_executable(${PROJECT_NAME} app.c
         systems/process_runner/ping_runner.h
         systems/process_runner/ping_runner.c
         systems/process_runner/proc_runner_table.h
-        systems/process_runner/proc_runner_table.c)
+        systems/process_runner/proc_runner_table.c
+        systems/process_runner/netscan_runner.h
+        systems/process_runner/netscan_runner.c
+        systems/utils/routing.h
+        systems/utils/routing.c)
 #set(raylib_VERBOSE 1)
 target_link_libraries(${PROJECT_NAME} raylib)
 target_link_libraries(${PROJECT_NAME} ${GLIB_PKG_LINK_LIBRARIES})

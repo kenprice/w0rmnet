@@ -3,11 +3,14 @@
 #include "../components/component_registry.h"
 
 #include "process_runner/ping_runner.h"
+#include "process_runner/netscan_runner.h"
 
 void send_packet_to_proc(char* entity_id, Process* process, Packet* packet) {
     switch (process->type) {
         case PROCESS_TYPE_PING:
             proc_ping_handle_packet(entity_id, process, packet);
+            break;
+        default:
             break;
     }
 }
@@ -16,6 +19,11 @@ void send_message_to_proc(char* entity_id, Process* process, ProcMessage* messag
     switch (process->type) {
         case PROCESS_TYPE_PING:
             proc_ping_handle_message(entity_id, process, message);
+            break;
+        case PROCESS_TYPE_SCAN:
+            proc_netscan_handle_message(entity_id, process, message);
+            break;
+        default:
             break;
     }
 }
@@ -39,7 +47,7 @@ void update_process_manager(char* entity_id, ProcessManager* process_manager) {
         message = proc_msg_queue_read(procMessageQueue);
         if (message != NULL) {
             Process proc = process_manager->processes[message->pid];
-            if (proc.invokable) {
+            if (proc.invocable) {
                 send_message_to_proc(entity_id, &proc, message);
             }
         }

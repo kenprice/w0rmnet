@@ -4,6 +4,8 @@
 #include "utils/rendering.h"
 #include "../components/component_registry.h"
 
+#define PANEL_HEIGHT 200
+
 Device* selected_device;
 
 void draw_popover(int x, int y, char* message) {
@@ -23,32 +25,17 @@ void draw_device_id(Device device, Vector2 coord) {
     DrawText(device.id, coord.x, coord.y-11, 10, GREEN);
 }
 
-void detect_mouse_collision() {
-    Vector2 mouse_pos = GetMousePosition();
-    Vector2 current_tile = convert_global_to_local(mouse_pos.x, mouse_pos.y);
-
-    Device* device = find_device_by_coord(current_tile.x, current_tile.y);
-    if (device != NULL) {
-        if (device->visible) {
-            draw_device_id(*device, mouse_pos);
-        } else {
-            draw_label("???", mouse_pos);
-        }
-    }
-}
-
 void render_device_info() {
     int screen_height = GetScreenHeight();
     int screen_width = GetScreenWidth();
 
     int panel_width = screen_width;
-    int panel_height = 200;
 
     int x = 0;
-    int y = screen_height - panel_height;
+    int y = screen_height - PANEL_HEIGHT;
 
-    DrawRectangle(x, y, panel_width, panel_height, BLACK);
-    DrawRectangleLinesEx((Rectangle){x, y, panel_width, panel_height}, 3, RAYWHITE);
+    DrawRectangle(x, y, panel_width, PANEL_HEIGHT, BLACK);
+    DrawRectangleLinesEx((Rectangle){x, y, panel_width, PANEL_HEIGHT}, 3, RAYWHITE);
 
     int top_pos = y+6;
     int left_pad = 6;
@@ -97,20 +84,25 @@ void render_device_info() {
             DrawText(buffer, left_pad, top_pos, 20, WHITE);
             sprintf(buffer, "%s", route_table->gateway);
             DrawText(buffer, left_pad+text_width, top_pos, 20, BLUE);
-            top_pos += 23;
         }
     }
 
-    // Next column
-    top_pos = y+6;
-    left_pad = panel_width/3;
+    // Action pad right hand side
+    top_pos = y+10;
+    left_pad = screen_width - 190;
 
+    for (int i=0; i<9; i++) {
+        int x_offset = (i%3)*60+3;
+        int y_offset = (i/3)*60+3;
 
-    Connection* conn = (Connection*)g_hash_table_lookup(component_registry.connections, entity_id);
-    sprintf(buffer, "Connections (%d):", conn->num_conns);
-    DrawText(buffer, left_pad, top_pos, 20, BLUE);
-    for (int i = 0; i < conn->num_conns; i++) {
-        conn->to_device_id[i];
+        ProcessManager* processManager = (ProcessManager *)g_hash_table_lookup(component_registry.process_managers, entity_id);
+        bool exists = processManager ? (i < processManager->num_procs) : false;
+
+        DrawRectangleLinesEx((Rectangle){left_pad+x_offset, top_pos+y_offset, 54, 54}, 2, exists ? RAYWHITE : GRAY);
+        if (exists) {
+            // TODO: icons
+            DrawText(ProcessTypeLabel[processManager->processes[i].type], left_pad+x_offset+6, top_pos+y_offset+6, 10, WHITE);
+        }
     }
 }
 
@@ -142,17 +134,45 @@ void render_selected_device() {
     render_device_info();
 }
 
+void panel_mouse_collision() {
+
+}
+
+void render_device_mouseover_hover() {
+    int screen_height = GetScreenHeight();
+    Vector2 mouse_pos = GetMousePosition();
+    Vector2 current_tile = convert_global_to_local(mouse_pos.x, mouse_pos.y);
+
+    if (selected_device && mouse_pos.y > (screen_height-PANEL_HEIGHT)) {
+        return;
+    }
+
+    Device* device = find_device_by_coord(current_tile.x, current_tile.y);
+    if (device != NULL) {
+        if (device->visible) {
+            draw_device_id(*device, mouse_pos);
+        } else {
+            draw_label("???", mouse_pos);
+        }
+    }
+}
+
 void initialize_device_ui_system() {
     selected_device = NULL;
 }
 
 void update_device_ui_system() {
+    int screen_height = GetScreenHeight();
+    Vector2 mouse_pos = GetMousePosition();
+
+    if (selected_device && mouse_pos.y > (screen_height-PANEL_HEIGHT)) {
+        panel_mouse_collision();
+        return;
+    }
     // Selection
+
     if (IsMouseButtonPressed(MOUSE_BUTTON_LEFT)) {
-        Vector2 mouse_pos = GetMousePosition();
-
         Vector2 clicked_tile = convert_global_to_local(mouse_pos.x, mouse_pos.y);
-
         Device* device = find_device_by_coord(clicked_tile.x, clicked_tile.y);
 
         if (device != NULL && device->visible) {
@@ -166,7 +186,7 @@ void update_device_ui_system() {
 void render_device_ui_system() {
     render_selected_device();
 
-    detect_mouse_collision();
+    render_device_mouseover_hover();
     draw_mouse_coords();
 }
 

@@ -1,21 +1,23 @@
 #ifndef W0RMNET_PROCESS_H
 #define W0RMNET_PROCESS_H
 
+#define PROCESS_ARGS_LEN 100
+#define PROCESS_STATE_LEN 100
+
 typedef enum {
     PROCESS_TYPE_PING,
     PROCESS_TYPE_ECHO,
+    PROCESS_TYPE_SCAN,
 } ProcessType ;
 
-#define PROCESS_ARGS_LEN 100
-#define PROCESS_STATE_LEN 100
+extern const char* ProcessTypeLabel[];
 
 typedef struct {
     char fingerprint[32]; // Identifies the program being run
     ProcessType type;
     char name[32]; // Name of program
 
-    bool invokable; // Can be invoked by owner of device, invocation is done via message Q ipc
-    char args[PROCESS_ARGS_LEN];     // Set if player or something else has invoked, with args
+    bool invocable; // Can be invoked by owner of device, invocation is done via message Q ipc
     char state[PROCESS_STATE_LEN];   // Proces state containing arbitrary bytes.
 } Process; // Models a running program
 

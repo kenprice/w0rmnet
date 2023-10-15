@@ -124,7 +124,7 @@ void update_packet_routing_system() {
     iterate_packet_buffers(update_packet_buffer);
     update_routers();
 
-    StartTimer(&timer, 1);
+    StartTimer(&timer, 0.1);
 }
 
 void render_packet_routing_system() {

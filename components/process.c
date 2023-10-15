@@ -4,6 +4,12 @@
 #include "component_registry.h"
 #include "process.h"
 
+const char* ProcessTypeLabel[] = {
+    "PING",
+    "ECHO",
+    "SCAN",
+};
+
 void register_process_manager(ProcessManager process_manager, char* entity_id) {
     ProcessManager* new_process_manager = calloc(1, sizeof(ProcessManager));
     memcpy(new_process_manager, &(process_manager), sizeof(ProcessManager));
