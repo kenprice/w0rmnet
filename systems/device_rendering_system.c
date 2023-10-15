@@ -1,6 +1,7 @@
 #include "device_rendering_system.h"
 #include "../components/components.h"
 #include "../world/world_map.h"
+#include "../world/world_state.h"
 #include "../graphics/tiles.h"
 #include "utils/rendering.h"
 
@@ -10,9 +11,8 @@ void draw_area() {
     int iso_w = SPRITE_X_SCALE/2;
     int iso_h = SPRITE_Y_SCALE/2;
 
-    Area area = area_registry[area_current];
-    int num_x_tiles = area.width;
-    int num_y_tiles = area.height;
+    int num_x_tiles = worldState.currentArea->width;
+    int num_y_tiles = worldState.currentArea->height;
 
     for (int y = 0; y < num_y_tiles; y++) {
         for (int x = 0; x < num_x_tiles; x++) {
@@ -32,7 +32,7 @@ void initialize_device_rendering_system() {
     int screen_width = GetScreenWidth();
     int screen_height = GetScreenHeight();
 
-    float map_offset = (float)(area_registry[area_current].width + area_registry[area_current].height) * (MAP_TILE_HEIGHT/2) / 2;
+    float map_offset = (float)(worldState.currentArea->width + worldState.currentArea->height) * (MAP_TILE_HEIGHT/2) / 2;
 
     initialize_camera((float)screen_width/2, (float)screen_height/2 - map_offset);
 }
@@ -131,24 +131,24 @@ void render_device_rendering_system() {
 //    draw_isometric_grid();
     draw_area();
 
-    Area current_area = area_registry[area_current];
+    Area* currentArea = worldState.currentArea;
 
-    for (int i = 0; i < current_area.num_entities; i++) {
-        char* entity_id = current_area.entities[i];
+    for (int i = 0; i < currentArea->numEntities; i++) {
+        char* entity_id = currentArea->entities[i];
         Connection* conn = (Connection*)g_hash_table_lookup(component_registry.connections, entity_id);
         if (conn == NULL) continue;
         render_connection(entity_id, conn);
     }
 
-    for (int i = 0; i < current_area.num_entities; i++) {
-        char* entity_id = current_area.entities[i];
+    for (int i = 0; i < currentArea->numEntities; i++) {
+        char* entity_id = currentArea->entities[i];
         Device* device = (Device*)g_hash_table_lookup(component_registry.devices, entity_id);
         if (device == NULL) continue;
         render_device_sprite(entity_id, device);
     }
 
-    for (int i = 0; i < current_area.num_entities; i++) {
-        char* entity_id = current_area.entities[i];
+    for (int i = 0; i < currentArea->numEntities; i++) {
+        char* entity_id = currentArea->entities[i];
         PacketBuffer* pbuffer = (PacketBuffer*)g_hash_table_lookup(component_registry.packet_buffers, entity_id);
         if (pbuffer == NULL) continue;
         render_packet(entity_id, pbuffer);

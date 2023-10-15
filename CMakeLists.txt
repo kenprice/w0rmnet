@@ -87,7 +87,10 @@ add_executable(${PROJECT_NAME} app.c
         systems/utils/routing.c
         lib/style_cyber.h
         systems/ui/device_info_window.h
-        systems/ui/device_info_window.c)
+        systems/ui/device_info_window.c
+        world/world_state.h
+        world/world_state.c
+)
 #set(raylib_VERBOSE 1)
 target_link_libraries(${PROJECT_NAME} raylib)
 target_link_libraries(${PROJECT_NAME} ${GLIB_PKG_LINK_LIBRARIES})

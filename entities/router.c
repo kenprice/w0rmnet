@@ -1,33 +1,33 @@
 #include "router.h"
 #include "../components/component_registry.h"
 
-Router entity_router_create_blank() {
-    Router router;
+Router* entity_router_create_blank() {
+    Router* router = calloc(1, sizeof(Router));
     char *entity_id = generate_uuid();
-    router.entity_id = entity_id;
+    router->entity_id = entity_id;
 
     char *device_id = generate_device_id();
-    router.device.type = DEVICE_TYPE_ROUTER;
-    router.device.owner = DEVICE_OWNER_NOBODY;
-    router.device.pwned = DEVICE_NOT_PWNED;
-    strncpy(router.device.entity_id, entity_id, UUID_STR_LEN);
-    strncpy(router.device.id, device_id, DEVICE_ID_LEN);
+    router->device.type = DEVICE_TYPE_ROUTER;
+    router->device.owner = DEVICE_OWNER_NOBODY;
+    router->device.pwned = DEVICE_NOT_PWNED;
+    strncpy(router->device.entity_id, entity_id, UUID_STR_LEN);
+    strncpy(router->device.id, device_id, DEVICE_ID_LEN);
 
-    router.position.coord.x = 0;
-    router.position.coord.y = 0;
+    router->position.coord.x = 0;
+    router->position.coord.y = 0;
 
-    router.sprite.sprite_id = SPRITE_ROUTER;
+    router->sprite.sprite_id = SPRITE_ROUTER;
 
-    strncpy(router.connection.from_device_id, device_id, DEVICE_ID_LEN);
-    router.connection.num_conns = 0;
-    router.connection.max_conns = 100;
+    strncpy(router->connection.from_device_id, device_id, DEVICE_ID_LEN);
+    router->connection.num_conns = 0;
+    router->connection.max_conns = 100;
 
-    strncpy(router.packet_buffer.entity_id, entity_id, UUID_STR_LEN);
-    router.packet_buffer.send_q = packet_queue_alloc(50);
-    router.packet_buffer.recv_q = packet_queue_alloc(50);
+    strncpy(router->packet_buffer.entity_id, entity_id, UUID_STR_LEN);
+    router->packet_buffer.send_q = packet_queue_alloc(50);
+    router->packet_buffer.recv_q = packet_queue_alloc(50);
 
-    router.route_table.max_records = 100;
-    router.route_table.num_records = 0;
+    router->route_table.max_records = 100;
+    router->route_table.num_records = 0;
 
     return router;
 }

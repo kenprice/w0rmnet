@@ -19,6 +19,7 @@ static unsigned int *guiIconsPtr = guiIcons;
 #include "systems/packet_routing_system.h"
 #include "systems/process_running_system.h"
 #include "world/world_map.h"
+#include "world/world_state.h"
 
 #define GLSL_VERSION 330
 
@@ -44,7 +45,8 @@ int main(void)
 
     //////////////
     init_component_registry();
-    init_player_area();
+    initialize_world();
+    init_world_state();
 
     initialize_device_rendering_system();
     initialize_device_ui_system();

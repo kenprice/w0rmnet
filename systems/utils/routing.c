@@ -2,11 +2,6 @@
 #include "../../components/component_registry.h"
 #include "../../components/components.h"
 
-/**
- * @param entity_id From which device (addresses are relative to a device)
- * @param address
- * @return entity_id of device, if found, else NULL
- */
 char* search_device_by_address(char* entity_id, char* address) {
     char buffer[200];
     strcpy(buffer, address);
@@ -50,6 +45,44 @@ char* search_device_by_address(char* entity_id, char* address) {
             connection = (Connection*)g_hash_table_lookup(component_registry.connections, to_entity);
         }
         cur_part = path[parts];
+    }
+
+    return NULL;
+}
+
+char* network_find_common_ancestor(char* entityId1, char* entityId2) {
+    char ancestors1[20][UUID_STR_LEN];
+    char numAncestors1 = 0;
+    char ancestors2[20][UUID_STR_LEN];
+    char numAncestors2 = 0;
+
+    Connection* curConn = (Connection*)g_hash_table_lookup(component_registry.connections, entityId1);
+    while (curConn) {
+        char* curEntityId = find_device_entity_id_by_device_id(curConn->parent_device_id);
+        curConn = (Connection*)g_hash_table_lookup(component_registry.connections, curEntityId);
+        if (curConn) {
+            strcpy(ancestors1[numAncestors1], curEntityId);
+            numAncestors1++;
+        }
+    }
+
+    curConn = (Connection*)g_hash_table_lookup(component_registry.connections, entityId2);
+    while (curConn) {
+        char* curEntityId = find_device_entity_id_by_device_id(curConn->parent_device_id);
+        curConn = (Connection*)g_hash_table_lookup(component_registry.connections, curEntityId);
+        if (curConn) {
+            strcpy(ancestors2[numAncestors2], curEntityId);
+            numAncestors2++;
+        }
+    }
+
+    for (int i = 0; i < numAncestors1; i++) {
+        for (int j = 0; j < numAncestors2; j++) {
+            if (strcmp(ancestors1[i], ancestors2[j]) == 0) {
+                // Found!
+                return ancestors1[i];
+            }
+        }
     }
 
     return NULL;

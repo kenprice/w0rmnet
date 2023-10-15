@@ -13,7 +13,7 @@ typedef struct {
     RouteTable route_table;
 } Router;
 
-Router entity_router_create_blank();
+Router* entity_router_create_blank();
 
 char* entity_router_register_components(Router router);
 

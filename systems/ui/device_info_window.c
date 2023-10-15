@@ -78,14 +78,15 @@ void render_info_panel(DeviceInfoWindowState* state) {
     Rectangle groupBoxRect = (Rectangle){
             state->windowBounds.x+UI_COMPONENT_PADDING,
             state->windowBounds.y + (TITLEBAR_HEIGHT*2) + (UI_COMPONENT_PADDING*2),
-            200, state->windowBounds.height - (TITLEBAR_HEIGHT*2) - (UI_COMPONENT_PADDING*3) - STATUSBAR_HEIGHT
+            state->windowBounds.width - (UI_COMPONENT_PADDING*2),
+            state->windowBounds.height - (TITLEBAR_HEIGHT*2) - (UI_COMPONENT_PADDING*3) - STATUSBAR_HEIGHT
     };
 
     GuiGroupBox(groupBoxRect, "Info");
 
     char buffer[100];
     sprintf(buffer, "#240#ID: %s", state->device->id);
-    Rectangle infoTextRect = (Rectangle){groupBoxRect.x+UI_COMPONENT_PADDING, groupBoxRect.y+UI_COMPONENT_PADDING, groupBoxRect.width, 10};
+    Rectangle infoTextRect = (Rectangle){groupBoxRect.x+UI_COMPONENT_PADDING, groupBoxRect.y+(UI_COMPONENT_PADDING*2), groupBoxRect.width, 10};
     GuiLabel(infoTextRect, buffer);
     infoTextRect.y += 16;
 
@@ -105,7 +106,12 @@ void render_info_panel(DeviceInfoWindowState* state) {
     if (network) {
         sprintf(buffer, "#241#Network: %s", network);
         GuiLabel(infoTextRect, buffer);
+        infoTextRect.y += 16;
     }
+
+    sprintf(buffer, "#242#%s", state->device->address);
+    GuiLabel(infoTextRect, buffer);
+    infoTextRect.y += 16;
 }
 
 void render_progs_ping_options(DeviceInfoWindowState* state) {
