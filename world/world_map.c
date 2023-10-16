@@ -36,7 +36,7 @@ void initialize_world() {
     // Top-level
     Router* areaRouter = entity_router_create_blank();
     areaRouter->position.coord = (Vector2){4, 1};
-    strcpy(areaRouter->device.address, "nightcity::metro:");
+    strcpy(areaRouter->device.address, "nightcity.metro.");
     strcat(areaRouter->device.address, areaRouter->device.id);
     areaRouter->device.owner = DEVICE_OWNER_PLAYER;
     areaRouter->device.visible = 1;
@@ -115,8 +115,8 @@ void initialize_world() {
     strcat(address_buff, areaRouter->device.id);
     strcat(address_buff, ".");
     strcat(address_buff, router->device.id);
-    ProcMessage* msg = proc_msg_alloc(1, address_buff);
-    proc_msg_queue_write(g_hash_table_lookup(component_registry.proc_msg_queues, machine1->entity_id), msg);
+//    ProcMessage* msg = proc_msg_alloc(1, address_buff);
+//    proc_msg_queue_write(g_hash_table_lookup(component_registry.proc_msg_queues, machine1->entity_id), msg);
 
     process_manager.max_procs = 10;
     process_manager.num_procs = 1;

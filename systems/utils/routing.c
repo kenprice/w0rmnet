@@ -29,15 +29,14 @@ char* search_device_by_address(char* entity_id, char* address) {
     }
 
     // Find target
-    parts--;
     Connection* connection = (Connection*)g_hash_table_lookup(component_registry.connections, cur_device->entity_id);
     char* cur_part = path[parts];
     while(parts) {
+        parts--;
         for (int i = 0; i < connection->num_conns; i++) {
             char* to_entity = find_device_entity_id_by_device_id(connection->to_device_id[i]);
             if (strcmp(cur_part, connection->to_device_id[i]) != 0) continue;
 
-            parts--;
             if (parts == 0) {
                 return to_entity; // found
             }

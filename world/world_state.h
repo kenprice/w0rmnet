@@ -18,4 +18,6 @@ extern WorldState* worldStatePtr;
 
 void init_world_state();
 
+void update_world_state();
+
 #endif //W0RMNET_WORLD_STATE_H

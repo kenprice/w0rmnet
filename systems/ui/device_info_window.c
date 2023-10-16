@@ -1,20 +1,27 @@
 #include <stdio.h>
-#include "device_info_window.h"
+#include "glib.h"
 #include "raylib.h"
+#include "device_info_window.h"
 #include "../../lib/raygui.h"
 #include "../../components/component_registry.h"
+#include "../../world/world_map.h"
 
 #define TITLEBAR_HEIGHT 24
 #define STATUSBAR_HEIGHT 18
 #define UI_COMPONENT_PADDING 8
-#define WINDOW_HEIGHT 440
-#define WINDOW_WIDTH 310
+#define WINDOW_HEIGHT 310
+#define WINDOW_WIDTH 440
 
 DeviceInfoWindowState init_device_info_window(Device* device) {
     DeviceInfoWindowState state;
 
     // Init window data
-    state.windowBounds = (Rectangle){ (float)GetScreenWidth()/2 - (float)440/2, (float)GetScreenHeight()/2 - (float)310/2, WINDOW_HEIGHT, WINDOW_WIDTH };
+    state.windowBounds = (Rectangle){
+        0,
+        (float)GetScreenHeight() - WINDOW_HEIGHT,
+        WINDOW_WIDTH,
+        WINDOW_HEIGHT
+    };
     state.windowActive = false;
     state.supportDrag = true;
     state.dragMode = false;
@@ -31,6 +38,8 @@ DeviceInfoWindowState init_device_info_window(Device* device) {
     // Progs
     state.progScrollIndex = 0;
     state.progActiveIndex = 0;
+    state.progTargetDevice[0] = '\0';
+    state.progTargetDeviceAddress[0] = '\0';
 
     return state;
 }
@@ -114,14 +123,100 @@ void render_info_panel(DeviceInfoWindowState* state) {
     infoTextRect.y += 16;
 }
 
+int render_device_target_dropdown(DeviceInfoWindowState* state, Rectangle rect) {
+    if (!state->device) return 0;
+
+    GHashTableIter iter;
+    char* entityId;
+    Device* device;
+    g_hash_table_iter_init(&iter, component_registry.devices);
+    float offsetY = 0;
+
+    while (g_hash_table_iter_next (&iter, (gpointer) &entityId, (gpointer) &device)) {
+        if (!device) continue;
+        if (!device->visible) continue;
+
+        char buffer[100];
+        if (strcmp(state->progTargetDevice, device->entity_id) == 0) {
+            sprintf(buffer, "#119#%s", device->address);
+        } else {
+            sprintf(buffer, "#0#%s", device->address);
+        }
+        if (GuiLabelButton((Rectangle){rect.x, rect.y+offsetY, rect.width, rect.height}, buffer)) {
+            strcpy(state->progTargetDevice, device->entity_id);
+        }
+        offsetY += 20;
+    }
+
+    Rectangle actionButtonRect = (Rectangle){
+            state->windowBounds.x + state->windowBounds.width-100-(UI_COMPONENT_PADDING),
+            state->windowBounds.y + state->windowBounds.height-30-(UI_COMPONENT_PADDING*3),
+            100, 30
+    };
+
+    return GuiButton(actionButtonRect, "Go");
+}
+
+void refreshProgTargetDeviceAddress(DeviceInfoWindowState* state) {
+    Device* device = (Device*) g_hash_table_lookup(component_registry.devices, state->progTargetDevice);
+    if (!device) return;
+
+    char** splitOriginAddress = g_strsplit(state->device->address, ".", 10);
+    char** splitTargetAddress = g_strsplit(device->address, ".", 10);
+    char targetAddress[100] = "";
+
+    int i;
+    for (i = 0; i < 10; i++) {
+        if (splitOriginAddress[i] == NULL || splitTargetAddress[i] == NULL) {
+            break;
+        }
+        if (strcmp(splitOriginAddress[i], splitTargetAddress[i]) != 0) {
+            break;
+        }
+    }
+    for (int j = i-1; j < 10; j++) {
+        if (splitTargetAddress[j] != NULL && strlen(splitTargetAddress[j])) {
+            strcat(targetAddress, splitTargetAddress[j]);
+            strcat(targetAddress, ".");
+        } else {
+            break;
+        }
+    }
+    targetAddress[strlen(targetAddress)-1] = '\0';
+
+    strcpy(state->progTargetDeviceAddress, targetAddress);
+}
+
 void render_progs_ping_options(DeviceInfoWindowState* state) {
     Rectangle groupBoxRect = (Rectangle){
             state->windowBounds.x+100+(UI_COMPONENT_PADDING*2),
             state->windowBounds.y + (TITLEBAR_HEIGHT*2) + (UI_COMPONENT_PADDING*2),
-            200, state->windowBounds.height - (TITLEBAR_HEIGHT*2) - (UI_COMPONENT_PADDING*3) - STATUSBAR_HEIGHT
+            state->windowBounds.width-100-(UI_COMPONENT_PADDING*3), 24
     };
 
-    GuiGroupBox(groupBoxRect, "Info");
+    if (render_device_target_dropdown(state, groupBoxRect)) {
+        refreshProgTargetDeviceAddress(state);
+
+        // ACTION: Send PING
+        ProcMessage* msg = proc_msg_alloc(state->progActiveIndex, state->progTargetDeviceAddress);
+        proc_msg_queue_write(g_hash_table_lookup(component_registry.proc_msg_queues, state->device->entity_id), msg);
+    }
+}
+
+void render_progs_scan_options(DeviceInfoWindowState* state) {
+    Rectangle groupBoxRect = (Rectangle){
+            state->windowBounds.x+100+(UI_COMPONENT_PADDING*2),
+            state->windowBounds.y + (TITLEBAR_HEIGHT*2) + (UI_COMPONENT_PADDING*2),
+            state->windowBounds.width-100-(UI_COMPONENT_PADDING*3), 24
+    };
+
+    if (render_device_target_dropdown(state, groupBoxRect)) {
+        refreshProgTargetDeviceAddress(state);
+
+        // ACTION: Send SCAN
+        ProcMessage* msg = proc_msg_alloc(state->progActiveIndex, state->progTargetDeviceAddress);
+        proc_msg_queue_write(g_hash_table_lookup(component_registry.proc_msg_queues, state->device->entity_id), msg);
+    }
 }
 
 void render_progs_panel(DeviceInfoWindowState* state) {
@@ -147,13 +242,16 @@ void render_progs_panel(DeviceInfoWindowState* state) {
 
     GuiListView(listviewRect, buffer, &state->progScrollIndex, &state->progActiveIndex);
 
-    if (state->progActiveIndex >= processManager->num_procs || processManager->num_procs == 0) {
+    if (state->progActiveIndex < 0 || state->progActiveIndex >= processManager->num_procs || processManager->num_procs == 0) {
         return;
     }
 
     switch(processManager->processes[state->progActiveIndex].type) {
         case PROCESS_TYPE_PING:
             render_progs_ping_options(state);
+            break;
+        case PROCESS_TYPE_SCAN:
+            render_progs_scan_options(state);
             break;
     }
 }
