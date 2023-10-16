@@ -4,12 +4,15 @@
 
 #include "process_runner/ping_runner.h"
 #include "process_runner/netscan_runner.h"
+#include "process_runner/login_runner.h"
 
 void send_packet_to_proc(char* entity_id, Process* process, Packet* packet) {
     switch (process->type) {
         case PROCESS_TYPE_PING:
             proc_ping_handle_packet(entity_id, process, packet);
             break;
+        case PROCESS_TYPE_LOGIN:
+            proc_login_handle_packet(entity_id, process, packet);;
         default:
             break;
     }
@@ -22,6 +25,9 @@ void send_message_to_proc(char* entity_id, Process* process, ProcMessage* messag
             break;
         case PROCESS_TYPE_SCAN:
             proc_netscan_handle_message(entity_id, process, message);
+            break;
+        case PROCESS_TYPE_LOGIN:
+            proc_login_handle_message(entity_id, process, message);
             break;
         default:
             break;

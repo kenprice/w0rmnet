@@ -8,6 +8,7 @@ const char* ProcessTypeLabel[] = {
     "PING",
     "ECHO",
     "SCAN",
+    "LOGIN"
 };
 
 void register_process_manager(ProcessManager process_manager, char* entity_id) {

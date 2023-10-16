@@ -28,6 +28,8 @@ char* search_device_by_address(char* entity_id, char* address) {
         cur_device = device;
     }
 
+    if (parts == 1) return cur_device->entity_id;
+
     // Find target
     Connection* connection = (Connection*)g_hash_table_lookup(component_registry.connections, cur_device->entity_id);
     char* cur_part = path[parts];

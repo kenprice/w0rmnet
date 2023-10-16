@@ -8,6 +8,7 @@ typedef enum {
     PROCESS_TYPE_PING,
     PROCESS_TYPE_ECHO,
     PROCESS_TYPE_SCAN,
+    PROCESS_TYPE_LOGIN,
 } ProcessType ;
 
 extern const char* ProcessTypeLabel[];

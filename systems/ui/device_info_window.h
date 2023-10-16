@@ -24,6 +24,8 @@ typedef struct {
 
     char progTargetDevice[UUID_STR_LEN]; // entityId
     char progTargetDeviceAddress[110];
+    char progInputText[100];
+    int progInputTextEditMode;
 } DeviceInfoWindowState;
 
 DeviceInfoWindowState init_device_info_window(Device* device);

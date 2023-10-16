@@ -90,6 +90,8 @@ add_executable(${PROJECT_NAME} app.c
         systems/ui/device_info_window.c
         world/world_state.h
         world/world_state.c
+        systems/process_runner/login_runner.h
+        systems/process_runner/login_runner.c
 )
 #set(raylib_VERBOSE 1)
 target_link_libraries(${PROJECT_NAME} raylib)

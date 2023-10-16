@@ -1,8 +1,11 @@
 #include "ping_runner.h"
 #include "../../components/component_registry.h"
 
+/**
+ * Ping State
+ * 1st byte: Restricted Mode (default 0)
+ */
 #define REGION_RESTRICTED_MODE 0
-
 #define RESTRICTED_MODE_UNRESTRICTED 0
 #define RESTRICTED_MODE_LOCAL 1
 

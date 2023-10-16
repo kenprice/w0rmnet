@@ -101,13 +101,16 @@ void initialize_world() {
 
     ProcessManager process_manager;
     process_manager.max_procs = 10;
-    process_manager.num_procs = 2;
+    process_manager.num_procs = 3;
     process_manager.processes[0].type = PROCESS_TYPE_PING;
     process_manager.processes[0].invocable = true;
     memset(process_manager.processes[0].state, '\0', PROCESS_STATE_LEN);
     process_manager.processes[1].type = PROCESS_TYPE_SCAN;
     process_manager.processes[1].invocable = true;
     memset(process_manager.processes[1].state, '\0', PROCESS_STATE_LEN);
+    process_manager.processes[2].type = PROCESS_TYPE_LOGIN;
+    process_manager.processes[2].invocable = true;
+    memset(process_manager.processes[2].state, '\0', PROCESS_STATE_LEN);
     register_process_manager(process_manager, machine1->entity_id);
     ProcMessageQueue machine1_pmq = proc_msg_queue_alloc(10);
     register_proc_msg_queue(machine1_pmq, machine1->entity_id);
@@ -131,10 +134,17 @@ void initialize_world() {
 //    proc_msg_queue_write(g_hash_table_lookup(component_registry.proc_msg_queues, machine2->entity_id), msg);
 
     process_manager.max_procs = 10;
-    process_manager.num_procs = 1;
+    process_manager.num_procs = 3;
     process_manager.processes[0].type = PROCESS_TYPE_PING;
     process_manager.processes[0].invocable = true;
     memset(process_manager.processes[0].state, '\0', PROCESS_STATE_LEN);
+    process_manager.processes[1].type = PROCESS_TYPE_SCAN;
+    process_manager.processes[1].invocable = true;
+    memset(process_manager.processes[1].state, '\0', PROCESS_STATE_LEN);
+    process_manager.processes[2].type = PROCESS_TYPE_LOGIN;
+    process_manager.processes[2].invocable = true;
+    memset(process_manager.processes[2].state, '\0', PROCESS_STATE_LEN);
+    strcpy(process_manager.processes[2].state, "root:root");
     register_process_manager(process_manager, machine3->entity_id);
     register_proc_msg_queue(proc_msg_queue_alloc(10), machine3->entity_id);
 

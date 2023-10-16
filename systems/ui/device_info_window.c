@@ -40,6 +40,8 @@ DeviceInfoWindowState init_device_info_window(Device* device) {
     state.progActiveIndex = 0;
     state.progTargetDevice[0] = '\0';
     state.progTargetDeviceAddress[0] = '\0';
+    state.progInputText[0] = '\0';
+    state.progInputTextEditMode = 0;
 
     return state;
 }
@@ -151,13 +153,13 @@ int render_device_target_dropdown(DeviceInfoWindowState* state, Rectangle rect) 
     Rectangle actionButtonRect = (Rectangle){
             state->windowBounds.x + state->windowBounds.width-100-(UI_COMPONENT_PADDING),
             state->windowBounds.y + state->windowBounds.height-30-(UI_COMPONENT_PADDING*3),
-            100, 30
+            100, 24
     };
 
     return GuiButton(actionButtonRect, "Go");
 }
 
-void refreshProgTargetDeviceAddress(DeviceInfoWindowState* state) {
+void refresh_prog_target_device_address(DeviceInfoWindowState* state) {
     Device* device = (Device*) g_hash_table_lookup(component_registry.devices, state->progTargetDevice);
     if (!device) return;
 
@@ -195,7 +197,7 @@ void render_progs_ping_options(DeviceInfoWindowState* state) {
     };
 
     if (render_device_target_dropdown(state, groupBoxRect)) {
-        refreshProgTargetDeviceAddress(state);
+        refresh_prog_target_device_address(state);
 
         // ACTION: Send PING
         ProcMessage* msg = proc_msg_alloc(state->progActiveIndex, state->progTargetDeviceAddress);
@@ -211,10 +213,41 @@ void render_progs_scan_options(DeviceInfoWindowState* state) {
     };
 
     if (render_device_target_dropdown(state, groupBoxRect)) {
-        refreshProgTargetDeviceAddress(state);
+        refresh_prog_target_device_address(state);
 
         // ACTION: Send SCAN
         ProcMessage* msg = proc_msg_alloc(state->progActiveIndex, state->progTargetDeviceAddress);
+        proc_msg_queue_write(g_hash_table_lookup(component_registry.proc_msg_queues, state->device->entity_id), msg);
+    }
+}
+
+void render_progs_login_options(DeviceInfoWindowState* state) {
+    Rectangle groupBoxRect = (Rectangle){
+            state->windowBounds.x+100+(UI_COMPONENT_PADDING*2),
+            state->windowBounds.y + (TITLEBAR_HEIGHT*2) + (UI_COMPONENT_PADDING*2),
+            state->windowBounds.width-100-(UI_COMPONENT_PADDING*3), 24
+    };
+
+    Rectangle textboxRect = (Rectangle){
+            state->windowBounds.x+100+(UI_COMPONENT_PADDING*2),
+            state->windowBounds.y + state->windowBounds.height-30-(UI_COMPONENT_PADDING*3),
+            state->windowBounds.width-100-(UI_COMPONENT_PADDING*3), 24
+    };
+
+    if (GuiTextBox(textboxRect, state->progInputText, 100, state->progInputTextEditMode)) {
+        state->progInputTextEditMode = !state->progInputTextEditMode;
+    }
+
+    if (render_device_target_dropdown(state, groupBoxRect)) {
+        refresh_prog_target_device_address(state);
+
+        // ACTION: Send LOGIN
+        char buffer[100];
+        strcpy(buffer, state->progTargetDeviceAddress);
+        strcat(buffer, ":");
+        strcat(buffer, state->progInputText);
+
+        ProcMessage* msg = proc_msg_alloc(state->progActiveIndex, buffer);
         proc_msg_queue_write(g_hash_table_lookup(component_registry.proc_msg_queues, state->device->entity_id), msg);
     }
 }
@@ -253,11 +286,15 @@ void render_progs_panel(DeviceInfoWindowState* state) {
         case PROCESS_TYPE_SCAN:
             render_progs_scan_options(state);
             break;
+        case PROCESS_TYPE_LOGIN:
+            render_progs_login_options(state);
+            break;
     }
 }
 
 int render_device_window(DeviceInfoWindowState* state) {
     if (!state->windowActive) return 0;
+    if (!state->device) return 0;
 
     state->windowActive = !GuiWindowBox(state->windowBounds, state->windowTitle);
 
@@ -267,13 +304,17 @@ int render_device_window(DeviceInfoWindowState* state) {
         (state->windowBounds.width-(UI_COMPONENT_PADDING*2)-3)/3, TITLEBAR_HEIGHT
     };
 
-    GuiToggleGroup(toggleGroupRect, "INFO;LOGS;PROGS", &state->activeToggleGroup);
+    GuiToggleGroup(toggleGroupRect, state->device->owner == DEVICE_OWNER_PLAYER ? "INFO;LOGS;PROGS" : "INFO", &state->activeToggleGroup);
 
-    if (!state->device) return 0;
+    if (state->device->owner != DEVICE_OWNER_PLAYER && state->activeToggleGroup > 0) {
+        state->activeToggleGroup = 0;
+    }
 
     switch(state->activeToggleGroup) {
         case 0:
             render_info_panel(state);
+            break;
+        case 1:
             break;
         case 2:
             render_progs_panel(state);
