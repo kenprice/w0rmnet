@@ -1,8 +1,8 @@
 #include "sprites.h"
 
-Texture2D texture_sprite_sheet;
+Texture2D textureSpriteSheet;
 
-SpriteRect sprite_sheet[] = {
+SpriteRect spriteSheet[] = {
     (SpriteRect){(Rectangle){0, 0, 64, 64},(Vector2){0, 32}},
     (SpriteRect){(Rectangle){64, 0, 64, 64},(Vector2){0, 32}},
     (SpriteRect){(Rectangle){128, 0, 64, 64},(Vector2){0, 32}},
@@ -11,14 +11,14 @@ SpriteRect sprite_sheet[] = {
 
 Texture2D load_sprite_sheet() {
     Image image = LoadImage("resources/tileset.png");  // Load image data into CPU memory (RAM)
-    texture_sprite_sheet = LoadTextureFromImage(image);       // Image converted to texture, GPU memory (RAM -> VRAM)
+    textureSpriteSheet = LoadTextureFromImage(image);       // Image converted to texture, GPU memory (RAM -> VRAM)
     UnloadImage(image);                                    // Unload image data from CPU memory (RAM)
 
-    image = LoadImageFromTexture(texture_sprite_sheet);    // Load image from GPU texture (VRAM -> RAM)
-    UnloadTexture(texture_sprite_sheet);                   // Unload texture from GPU memory (VRAM)
+    image = LoadImageFromTexture(textureSpriteSheet);    // Load image from GPU texture (VRAM -> RAM)
+    UnloadTexture(textureSpriteSheet);                   // Unload texture from GPU memory (VRAM)
 
-    texture_sprite_sheet = LoadTextureFromImage(image);    // Recreate texture from retrieved image data (RAM -> VRAM)
+    textureSpriteSheet = LoadTextureFromImage(image);    // Recreate texture from retrieved image data (RAM -> VRAM)
     UnloadImage(image);                                    // Unload retrieved image data from CPU memory (RAM)
 
-    return texture_sprite_sheet;
+    return textureSpriteSheet;
 }

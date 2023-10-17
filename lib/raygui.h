@@ -404,7 +404,7 @@
     // TODO: Texture2D type is very coupled to raylib, required by Font type
     // It should be redesigned to be provided by user
     typedef struct Texture2D {
-        unsigned int id;        // OpenGL texture id
+        unsigned int name;        // OpenGL texture name
         int width;              // Texture base width
         int height;             // Texture base height
         int mipmaps;            // Mipmap levels, 1 by default
@@ -690,7 +690,7 @@ RAYGUIAPI void GuiDisableTooltip(void);                         // Disable gui t
 RAYGUIAPI void GuiSetTooltip(const char *tooltip);              // Set tooltip string
 
 // Icons functionality
-RAYGUIAPI const char *GuiIconText(int iconId, const char *text); // Get text with icon id prepended (if supported)
+RAYGUIAPI const char *GuiIconText(int iconId, const char *text); // Get text with icon name prepended (if supported)
 #if !defined(RAYGUI_NO_ICONS)
 RAYGUIAPI void GuiSetIconScale(int scale);                      // Set default icon drawing size
 RAYGUIAPI unsigned int *GuiGetIcons(void);                      // Get raygui icons data pointer
@@ -1039,7 +1039,7 @@ typedef enum {
     #define RAYGUI_CLITERAL(name) (name)
 #endif
 
-// Check if two rectangles are equal, used to validate a slider bounds as an id
+// Check if two rectangles are equal, used to validate a slider bounds as an name
 #ifndef CHECK_BOUNDS_ID
     #define CHECK_BOUNDS_ID(src, dst) ((src.x == dst.x) && (src.y == dst.y) && (src.width == dst.width) && (src.height == dst.height))
 #endif
@@ -1049,7 +1049,7 @@ typedef enum {
 // Embedded icons, no external file provided
 #define RAYGUI_ICON_SIZE               16          // Size of icons in pixels (squared)
 #define RAYGUI_ICON_MAX_ICONS         256          // Maximum number of icons
-#define RAYGUI_ICON_MAX_NAME_LENGTH    32          // Maximum length of icon name id
+#define RAYGUI_ICON_MAX_NAME_LENGTH    32          // Maximum length of icon name name
 
 // Icons data is defined by bit array (every bit represents one pixel)
 // Those arrays are stored as unsigned int data arrays, so,
@@ -4182,8 +4182,8 @@ void GuiLoadStyleDefault(void)
     }
 }
 
-// Get text with icon id prepended
-// NOTE: Useful to add icons by name id (enum) instead of
+// Get text with icon name prepended
+// NOTE: Useful to add icons by name name (enum) instead of
 // a number that can change between ricon versions
 const char *GuiIconText(int iconId, const char *text)
 {
@@ -4236,7 +4236,7 @@ char **GuiLoadIcons(const char *fileName, bool loadIconsName)
     // 8       | 2       | short      | Num icons (N)
     // 10      | 2       | short      | Icons size (Options: 16, 32, 64) (S)
 
-    // Icons name id (32 bytes per name id)
+    // Icons name name (32 bytes per name name)
     // foreach (icon)
     // {
     //   12+32*i  | 32   | char       | Icon NameId

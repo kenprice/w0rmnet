@@ -10,13 +10,13 @@ typedef struct {
     GHashTable* positions;
     GHashTable* sprites;
     GHashTable* connections;
-    GHashTable* packet_buffers;
-    GHashTable* route_tables;
-    GHashTable* process_managers;
-    GHashTable* proc_msg_queues;
+    GHashTable* packetBuffers;
+    GHashTable* routeTable;
+    GHashTable* processManagers;
+    GHashTable* procMsgQueues;
 } ComponentRegistry;
 
-extern ComponentRegistry component_registry;
+extern ComponentRegistry componentRegistry;
 
 void init_component_registry();
 

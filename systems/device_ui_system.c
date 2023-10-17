@@ -23,21 +23,21 @@ void draw_label(char* label, Vector2 coord) {
 }
 
 void draw_device_id(Device device, Vector2 coord) {
-    int width = MeasureText(device.id, 10);
+    int width = MeasureText(device.name, 10);
     DrawRectangle(coord.x-1, coord.y-11, width+2, 10, BLACK);
-    DrawText(device.id, coord.x, coord.y-11, 10, GREEN);
+    DrawText(device.name, coord.x, coord.y - 11, 10, GREEN);
 }
 
 void render_selected_device() {
     if (selectedDevice == NULL) return;
 
-    char* entity_id = selectedDevice->entity_id;
-    Sprite* sprite = (Sprite*)g_hash_table_lookup(component_registry.sprites, entity_id);
+    char* entity_id = selectedDevice->entityId;
+    Sprite* sprite = (Sprite*)g_hash_table_lookup(componentRegistry.sprites, entity_id);
 
     // Render Sprite
-    Position* position = (Position*)g_hash_table_lookup(component_registry.positions, entity_id);
+    Position* position = (Position*)g_hash_table_lookup(componentRegistry.positions, entity_id);
     Vector2 coord = position->coord;
-    SpriteRect sprite_rect = sprite_sheet[sprite->sprite_id];
+    SpriteRect sprite_rect = spriteSheet[sprite->spriteId];
 
     Vector2 global_coord = convert_local_to_global(coord.x, coord.y);
     float global_x = global_coord.x;
@@ -48,8 +48,8 @@ void render_selected_device() {
 
     BeginMode2D(camera);
 
-    DrawTextureRec(texture_sprite_sheet, sprite_sheet[SPRITE_SELECTED].rect, (Vector2){global_x+offset.x, global_y+offset.y}, WHITE);
-    DrawTextureRec(texture_sprite_sheet, sprite_rect.rect, (Vector2){global_x+offset.x, global_y+offset.y}, WHITE);
+    DrawTextureRec(textureSpriteSheet, spriteSheet[SPRITE_SELECTED].rect, (Vector2){global_x + offset.x, global_y + offset.y}, WHITE);
+    DrawTextureRec(textureSpriteSheet, sprite_rect.rect, (Vector2){global_x + offset.x, global_y + offset.y}, WHITE);
 
     EndMode2D();
 }
@@ -93,7 +93,7 @@ void update_device_ui_system() {
             char buffer[50] = "";
             strcat(buffer, (device == NULL || device->type != DEVICE_TYPE_ROUTER) ? "#224#" : "#225#");
             deviceInfoWindowState.device = device;
-            strcat(buffer, (device != NULL ? device->id : "Device"));
+            strcat(buffer, (device != NULL ? device->name : "Device"));
             strcpy(deviceInfoWindowState.windowTitle, buffer);
             deviceInfoWindowState.windowActive = true;
         }

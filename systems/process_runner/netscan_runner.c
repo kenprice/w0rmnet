@@ -24,7 +24,7 @@ void proc_netscan_handle_packet(char* entity_id, Process* process, Packet* packe
  * @param message received message
  */
 void proc_netscan_handle_message(char* entity_id, Process* process, ProcMessage* message) {
-    PacketBuffer* packet_buffer = (PacketBuffer*)g_hash_table_lookup(component_registry.packet_buffers, entity_id);
+    PacketBuffer* packet_buffer = (PacketBuffer*)g_hash_table_lookup(componentRegistry.packetBuffers, entity_id);
     if (!packet_buffer) return;
 
     // Message contains address of target router
@@ -33,14 +33,16 @@ void proc_netscan_handle_message(char* entity_id, Process* process, ProcMessage*
     if (!found_entity_id) return;
 
     // Perform a ping scan against target router's connections
-    Connection* connection = (Connection*)g_hash_table_lookup(component_registry.connections, found_entity_id);
-    for (int i = 0; i < connection->num_conns; i++) {
-        if (strcmp(connection->to_device_id[i], connection->parent_device_id) == 0) continue;
+    Connection* connection = (Connection*)g_hash_table_lookup(componentRegistry.connections, found_entity_id);
+    for (int i = 0; i < connection->numConns; i++) {
+        if (strcmp(connection->toEntityIds[i], connection->parentEntityId) == 0) continue;
+
+        Device* device = g_hash_table_lookup(componentRegistry.devices, connection->toEntityIds[i]);
 
         char to_address[110];
         strcpy(to_address, target_router_address);
         strcat(to_address, ".");
-        strcat(to_address, connection->to_device_id[i]);
-        packet_queue_write(&packet_buffer->send_q, packet_alloc(entity_id, to_address, "Ping?"));
+        strcat(to_address, device->name);
+        packet_queue_write(&packet_buffer->sendQ, packet_alloc(entity_id, to_address, "Ping?"));
     }
 }

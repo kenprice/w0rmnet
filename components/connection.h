@@ -2,18 +2,18 @@
 #define W0RMNET_CONNECTION_H
 
 #include "utils/device_id.h"
+#include "../utils/uuid.h"
 
 typedef struct {
-    char from_device_id[DEVICE_ID_LEN];
-    char parent_device_id[DEVICE_ID_LEN]; // Parent device in network hierarchy
-    char to_device_id[100][DEVICE_ID_LEN];
-    int num_conns;
-    int max_conns;
+    char parentEntityId[UUID_STR_LEN]; // Parent device in network hierarchy
+    char toEntityIds[100][UUID_STR_LEN];
+    int numConns;
+    int maxConns;
 } Connection; // Wire-like structure
 
-int connection_add_device(char* entity_id, char* device_id);
+int connection_add_device(char* entityId, char* deviceId);
 
-int connection_set_parent(char* entity_id, char* device_id);
+int connection_set_parent(char* entityId, char* parentEntityId);
 
 void iterate_connections(void (*cb)(char*,Connection*));
 

@@ -28,7 +28,7 @@ DeviceInfoWindowState init_device_info_window(Device* device) {
     state.panOffset = (Vector2){ 0, 0 };
 
     char buffer[50] = "#181#";
-    strcat(buffer, (device != NULL ? device->id : "Device"));
+    strcat(buffer, (device != NULL ? device->name : "Device"));
     strcpy(state.windowTitle, buffer);
 
     // Device info data
@@ -96,7 +96,7 @@ void render_info_panel(DeviceInfoWindowState* state) {
     GuiGroupBox(groupBoxRect, "Info");
 
     char buffer[100];
-    sprintf(buffer, "#240#ID: %s", state->device->id);
+    sprintf(buffer, "#240#ID: %s", state->device->name);
     Rectangle infoTextRect = (Rectangle){groupBoxRect.x+UI_COMPONENT_PADDING, groupBoxRect.y+(UI_COMPONENT_PADDING*2), groupBoxRect.width, 10};
     GuiLabel(infoTextRect, buffer);
     infoTextRect.y += 16;
@@ -110,9 +110,10 @@ void render_info_panel(DeviceInfoWindowState* state) {
     infoTextRect.y += 16;
 
     char* network = NULL;
-    Connection* conn = (Connection*)g_hash_table_lookup(component_registry.connections, state->device->entity_id);
-    if (conn != NULL && strlen(conn->parent_device_id) > 0) {
-        network = conn->parent_device_id;
+    Connection* conn = (Connection*)g_hash_table_lookup(componentRegistry.connections, state->device->entityId);
+    if (conn != NULL && strlen(conn->parentEntityId) > 0) {
+        Device* parentDevice = g_hash_table_lookup(componentRegistry.devices, conn->parentEntityId);
+        network = parentDevice->name;
     }
     if (network) {
         sprintf(buffer, "#241#Network: %s", network);
@@ -131,7 +132,7 @@ int render_device_target_dropdown(DeviceInfoWindowState* state, Rectangle rect) 
     GHashTableIter iter;
     char* entityId;
     Device* device;
-    g_hash_table_iter_init(&iter, component_registry.devices);
+    g_hash_table_iter_init(&iter, componentRegistry.devices);
     float offsetY = 0;
 
     while (g_hash_table_iter_next (&iter, (gpointer) &entityId, (gpointer) &device)) {
@@ -139,13 +140,13 @@ int render_device_target_dropdown(DeviceInfoWindowState* state, Rectangle rect) 
         if (!device->visible) continue;
 
         char buffer[100];
-        if (strcmp(state->progTargetDevice, device->entity_id) == 0) {
+        if (strcmp(state->progTargetDevice, device->entityId) == 0) {
             sprintf(buffer, "#119#%s", device->address);
         } else {
             sprintf(buffer, "#0#%s", device->address);
         }
         if (GuiLabelButton((Rectangle){rect.x, rect.y+offsetY, rect.width, rect.height}, buffer)) {
-            strcpy(state->progTargetDevice, device->entity_id);
+            strcpy(state->progTargetDevice, device->entityId);
         }
         offsetY += 20;
     }
@@ -160,7 +161,7 @@ int render_device_target_dropdown(DeviceInfoWindowState* state, Rectangle rect) 
 }
 
 void refresh_prog_target_device_address(DeviceInfoWindowState* state) {
-    Device* device = (Device*) g_hash_table_lookup(component_registry.devices, state->progTargetDevice);
+    Device* device = (Device*) g_hash_table_lookup(componentRegistry.devices, state->progTargetDevice);
     if (!device) return;
 
     char** splitOriginAddress = g_strsplit(state->device->address, ".", 10);
@@ -201,7 +202,7 @@ void render_progs_ping_options(DeviceInfoWindowState* state) {
 
         // ACTION: Send PING
         ProcMessage* msg = proc_msg_alloc(state->progActiveIndex, state->progTargetDeviceAddress);
-        proc_msg_queue_write(g_hash_table_lookup(component_registry.proc_msg_queues, state->device->entity_id), msg);
+        proc_msg_queue_write(g_hash_table_lookup(componentRegistry.procMsgQueues, state->device->entityId), msg);
     }
 }
 
@@ -217,7 +218,7 @@ void render_progs_scan_options(DeviceInfoWindowState* state) {
 
         // ACTION: Send SCAN
         ProcMessage* msg = proc_msg_alloc(state->progActiveIndex, state->progTargetDeviceAddress);
-        proc_msg_queue_write(g_hash_table_lookup(component_registry.proc_msg_queues, state->device->entity_id), msg);
+        proc_msg_queue_write(g_hash_table_lookup(componentRegistry.procMsgQueues, state->device->entityId), msg);
     }
 }
 
@@ -248,12 +249,12 @@ void render_progs_login_options(DeviceInfoWindowState* state) {
         strcat(buffer, state->progInputText);
 
         ProcMessage* msg = proc_msg_alloc(state->progActiveIndex, buffer);
-        proc_msg_queue_write(g_hash_table_lookup(component_registry.proc_msg_queues, state->device->entity_id), msg);
+        proc_msg_queue_write(g_hash_table_lookup(componentRegistry.procMsgQueues, state->device->entityId), msg);
     }
 }
 
 void render_progs_panel(DeviceInfoWindowState* state) {
-    ProcessManager* processManager = (ProcessManager *)g_hash_table_lookup(component_registry.process_managers, state->device->entity_id);
+    ProcessManager* processManager = (ProcessManager *)g_hash_table_lookup(componentRegistry.processManagers, state->device->entityId);
     if (!processManager) {
         return;
     }
@@ -265,8 +266,8 @@ void render_progs_panel(DeviceInfoWindowState* state) {
     };
 
     char buffer[100] = "";
-    if (processManager->num_procs > 0) {
-        for (int i=0; i<processManager->num_procs; i++) {
+    if (processManager->numProcs > 0) {
+        for (int i=0; i<processManager->numProcs; i++) {
             strcat(buffer, ProcessTypeLabel[processManager->processes[i].type]);
             strcat(buffer, ";");
         }
@@ -275,7 +276,7 @@ void render_progs_panel(DeviceInfoWindowState* state) {
 
     GuiListView(listviewRect, buffer, &state->progScrollIndex, &state->progActiveIndex);
 
-    if (state->progActiveIndex < 0 || state->progActiveIndex >= processManager->num_procs || processManager->num_procs == 0) {
+    if (state->progActiveIndex < 0 || state->progActiveIndex >= processManager->numProcs || processManager->numProcs == 0) {
         return;
     }
 

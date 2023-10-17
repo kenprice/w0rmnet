@@ -19,10 +19,10 @@ void draw_area() {
             int global_x = iso_x + (x - y) * iso_w;
             int global_y = iso_y + (x + y) * iso_h;
 
-            Vector2 offset = tile_sheet[0].offset;
-            offset = (Vector2){-tile_sheet[0].rect.width/2-offset.x, -offset.y};
+            Vector2 offset = tileSheet[0].offset;
+            offset = (Vector2){-tileSheet[0].rect.width / 2 - offset.x, -offset.y};
 
-            DrawTextureRec(texture_tile_sheet, tile_sheet[0].rect, (Vector2){global_x+offset.x, global_y+offset.y}, WHITE);
+            DrawTextureRec(textureTileSheet, tileSheet[0].rect, (Vector2){global_x + offset.x, global_y + offset.y}, WHITE);
         }
     }
 
@@ -57,28 +57,28 @@ void draw_sprite(SpriteRect sprite_rect, Vector2 coord) {
     offset = (Vector2){-rect.width/2-offset.x, -offset.y};
     Vector2 position = (Vector2){global_x+offset.x, global_y+offset.y};
 
-    DrawTextureRec(texture_sprite_sheet, rect, position, WHITE);
+    DrawTextureRec(textureSpriteSheet, rect, position, WHITE);
 }
 
 void render_packet(char* entity_id, PacketBuffer* packet_buffer) {
-    Position* from_pos = (Position*)g_hash_table_lookup(component_registry.positions, entity_id);
+    Position* from_pos = (Position*)g_hash_table_lookup(componentRegistry.positions, entity_id);
     Vector2 global_coord = convert_local_to_global(from_pos->coord.x, from_pos->coord.y);
 
     // Render SEND messages
-    PacketQueue q = packet_buffer->send_q;
+    PacketQueue q = packet_buffer->sendQ;
     int offset = 12;
     for (int i = q.tail; i < q.head; i++) {
         Packet* packet = q.packets[i];
         char message[100] = "";
         strcat(message, packet->message);
         strcat(message, " to ");
-        strcat(message, packet->to_address);
+        strcat(message, packet->toAddress);
         DrawRectangle(global_coord.x-1, global_coord.y+offset, MeasureText(message, 10)+2, 10, BLACK);
         DrawText(message, global_coord.x, global_coord.y+offset, 10, GREEN);
         offset += 12;
     }
     // Render RECV messages
-    q = packet_buffer->recv_q;
+    q = packet_buffer->recvQ;
     for (int i = q.tail; i < q.head; i++) {
         Packet* packet = q.packets[i];
         char* message = packet->message;
@@ -88,14 +88,14 @@ void render_packet(char* entity_id, PacketBuffer* packet_buffer) {
     }
 }
 
-void render_connection(char* _entity_id, Connection* connection) {
-    char* from_entity = _entity_id;
+void render_connection(char* entityId, Connection* connection) {
+    char* fromEntity = entityId;
 
-    char* to_entity = find_device_entity_id_by_device_id(connection->parent_device_id);
-    if (!to_entity) return;
+    char* toEntity = connection->parentEntityId;
+    if (!toEntity || strlen(toEntity) == 0) return;
 
-    Position* from_pos = (Position*)g_hash_table_lookup(component_registry.positions, from_entity);
-    Position* to_pos = (Position*)g_hash_table_lookup(component_registry.positions, to_entity);
+    Position* from_pos = (Position*)g_hash_table_lookup(componentRegistry.positions, fromEntity);
+    Position* to_pos = (Position*)g_hash_table_lookup(componentRegistry.positions, toEntity);
 
     Vector2 from_coord = convert_local_to_global(from_pos->coord.x, from_pos->coord.y);
     from_coord.y += SPRITE_Y_SCALE/2;
@@ -106,16 +106,16 @@ void render_connection(char* _entity_id, Connection* connection) {
 }
 
 void render_device_sprite(char* entity_id, Device* device) {
-    Sprite* sprite = (Sprite*)g_hash_table_lookup(component_registry.sprites, entity_id);
+    Sprite* sprite = (Sprite*)g_hash_table_lookup(componentRegistry.sprites, entity_id);
 
     // Render Sprite
-    Position* position = (Position*)g_hash_table_lookup(component_registry.positions, entity_id);
+    Position* position = (Position*)g_hash_table_lookup(componentRegistry.positions, entity_id);
 
     if (!device->visible) {
-        draw_sprite(sprite_sheet[SPRITE_UNKNOWN], position->coord);
+        draw_sprite(spriteSheet[SPRITE_UNKNOWN], position->coord);
         return;
     } else {
-        draw_sprite(sprite_sheet[sprite->sprite_id], position->coord);
+        draw_sprite(spriteSheet[sprite->spriteId], position->coord);
     }
 
     if (device->owner != DEVICE_OWNER_PLAYER) {
@@ -135,21 +135,21 @@ void render_device_rendering_system() {
 
     for (int i = 0; i < currentArea->numEntities; i++) {
         char* entity_id = currentArea->entities[i];
-        Connection* conn = (Connection*)g_hash_table_lookup(component_registry.connections, entity_id);
+        Connection* conn = (Connection*)g_hash_table_lookup(componentRegistry.connections, entity_id);
         if (conn == NULL) continue;
         render_connection(entity_id, conn);
     }
 
     for (int i = 0; i < currentArea->numEntities; i++) {
         char* entity_id = currentArea->entities[i];
-        Device* device = (Device*)g_hash_table_lookup(component_registry.devices, entity_id);
+        Device* device = (Device*)g_hash_table_lookup(componentRegistry.devices, entity_id);
         if (device == NULL) continue;
         render_device_sprite(entity_id, device);
     }
 
     for (int i = 0; i < currentArea->numEntities; i++) {
         char* entity_id = currentArea->entities[i];
-        PacketBuffer* pbuffer = (PacketBuffer*)g_hash_table_lookup(component_registry.packet_buffers, entity_id);
+        PacketBuffer* pbuffer = (PacketBuffer*)g_hash_table_lookup(componentRegistry.packetBuffers, entity_id);
         if (pbuffer == NULL) continue;
         render_packet(entity_id, pbuffer);
     }

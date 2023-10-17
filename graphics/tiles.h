@@ -11,9 +11,9 @@ typedef struct {
     Vector2 offset; // offset by which to render, in order to align to isometric grid
 } TileRect;
 
-extern TileRect tile_sheet[];
+extern TileRect tileSheet[];
 
-extern Texture2D texture_tile_sheet;
+extern Texture2D textureTileSheet;
 
 Texture2D load_tile_sheet();
 

@@ -16,9 +16,9 @@ typedef struct {
     Vector2 offset; // offset by which to render, in order to align to isometric grid
 } SpriteRect;
 
-extern SpriteRect sprite_sheet[];
+extern SpriteRect spriteSheet[];
 
-extern Texture2D texture_sprite_sheet;
+extern Texture2D textureSpriteSheet;
 
 Texture2D load_sprite_sheet();
 

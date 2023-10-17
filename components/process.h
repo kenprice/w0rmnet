@@ -24,8 +24,8 @@ typedef struct {
 
 typedef struct {
     Process processes[10];
-    int num_procs;
-    int max_procs;
+    int numProcs;
+    int maxProcs;
 } ProcessManager;
 
 

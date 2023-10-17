@@ -4,13 +4,13 @@
 #include "../components/components.h"
 
 typedef struct {
-    char* entity_id;
+    char* entityId;
     Device device;
     Position position;
     Sprite sprite;
     OperatingSystem os;
     Connection connection;
-    PacketBuffer packet_buffer;
+    PacketBuffer packetBuffer;
 } Machine;
 
 Machine* entity_machine_create_blank();

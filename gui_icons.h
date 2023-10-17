@@ -14,7 +14,7 @@
 //----------------------------------------------------------------------------------
 #define RAYGUI_ICON_SIZE             16   // Size of icons (squared)
 #define RAYGUI_ICON_MAX_ICONS       256   // Maximum number of icons
-#define RAYGUI_ICON_MAX_NAME_LENGTH  32   // Maximum length of icon name id
+#define RAYGUI_ICON_MAX_NAME_LENGTH  32   // Maximum length of icon name name
 
 // Icons data is defined by bit array (every bit represents one pixel)
 // Those arrays are stored as unsigned int data arrays, so every array

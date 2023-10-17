@@ -7,16 +7,16 @@
 
 Packet* packet_alloc(char* from_entity_id, char* to_address, char* message) {
     Packet* packet = calloc(1, sizeof(Packet));
-    packet->from_entity_id = calloc(1, sizeof(char) * strlen(from_entity_id));
-    strcpy(packet->from_entity_id, from_entity_id);
-    packet->from_address = calloc(1, sizeof(char) * 110);
-    packet->from_address[0] = '\0';
-    packet->to_address = calloc(1, sizeof(char) * strlen(to_address) + 1);
-    strcpy(packet->to_address, to_address);
+    packet->fromEntityId = calloc(1, sizeof(char) * strlen(from_entity_id));
+    strcpy(packet->fromEntityId, from_entity_id);
+    packet->fromAddress = calloc(1, sizeof(char) * 110);
+    packet->fromAddress[0] = '\0';
+    packet->toAddress = calloc(1, sizeof(char) * strlen(to_address) + 1);
+    strcpy(packet->toAddress, to_address);
     packet->message = calloc(1, sizeof(char) * strlen(message) + 1);
     strcpy(packet->message, message);
     packet->hops = 0;
-    packet->top_level_found = false;
+    packet->topLevelFound = false;
     return packet;
 }
 
@@ -63,7 +63,7 @@ void iterate_packet_buffers(void (*cb)(char*,PacketBuffer *)) {
     char* entity_id;
     PacketBuffer* packet_buffer;
 
-    g_hash_table_iter_init(&iter, component_registry.packet_buffers);
+    g_hash_table_iter_init(&iter, componentRegistry.packetBuffers);
     while (g_hash_table_iter_next (&iter, (gpointer) &entity_id, (gpointer) &packet_buffer)) {
         (*cb)(entity_id, packet_buffer);
     }

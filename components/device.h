@@ -18,8 +18,8 @@ typedef enum {
 extern const char* DeviceTypeLabel[2];
 
 typedef struct {
-    char entity_id[UUID_STR_LEN];
-    char id[DEVICE_ID_LEN];
+    char entityId[UUID_STR_LEN];
+    char name[DEVICE_NAME_LEN];
     char address[100]; // FQ Adress is something like nightcity::metro:d0rkyd3vel.sn0rtt0k3r.b3efsdr34d
     DeviceType type;
     int owner; // 0 for nobody, 1 for player
@@ -27,11 +27,11 @@ typedef struct {
     int visible; // 0 for not visible, 1 for visible
 } Device;
 
-char* find_device_entity_id_by_device_id(char* device_id);
+char* find_device_entity_id_by_device_id(char* deviceId);
 
 Device* find_device_by_coord(int x, int y);
 
-void register_device(Device device, char* entity_id);
+void register_device(Device device, char* entityId);
 
 void iterate_devices(void (*cb)(char*,Device*));
 

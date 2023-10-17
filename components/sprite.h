@@ -2,7 +2,7 @@
 #define W0RMNET_SPRITE_H
 
 typedef struct {
-    int sprite_id;
+    int spriteId;
 } Sprite;
 
 void iterate_sprites(void (*cb)(char*,Sprite*));

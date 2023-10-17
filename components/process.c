@@ -14,13 +14,13 @@ const char* ProcessTypeLabel[] = {
 void register_process_manager(ProcessManager process_manager, char* entity_id) {
     ProcessManager* new_process_manager = calloc(1, sizeof(ProcessManager));
     memcpy(new_process_manager, &(process_manager), sizeof(ProcessManager));
-    g_hash_table_insert(component_registry.process_managers, entity_id, new_process_manager);
+    g_hash_table_insert(componentRegistry.processManagers, entity_id, new_process_manager);
 }
 
 void register_proc_msg_queue(ProcMessageQueue queue, char* entity_id) {
     ProcMessageQueue* new_proc_msg_q = calloc(1, sizeof(ProcMessageQueue));
     memcpy(new_proc_msg_q, &(queue), sizeof(ProcMessageQueue));
-    g_hash_table_insert(component_registry.proc_msg_queues, entity_id, new_proc_msg_q);
+    g_hash_table_insert(componentRegistry.procMsgQueues, entity_id, new_proc_msg_q);
 }
 
 ProcMessage* proc_msg_alloc(int pid, char* args) {

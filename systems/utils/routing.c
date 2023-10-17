@@ -15,35 +15,36 @@ char* search_device_by_address(char* entity_id, char* address) {
     }
 
     char* first_part = path[0];
-    Device* cur_device = (Device*)g_hash_table_lookup(component_registry.devices, entity_id);
+    Device* cur_device = (Device*)g_hash_table_lookup(componentRegistry.devices, entity_id);
 
     // Find top-level
-    while(strcmp(cur_device->id, first_part) != 0) {
-        Connection* connection = (Connection*)g_hash_table_lookup(component_registry.connections, cur_device->entity_id);
-        char* to_entity = find_device_entity_id_by_device_id(connection->parent_device_id);
+    while(strcmp(cur_device->name, first_part) != 0) {
+        Connection* connection = (Connection*)g_hash_table_lookup(componentRegistry.connections, cur_device->entityId);
+        char* to_entity = connection->parentEntityId;
 
-        Device* device = (Device*)g_hash_table_lookup(component_registry.devices, to_entity);
+        Device* device = (Device*)g_hash_table_lookup(componentRegistry.devices, to_entity);
         if (device->type != DEVICE_TYPE_ROUTER) continue;
 
         cur_device = device;
     }
 
-    if (parts == 1) return cur_device->entity_id;
+    if (parts == 1) return cur_device->entityId;
 
     // Find target
-    Connection* connection = (Connection*)g_hash_table_lookup(component_registry.connections, cur_device->entity_id);
+    Connection* connection = (Connection*)g_hash_table_lookup(componentRegistry.connections, cur_device->entityId);
     char* cur_part = path[parts];
     while(parts) {
         parts--;
-        for (int i = 0; i < connection->num_conns; i++) {
-            char* to_entity = find_device_entity_id_by_device_id(connection->to_device_id[i]);
-            if (strcmp(cur_part, connection->to_device_id[i]) != 0) continue;
+        for (int i = 0; i < connection->numConns; i++) {
+            char* to_entity = connection->toEntityIds[i];
+            Device* device = g_hash_table_lookup(componentRegistry.devices, to_entity);
+            if (strcmp(cur_part, device->name) != 0) continue;
 
             if (parts == 0) {
                 return to_entity; // found
             }
 
-            connection = (Connection*)g_hash_table_lookup(component_registry.connections, to_entity);
+            connection = (Connection*)g_hash_table_lookup(componentRegistry.connections, to_entity);
         }
         cur_part = path[parts];
     }
@@ -57,20 +58,20 @@ char* network_find_common_ancestor(char* entityId1, char* entityId2) {
     char ancestors2[20][UUID_STR_LEN];
     char numAncestors2 = 0;
 
-    Connection* curConn = (Connection*)g_hash_table_lookup(component_registry.connections, entityId1);
+    Connection* curConn = (Connection*)g_hash_table_lookup(componentRegistry.connections, entityId1);
     while (curConn) {
-        char* curEntityId = find_device_entity_id_by_device_id(curConn->parent_device_id);
-        curConn = (Connection*)g_hash_table_lookup(component_registry.connections, curEntityId);
+        char* curEntityId = curConn->parentEntityId;
+        curConn = (Connection*)g_hash_table_lookup(componentRegistry.connections, curEntityId);
         if (curConn) {
             strcpy(ancestors1[numAncestors1], curEntityId);
             numAncestors1++;
         }
     }
 
-    curConn = (Connection*)g_hash_table_lookup(component_registry.connections, entityId2);
+    curConn = (Connection*)g_hash_table_lookup(componentRegistry.connections, entityId2);
     while (curConn) {
-        char* curEntityId = find_device_entity_id_by_device_id(curConn->parent_device_id);
-        curConn = (Connection*)g_hash_table_lookup(component_registry.connections, curEntityId);
+        char* curEntityId = curConn->parentEntityId;
+        curConn = (Connection*)g_hash_table_lookup(componentRegistry.connections, curEntityId);
         if (curConn) {
             strcpy(ancestors2[numAncestors2], curEntityId);
             numAncestors2++;

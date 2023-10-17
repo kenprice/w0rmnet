@@ -35,19 +35,19 @@ void send_message_to_proc(char* entity_id, Process* process, ProcMessage* messag
 }
 
 void update_process_manager(char* entity_id, ProcessManager* process_manager) {
-    PacketBuffer* packet_buffer = (PacketBuffer*)g_hash_table_lookup(component_registry.packet_buffers, entity_id);
+    PacketBuffer* packet_buffer = (PacketBuffer*)g_hash_table_lookup(componentRegistry.packetBuffers, entity_id);
     Packet* packet = NULL;
 
     // A packet, if exists, is broadcasted to all processes. Something that no sane systems engineer would do.
     if (packet_buffer != NULL) {
-        packet = packet_queue_read(&packet_buffer->recv_q);
+        packet = packet_queue_read(&packet_buffer->recvQ);
     }
-    for (int i = 0; i < process_manager->num_procs; i++) {
+    for (int i = 0; i < process_manager->numProcs; i++) {
         send_packet_to_proc(entity_id, &process_manager->processes[i], packet);
     }
 
     // Then, go through IPC proc msg Q and send messages to procs
-    ProcMessageQueue* procMessageQueue = (ProcMessageQueue*)g_hash_table_lookup(component_registry.proc_msg_queues, entity_id);
+    ProcMessageQueue* procMessageQueue = (ProcMessageQueue*)g_hash_table_lookup(componentRegistry.procMsgQueues, entity_id);
     ProcMessage* message = NULL;
     if (procMessageQueue != NULL) {
         message = proc_msg_queue_read(procMessageQueue);
@@ -65,7 +65,7 @@ void update_process_running_system() {
     char* entity_id;
     ProcessManager* process_manager;
 
-    g_hash_table_iter_init(&iter, component_registry.process_managers);
+    g_hash_table_iter_init(&iter, componentRegistry.processManagers);
     while (g_hash_table_iter_next (&iter, (gpointer) &entity_id, (gpointer) &process_manager)) {
         update_process_manager(entity_id, process_manager);
     }

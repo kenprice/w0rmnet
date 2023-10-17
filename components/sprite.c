@@ -6,7 +6,7 @@ void iterate_sprites(void (*cb)(char*,Sprite*)) {
     char* entity_id;
     Sprite* sprite;
 
-    g_hash_table_iter_init(&iter, component_registry.sprites);
+    g_hash_table_iter_init(&iter, componentRegistry.sprites);
     while (g_hash_table_iter_next (&iter, (gpointer) &entity_id, (gpointer) &sprite)) {
         (*cb)(entity_id, sprite);
     }

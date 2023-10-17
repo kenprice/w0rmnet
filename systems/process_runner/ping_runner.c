@@ -39,12 +39,12 @@ void proc_ping_handle_packet(char* entity_id, Process* process, Packet* packet) 
     if (strcmp(packet->message, "Ping?") == 0) {
         bool respond = true;
         if ((int)process->state[REGION_RESTRICTED_MODE] == RESTRICTED_MODE_LOCAL) {
-            int address_depth = count_address_depth(packet->to_address);
+            int address_depth = count_address_depth(packet->toAddress);
             respond = address_depth <= 2;
         }
         if (respond) {
-            PacketBuffer* packet_buffer = (PacketBuffer*)g_hash_table_lookup(component_registry.packet_buffers, entity_id);
-            packet_queue_write(&packet_buffer->send_q, packet_alloc(entity_id, packet->from_address, "Pong!"));
+            PacketBuffer* packet_buffer = (PacketBuffer*)g_hash_table_lookup(componentRegistry.packetBuffers, entity_id);
+            packet_queue_write(&packet_buffer->sendQ, packet_alloc(entity_id, packet->fromAddress, "Pong!"));
         }
         isValid = true;
     }
@@ -55,11 +55,11 @@ void proc_ping_handle_packet(char* entity_id, Process* process, Packet* packet) 
 
     // Received packet is valid ping-pong packet, make sender visible if recipient is owned by player
     if (isValid) {
-        Device* recipient_device = (Device*)g_hash_table_lookup(component_registry.devices, entity_id);
+        Device* recipient_device = (Device*)g_hash_table_lookup(componentRegistry.devices, entity_id);
         if (recipient_device->owner == DEVICE_OWNER_PLAYER) {
             // Target entity is the one we want to determine the new visibility of
-            char* target_entity = packet->from_entity_id;
-            Device* target_device = (Device*)g_hash_table_lookup(component_registry.devices, target_entity);
+            char* target_entity = packet->fromEntityId;
+            Device* target_device = (Device*)g_hash_table_lookup(componentRegistry.devices, target_entity);
             if (target_device && !target_device->visible) {
                 target_device->visible = true;
             }
@@ -73,6 +73,6 @@ void proc_ping_handle_message(char* entity_id, Process* process, ProcMessage* me
 
     // Sends Ping to address specified by args
     char* address = message->args;
-    PacketBuffer* packet_buffer = (PacketBuffer*)g_hash_table_lookup(component_registry.packet_buffers, entity_id);
-    packet_queue_write(&packet_buffer->send_q, packet_alloc(entity_id, address, "Ping?"));
+    PacketBuffer* packet_buffer = (PacketBuffer*)g_hash_table_lookup(componentRegistry.packetBuffers, entity_id);
+    packet_queue_write(&packet_buffer->sendQ, packet_alloc(entity_id, address, "Ping?"));
 }

@@ -4,13 +4,13 @@
 #include "../components/components.h"
 
 typedef struct {
-    char* entity_id;
+    char* entityId;
     Device device;
     Position position;
     Sprite sprite;
     Connection connection;
-    PacketBuffer packet_buffer;
-    RouteTable route_table;
+    PacketBuffer packetBuffer;
+    RouteTable routeTable;
 } Router;
 
 Router* entity_router_create_blank();

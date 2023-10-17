@@ -4,7 +4,7 @@
 /**
  * @param entity_id From which device (addresses are relative to a device)
  * @param address
- * @return entity_id of device, if found, else NULL
+ * @return entityId of device, if found, else NULL
  */
 char* search_device_by_address(char* entity_id, char* address);
 

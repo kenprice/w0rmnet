@@ -4,11 +4,12 @@
 #include "../utils/uuid.h"
 
 typedef struct {
-    char* from_entity_id;
-    char* from_address; // ex. w0odyv3rs0.un1tyd1zzy.d34dlyd3uce
-    char* to_address; // ex. w0odyv3rs0.un1tyd1zzy.d34dlyd3uce
+    char* fromEntityId;
+    char* fromAddress; // ex. w0odyv3rs0.un1tyd1zzy.d34dlyd3uce
+    char* toAddress; // ex. w0odyv3rs0.un1tyd1zzy.d34dlyd3uce
     char* message;
-    bool top_level_found; // has this packet reached the top-level of address?
+
+    bool topLevelFound; // has this packet reached the top-level of address?
     int hops; // How many hops from the top-level of address traversed thus far, e.g. from w0odyv3rs0 for w0odyv3rs0.un1tyd1zzy.d34dlyd3uce
 } Packet;
 
@@ -20,9 +21,9 @@ typedef struct {
 } PacketQueue;
 
 typedef struct {
-    char entity_id[UUID_STR_LEN];
-    PacketQueue send_q;
-    PacketQueue recv_q;
+    char entityId[UUID_STR_LEN];
+    PacketQueue sendQ;
+    PacketQueue recvQ;
 } PacketBuffer;
 
 Packet* packet_alloc(char* from_entity_id, char* to_address, char* message);

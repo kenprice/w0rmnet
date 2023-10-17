@@ -79,7 +79,7 @@ int main(void)
 
     // De-Initialization
     //--------------------------------------------------------------------------------------
-    UnloadTexture(texture_sprite_sheet);       // Texture unloading
+    UnloadTexture(textureSpriteSheet);       // Texture unloading
 
     CloseWindow();                // Close window and OpenGL context
     //--------------------------------------------------------------------------------------
