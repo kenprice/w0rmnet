@@ -38,4 +38,8 @@ int packet_queue_write(PacketQueue *queue, Packet* packet);
 
 void iterate_packet_buffers(void (*cb)(char*,PacketBuffer *));
 
+char* comp_packet_buffer_serialize(PacketBuffer* packetBuffer);
+
+PacketBuffer* comp_packet_buffer_deserialize(char* data);
+
 #endif //W0RMNET_PACKET_H

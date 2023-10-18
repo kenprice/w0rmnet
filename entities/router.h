@@ -10,11 +10,12 @@ typedef struct {
     Sprite sprite;
     Connection connection;
     PacketBuffer packetBuffer;
-    RouteTable routeTable;
 } Router;
 
 Router* entity_router_create_blank();
 
 char* entity_router_register_components(Router router);
+
+char* entity_router_serialize(Router router);
 
 #endif //W0RMNET_ROUTER_H

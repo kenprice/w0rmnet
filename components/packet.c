@@ -1,3 +1,4 @@
+#include <stdio.h>
 #include <string.h>
 #include "component_registry.h"
 #include "packet.h"
@@ -68,3 +69,31 @@ void iterate_packet_buffers(void (*cb)(char*,PacketBuffer *)) {
         (*cb)(entity_id, packet_buffer);
     }
 }
+
+char* comp_packet_buffer_serialize(PacketBuffer* packetBuffer) {
+    // TODO Serialize Packets in PacketQueues
+    char buffer[100];
+
+    sprintf(buffer, "%s;%d;%d", packetBuffer->entityId, (int)packetBuffer->sendQ.size, (int)packetBuffer->recvQ.size);
+
+    char* data = calloc(strlen(buffer)+1, sizeof(char));
+    strcpy(data, buffer);
+    return data;
+}
+
+PacketBuffer* comp_packet_buffer_deserialize(char* data) {
+    PacketBuffer* packetBuffer = calloc(1, sizeof(PacketBuffer));
+
+    char** splitData = g_strsplit(data, ";", 3);
+
+    strcpy(packetBuffer->entityId, splitData[0]);
+    packetBuffer->sendQ.size = atoi(splitData[1]);
+    packetBuffer->sendQ.packets = calloc(packetBuffer->sendQ.size, sizeof(Packet*));
+    packetBuffer->recvQ.size = atoi(splitData[2]);
+    packetBuffer->recvQ.packets = calloc(packetBuffer->recvQ.size, sizeof(Packet*));
+
+    g_strfreev(splitData);
+
+    return packetBuffer;
+}
+

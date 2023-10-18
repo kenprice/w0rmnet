@@ -1,3 +1,4 @@
+#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include "glib.h"
@@ -19,7 +20,10 @@ void register_process_manager(ProcessManager process_manager, char* entity_id) {
 
 void register_proc_msg_queue(ProcMessageQueue queue, char* entity_id) {
     ProcMessageQueue* new_proc_msg_q = calloc(1, sizeof(ProcMessageQueue));
-    memcpy(new_proc_msg_q, &(queue), sizeof(ProcMessageQueue));
+    new_proc_msg_q->head = queue.head;
+    new_proc_msg_q->tail = queue.tail;
+    new_proc_msg_q->size = queue.size;
+    new_proc_msg_q->messages = queue.messages;
     g_hash_table_insert(componentRegistry.procMsgQueues, entity_id, new_proc_msg_q);
 }
 
@@ -57,4 +61,46 @@ int proc_msg_queue_write(ProcMessageQueue* queue, ProcMessage* message) {
     queue->messages[queue->head] = message;
     queue->head = (queue->head + 1) % queue->size;
     return 0;
+}
+
+char* comp_process_manager_serialize(ProcessManager* processManager) {
+    char procsBuffer[10000] = "";
+    for (int i = 0; i < processManager->numProcs; i++) {
+        char processBuffer[1000] = "";
+        Process proc = processManager->processes[i];
+        sprintf(processBuffer, "%d$%d$%s", proc.type, proc.invocable, proc.state);
+        strcat(procsBuffer, processBuffer);
+        strcat(procsBuffer, "|");
+    }
+    procsBuffer[strlen(procsBuffer) - 1] = '\0';
+
+    char procMgrBuffer[10000];
+    sprintf(procMgrBuffer, "%s;%d;%d", procsBuffer, processManager->numProcs, processManager->maxProcs);
+
+    char* data = calloc(strlen(procMgrBuffer)+1, sizeof(char));
+    strcpy(data, procMgrBuffer);
+    return data;
+}
+
+ProcessManager* comp_process_manager_deserialize(char* data) {
+    ProcessManager* processManager = calloc(1, sizeof(ProcessManager));
+
+    char** splitData = g_strsplit(data, ";", 3);
+
+    processManager->numProcs = atoi(splitData[1]);
+    processManager->maxProcs = atoi(splitData[2]);
+
+    char** procs = g_strsplit(splitData[0], "|", processManager->numProcs);
+    for (int i = 0; i < processManager->numProcs; i++) {
+        char** proc = g_strsplit(procs[i], "$", 3);
+        processManager->processes[i].type = atoi(proc[0]);
+        processManager->processes[i].invocable = atoi(proc[1]);
+        strcpy(processManager->processes[i].state, proc[2]);
+        g_strfreev(proc);
+    }
+
+    g_strfreev(splitData);
+    g_strfreev(procs);
+
+    return processManager;
 }

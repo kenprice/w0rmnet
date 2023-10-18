@@ -14,9 +14,7 @@ typedef enum {
 extern const char* ProcessTypeLabel[];
 
 typedef struct {
-    char fingerprint[32]; // Identifies the program being run
     ProcessType type;
-    char name[32]; // Name of program
 
     bool invocable; // Can be invoked by owner of device, invocation is done via message Q ipc
     char state[PROCESS_STATE_LEN];   // Proces state containing arbitrary bytes.
@@ -54,5 +52,9 @@ int proc_msg_queue_write(ProcMessageQueue* queue, ProcMessage* message);
 void register_process_manager(ProcessManager process_manager, char* entity_id);
 
 void register_proc_msg_queue(ProcMessageQueue queue, char* entity_id);
+
+char* comp_process_manager_serialize(ProcessManager* processManager);
+
+ProcessManager* comp_process_manager_deserialize(char* data);
 
 #endif //W0RMNET_PROCESS_H

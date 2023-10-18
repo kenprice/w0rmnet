@@ -1,4 +1,5 @@
 #include <glib.h>
+#include <stdio.h>
 #include <string.h>
 #include "device.h"
 #include "component_registry.h"
@@ -57,4 +58,32 @@ void iterate_devices(void (*cb)(char*,Device*)) {
     while (g_hash_table_iter_next (&iter, (gpointer) &entity_id, (gpointer) &device)) {
         (*cb)(entity_id, device);
     }
+}
+
+char* comp_device_serialize(Device* device) {
+    char buffer[1000] = "";
+    sprintf(buffer, "%s;%s;%s;%d;%d;%d;%d", device->entityId, device->name, device->address, device->type,
+            device->owner, device->pwned, device->visible);
+
+    char* data = calloc(1, sizeof(char)*strlen(buffer)+1);
+    strcpy(data, buffer);
+    return data;
+}
+
+Device* comp_device_deserialize(char* data) {
+    Device* device = calloc(1, sizeof(Device));
+
+    char** splitData = g_strsplit(data, ";", 7);
+
+    strcpy(device->entityId, splitData[0]);
+    strcpy(device->name, splitData[1]);
+    strcpy(device->address, splitData[2]);
+    device->type = atoi(splitData[3]);
+    device->owner = atoi(splitData[4]);
+    device->pwned = atoi(splitData[5]);
+    device->visible = atoi(splitData[6]);
+
+    g_strfreev(splitData);
+
+    return device;
 }

@@ -35,4 +35,8 @@ void register_device(Device device, char* entityId);
 
 void iterate_devices(void (*cb)(char*,Device*));
 
+char* comp_device_serialize(Device* device);
+
+Device* comp_device_deserialize(char* data);
+
 #endif //W0RMNET_DEVICE_H

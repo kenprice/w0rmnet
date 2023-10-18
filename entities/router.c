@@ -1,3 +1,4 @@
+#include <stdio.h>
 #include "router.h"
 #include "../components/component_registry.h"
 
@@ -25,9 +26,6 @@ Router* entity_router_create_blank() {
     router->packetBuffer.sendQ = packet_queue_alloc(50);
     router->packetBuffer.recvQ = packet_queue_alloc(50);
 
-    router->routeTable.maxRecords = 100;
-    router->routeTable.numRecords = 0;
-
     return router;
 }
 
@@ -54,9 +52,35 @@ char* entity_router_register_components(Router router) {
     strcpy(packet_buffer->entityId, entity_id);
     g_hash_table_insert(componentRegistry.packetBuffers, entity_id, packet_buffer);
 
-    RouteTable* route_table = calloc(1, sizeof(RouteTable));
-    memcpy(route_table, &router.routeTable, sizeof(RouteTable));
-    g_hash_table_insert(componentRegistry.routeTable, entity_id, route_table);
-
     return entity_id;
+}
+
+/**
+ * Tab-separated values of serialized components.
+ * Serialized components themselves are semicolon-separated values
+ *
+ * @param router
+ * @return
+ */
+char* entity_router_serialize(Router router) {
+    char buffer[10000] = "";
+
+    char* strDevice = comp_device_serialize(&router.device);
+    char* strPosition = comp_position_serialize(&router.position);
+    char* strSprite = comp_sprite_serialize(&router.sprite);
+    char* strConnection = comp_connection_serialize(&router.connection);
+    char* strPacketBuffer = comp_packet_buffer_serialize(&router.packetBuffer);
+
+    sprintf(buffer, "%s\t%s\t%s\t%s\t%s\t%s", router.entityId, strDevice, strPosition, strSprite, strConnection, strPacketBuffer);
+
+    char* data = calloc(strlen(buffer)+1, sizeof(char));
+    strcpy(data, buffer);
+
+    free(strDevice);
+    free(strPosition);
+    free(strSprite);
+    free(strConnection);
+    free(strPacketBuffer);
+
+    return data;
 }

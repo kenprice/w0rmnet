@@ -92,6 +92,7 @@ add_executable(${PROJECT_NAME} app.c
         world/world_state.c
         systems/process_runner/login_runner.h
         systems/process_runner/login_runner.c
+        components/components.c
 )
 #set(raylib_VERBOSE 1)
 target_link_libraries(${PROJECT_NAME} raylib)

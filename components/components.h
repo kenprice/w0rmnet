@@ -15,10 +15,8 @@ typedef struct {
     Vector2 coord;
 } Position;
 
-// Operating System Components
+char* comp_position_serialize(Position* position);
 
-typedef struct {
-    char id[32];
-} OperatingSystem;
+Position* comp_position_deserialize(char* data);
 
 #endif //EXAMPLE_COMPONENTS_H

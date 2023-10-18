@@ -33,127 +33,121 @@ void initialize_world() {
     playerArea->height = 12;
     playerArea->width = 12;
 
-    // Top-level
+    playerArea->numEntities = 5;
     Router* areaRouter = entity_router_create_blank();
+    Router* router = entity_router_create_blank();
+    Machine* machine1 = entity_machine_create_blank();
+    Machine* machine2 = entity_machine_create_blank();
+    Machine* machine3 = entity_machine_create_blank();
+    strncpy(playerArea->entities[0], machine1->entityId, UUID_STR_LEN);
+    strncpy(playerArea->entities[1], machine2->entityId, UUID_STR_LEN);
+    strncpy(playerArea->entities[2], machine3->entityId, UUID_STR_LEN);
+    strncpy(playerArea->entities[3], router->entityId, UUID_STR_LEN);
+    strncpy(playerArea->entities[4], areaRouter->entityId, UUID_STR_LEN);
+
+    ///////////////////////////////
+    /// DEVICES
+    ///////////////////////////////
+
+    // Area Router
+    // ============
     areaRouter->position.coord = (Vector2){4, 1};
     strcpy(areaRouter->device.address, "nightcity.metro.");
     strcat(areaRouter->device.address, areaRouter->device.name);
     areaRouter->device.owner = DEVICE_OWNER_PLAYER;
     areaRouter->device.visible = 1;
+    areaRouter->connection.numConns = 2;
+    strcpy(areaRouter->connection.toEntityIds[0], machine1->entityId);
+    strcpy(areaRouter->connection.toEntityIds[1], router->entityId);
     entity_router_register_components(*areaRouter);
 
-    // LANs
-    Router* router = entity_router_create_blank();
+    // Router
+    // ============
     router->position.coord = (Vector2){7, 4};
     strcpy(router->device.address, areaRouter->device.address);
     strcat(router->device.address, ".");
     strcat(router->device.address, router->device.name);
     router->device.owner = DEVICE_OWNER_PLAYER;
     router->device.visible = 1;
+    router->connection.numConns = 3;
+    strcpy(router->connection.parentEntityId, areaRouter->entityId);
+    strcpy(router->connection.toEntityIds[0], areaRouter->entityId);
+    strcpy(router->connection.toEntityIds[1], machine2->entityId);
+    strcpy(router->connection.toEntityIds[2], machine3->entityId);
     entity_router_register_components(*router);
-    connection_set_parent(router->entityId, areaRouter->entityId);
-    connection_add_device(router->entityId, areaRouter->entityId);
-    connection_add_device(areaRouter->entityId, router->entityId);
 
-    // Machines within LANs
-    Machine* machine1 = entity_machine_create_blank();
+    // Machine 1
+    // ============
     machine1->position.coord = (Vector2){2, 3};
     strcpy(machine1->device.address, areaRouter->device.address);
     strcat(machine1->device.address, ".");
     strcat(machine1->device.address, machine1->device.name);
     machine1->device.owner = DEVICE_OWNER_PLAYER;
     machine1->device.visible = 1;
-    entity_machine_register_components(*machine1);
-    connection_set_parent(machine1->entityId, areaRouter->entityId);
-    connection_add_device(machine1->entityId, areaRouter->entityId);
-    connection_add_device(areaRouter->entityId, machine1->entityId);
+    machine1->connection.numConns = 1;
+    machine1->connection.maxConns = 1;
+    strcpy(machine1->connection.parentEntityId, areaRouter->entityId);
+    strcpy(machine1->connection.toEntityIds[0], areaRouter->entityId);
+    // Processes
+    machine1->processManager.maxProcs = 10;
+    machine1->processManager.numProcs = 3;
+    machine1->processManager.processes[0].type = PROCESS_TYPE_PING;
+    machine1->processManager.processes[0].invocable = true;
+    memset(machine1->processManager.processes[0].state, '\0', PROCESS_STATE_LEN);
+    machine1->processManager.processes[1].type = PROCESS_TYPE_SCAN;
+    machine1->processManager.processes[1].invocable = true;
+    memset(machine1->processManager.processes[1].state, '\0', PROCESS_STATE_LEN);
+    machine1->processManager.processes[2].type = PROCESS_TYPE_LOGIN;
+    machine1->processManager.processes[2].invocable = true;
+    memset(machine1->processManager.processes[2].state, '\0', PROCESS_STATE_LEN);
+    // Register
+    entity_machine_register_components(entity_machine_deserialize(entity_machine_serialize(*machine1)));
 
-    Machine* machine2 = entity_machine_create_blank();
+    // Machine 2
+    // ============
     machine2->position.coord = (Vector2){7, 6};
     strcpy(machine2->device.address, router->device.address);
     strcat(machine2->device.address, ".");
     strcat(machine2->device.address, machine2->device.name);
+    machine2->connection.numConns = 1;
+    machine2->connection.maxConns = 1;
+    strcpy(machine2->connection.parentEntityId, router->entityId);
+    strcpy(machine2->connection.toEntityIds[0], router->entityId);
+    // Processes
+    machine2->processManager.maxProcs = 10;
+    machine2->processManager.numProcs = 1;
+    machine2->processManager.processes[0].type = PROCESS_TYPE_PING;
+    machine2->processManager.processes[0].invocable = true;
+    memset(machine2->processManager.processes[0].state, '\0', PROCESS_STATE_LEN);
+    machine2->processManager.processes[0].state[0] = 1;
+    // Register
     entity_machine_register_components(*machine2);
-    connection_set_parent(machine2->entityId, router->entityId);
-    connection_add_device(machine2->entityId, router->entityId);
-    connection_add_device(router->entityId, machine2->entityId);
+    entity_machine_register_components(entity_machine_deserialize(entity_machine_serialize(*machine2)));
 
-    Machine* machine3 = entity_machine_create_blank();
+    // Machine 3
+    // ============
     machine3->position.coord = (Vector2){9, 6};
     strcpy(machine3->device.address, router->device.address);
     strcat(machine3->device.address, ".");
     strcat(machine3->device.address, machine3->device.name);
-    entity_machine_register_components(*machine3);
-    connection_set_parent(machine3->entityId, router->entityId);
-    connection_add_device(machine3->entityId, router->entityId);
-    connection_add_device(router->entityId, machine3->entityId);
+    machine3->connection.numConns = 1;
+    machine3->connection.maxConns = 1;
+    strcpy(machine3->connection.parentEntityId, router->entityId);
+    strcpy(machine3->connection.toEntityIds[0], router->entityId);
+    // Processes
+    machine3->processManager.maxProcs = 10;
+    machine3->processManager.numProcs = 3;
+    machine3->processManager.processes[0].type = PROCESS_TYPE_PING;
+    machine3->processManager.processes[0].invocable = true;
+    memset(machine3->processManager.processes[0].state, '\0', PROCESS_STATE_LEN);
+    machine3->processManager.processes[1].type = PROCESS_TYPE_SCAN;
+    machine3->processManager.processes[1].invocable = true;
+    memset(machine3->processManager.processes[1].state, '\0', PROCESS_STATE_LEN);
+    machine3->processManager.processes[2].type = PROCESS_TYPE_LOGIN;
+    machine3->processManager.processes[2].invocable = true;
+    memset(machine3->processManager.processes[2].state, '\0', PROCESS_STATE_LEN);
+    strcpy(machine3->processManager.processes[2].state, "root:root");
+    entity_machine_register_components(entity_machine_deserialize(entity_machine_serialize(*machine3)));
 
-    char address_buff[100] = "";
-    address_buff[0] = '\0';
-    strcat(address_buff, areaRouter->device.name);
-    strcat(address_buff, ".");
-    strcat(address_buff, router->device.name);
-    strcat(address_buff, ".");
-    strcat(address_buff, machine3->device.name);
-
-//    PacketBuffer* packetBuffer = (PacketBuffer*)g_hash_table_lookup(componentRegistry.packetBuffers, machine2->entityId);
-//    packet_queue_write(&packetBuffer->sendQ, packet_alloc(address_buff, "Ping?"));
-
-    ProcessManager process_manager;
-    process_manager.maxProcs = 10;
-    process_manager.numProcs = 3;
-    process_manager.processes[0].type = PROCESS_TYPE_PING;
-    process_manager.processes[0].invocable = true;
-    memset(process_manager.processes[0].state, '\0', PROCESS_STATE_LEN);
-    process_manager.processes[1].type = PROCESS_TYPE_SCAN;
-    process_manager.processes[1].invocable = true;
-    memset(process_manager.processes[1].state, '\0', PROCESS_STATE_LEN);
-    process_manager.processes[2].type = PROCESS_TYPE_LOGIN;
-    process_manager.processes[2].invocable = true;
-    memset(process_manager.processes[2].state, '\0', PROCESS_STATE_LEN);
-    register_process_manager(process_manager, machine1->entityId);
-    ProcMessageQueue machine1_pmq = proc_msg_queue_alloc(10);
-    register_proc_msg_queue(machine1_pmq, machine1->entityId);
-    address_buff[0] = '\0';
-    strcat(address_buff, areaRouter->device.name);
-    strcat(address_buff, ".");
-    strcat(address_buff, router->device.name);
-//    ProcMessage* msg = proc_msg_alloc(1, address_buff);
-//    proc_msg_queue_write(g_hash_table_lookup(componentRegistry.procMsgQueues, machine1->entityId), msg);
-
-    process_manager.maxProcs = 10;
-    process_manager.numProcs = 1;
-    process_manager.processes[0].type = PROCESS_TYPE_PING;
-    process_manager.processes[0].invocable = true;
-    memset(process_manager.processes[0].state, '\0', PROCESS_STATE_LEN);
-    process_manager.processes[0].state[0] = 1;
-    register_process_manager(process_manager, machine2->entityId);
-    ProcMessageQueue machine2_pmq = proc_msg_queue_alloc(10);
-    register_proc_msg_queue(machine2_pmq, machine2->entityId);
-//    msg = proc_msg_alloc(0, address_buff);
-//    proc_msg_queue_write(g_hash_table_lookup(componentRegistry.procMsgQueues, machine2->entityId), msg);
-
-    process_manager.maxProcs = 10;
-    process_manager.numProcs = 3;
-    process_manager.processes[0].type = PROCESS_TYPE_PING;
-    process_manager.processes[0].invocable = true;
-    memset(process_manager.processes[0].state, '\0', PROCESS_STATE_LEN);
-    process_manager.processes[1].type = PROCESS_TYPE_SCAN;
-    process_manager.processes[1].invocable = true;
-    memset(process_manager.processes[1].state, '\0', PROCESS_STATE_LEN);
-    process_manager.processes[2].type = PROCESS_TYPE_LOGIN;
-    process_manager.processes[2].invocable = true;
-    memset(process_manager.processes[2].state, '\0', PROCESS_STATE_LEN);
-    strcpy(process_manager.processes[2].state, "root:root");
-    register_process_manager(process_manager, machine3->entityId);
-    register_proc_msg_queue(proc_msg_queue_alloc(10), machine3->entityId);
-
-
-    // Area info
-    playerArea->numEntities = 5;
-    strncpy(playerArea->entities[0], machine1->entityId, UUID_STR_LEN);
-    strncpy(playerArea->entities[1], machine2->entityId, UUID_STR_LEN);
-    strncpy(playerArea->entities[2], machine3->entityId, UUID_STR_LEN);
-    strncpy(playerArea->entities[3], router->entityId, UUID_STR_LEN);
-    strncpy(playerArea->entities[4], areaRouter->entityId, UUID_STR_LEN);
+//    SaveFileText("world.sav", buffer);
 }

@@ -1,3 +1,4 @@
+#include <stdio.h>
 #include <string.h>
 #include "connection.h"
 #include "component_registry.h"
@@ -30,4 +31,41 @@ void iterate_connections(void (*cb)(char*,Connection*)) {
     while (g_hash_table_iter_next (&iter, (gpointer) &entity_id, (gpointer) &connection)) {
         (*cb)(entity_id, connection);
     }
+}
+
+char* comp_connection_serialize(Connection* connection) {
+    char entityIdsBuffer[1000] = "";
+    for (int i = 0; i < connection->numConns; i++) {
+        strcat(entityIdsBuffer, connection->toEntityIds[i]);
+        strcat(entityIdsBuffer, ",");
+    }
+    entityIdsBuffer[strlen(entityIdsBuffer)-1] = '\0';
+
+    char buffer[1000];
+    sprintf(buffer, "%s;%s;%d;%d", connection->parentEntityId, entityIdsBuffer, connection->numConns, connection->maxConns);
+
+    char* data = calloc(1, sizeof(char)*strlen(buffer)+1);
+    strcpy(data, buffer);
+    return data;
+}
+
+Connection* comp_connection_deserialize(char* data) {
+    Connection* connection = calloc(1, sizeof(Connection));
+
+    char** splitData = g_strsplit(data, ";", 4);
+
+    strcpy(connection->parentEntityId, splitData[0]);
+    connection->numConns = atoi(splitData[2]);
+    connection->maxConns = atoi(splitData[3]);
+
+    char** toEntityIds = g_strsplit(splitData[1], ",", connection->numConns);
+
+    for (int i = 0; i < connection->numConns; i++) {
+        strcat(connection->toEntityIds[i], toEntityIds[i]);
+    }
+
+    g_strfreev(splitData);
+    g_strfreev(toEntityIds);
+
+    return connection;
 }
