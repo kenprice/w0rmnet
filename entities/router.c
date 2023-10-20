@@ -5,7 +5,7 @@
 Router* entity_router_create_blank() {
     Router* router = calloc(1, sizeof(Router));
     char *entity_id = generate_uuid();
-    router->entityId = entity_id;
+    strcpy(router->entityId, entity_id);
 
     char *device_id = generate_device_id();
     router->device.type = DEVICE_TYPE_ROUTER;
@@ -30,7 +30,7 @@ Router* entity_router_create_blank() {
 }
 
 char* entity_router_register_components(Router router) {
-    char* entity_id = router.entityId;
+    char* entity_id = strdup(router.entityId);
 
     register_device(router.device, entity_id);
 
@@ -83,4 +83,18 @@ char* entity_router_serialize(Router router) {
     free(strPacketBuffer);
 
     return data;
+}
+
+Router entity_router_deserialize(char* data) {
+    char** routerData = g_strsplit(data, "\t", 7);
+
+    Router router;
+    strcpy(router.entityId, routerData[0]);
+    router.device = *(comp_device_deserialize(routerData[1]));
+    router.position = *(comp_position_deserialize(routerData[2]));
+    router.sprite = *(comp_sprite_deserialize(routerData[3]));
+    router.connection = *(comp_connection_deserialize(routerData[4]));
+    router.packetBuffer = *(comp_packet_buffer_deserialize(routerData[5]));
+
+    return router;
 }

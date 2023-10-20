@@ -59,7 +59,7 @@ void initialize_world() {
     areaRouter->connection.numConns = 2;
     strcpy(areaRouter->connection.toEntityIds[0], machine1->entityId);
     strcpy(areaRouter->connection.toEntityIds[1], router->entityId);
-    entity_router_register_components(*areaRouter);
+    entity_router_register_components(entity_router_deserialize(entity_router_serialize(*areaRouter)));
 
     // Router
     // ============
@@ -74,7 +74,7 @@ void initialize_world() {
     strcpy(router->connection.toEntityIds[0], areaRouter->entityId);
     strcpy(router->connection.toEntityIds[1], machine2->entityId);
     strcpy(router->connection.toEntityIds[2], machine3->entityId);
-    entity_router_register_components(*router);
+    entity_router_register_components(entity_router_deserialize(entity_router_serialize(*router)));
 
     // Machine 1
     // ============
@@ -121,7 +121,6 @@ void initialize_world() {
     memset(machine2->processManager.processes[0].state, '\0', PROCESS_STATE_LEN);
     machine2->processManager.processes[0].state[0] = 1;
     // Register
-    entity_machine_register_components(*machine2);
     entity_machine_register_components(entity_machine_deserialize(entity_machine_serialize(*machine2)));
 
     // Machine 3

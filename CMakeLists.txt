@@ -93,6 +93,9 @@ add_executable(${PROJECT_NAME} app.c
         systems/process_runner/login_runner.h
         systems/process_runner/login_runner.c
         components/components.c
+        systems/ui/area_viewer_window.h
+        systems/ui/area_viewer_window.c
+        systems/ui/window_struct.h
 )
 #set(raylib_VERBOSE 1)
 target_link_libraries(${PROJECT_NAME} raylib)

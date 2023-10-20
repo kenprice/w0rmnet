@@ -25,7 +25,6 @@ void draw_area() {
             DrawTextureRec(textureTileSheet, tileSheet[0].rect, (Vector2){global_x + offset.x, global_y + offset.y}, WHITE);
         }
     }
-
 }
 
 void initialize_device_rendering_system() {
@@ -127,6 +126,9 @@ void render_device_sprite(char* entity_id, Device* device) {
 }
 
 void render_device_rendering_system() {
+
+    return;
+
     BeginMode2D(camera);
 //    draw_isometric_grid();
     draw_area();

@@ -8,7 +8,8 @@ void initialize_camera(float x_offset, float y_offset) {
     camera.target = (Vector2){0, 0};
     camera.offset = (Vector2){x_offset, y_offset};
     camera.rotation = 0.0f;
-    camera.zoom = 1.0f;
+//    camera.zoom = 1.0f;
+    camera.zoom = 0.5f;
 }
 
 /**
@@ -26,13 +27,15 @@ Vector2 convert_local_to_global(float x, float y) {
 }
 
 Vector2 convert_global_to_local(float x, float y) {
-    float iso_x = camera.offset.x;
-    float iso_y = camera.offset.y;
-    float iso_w = (float)SPRITE_X_SCALE/2;
-    float iso_h = (float)SPRITE_Y_SCALE/2;
-    float local_x = ((y - iso_y) / iso_h + (x - iso_x) / iso_w) / 2;
-    float local_y = ((y - iso_y) / iso_h - (x - iso_x) / iso_w) / 2;
-    return (Vector2){local_x, local_y};
+    float scaledX = x / camera.zoom;
+    float scaledY = y / camera.zoom;
+    float isoX = camera.offset.x / camera.zoom;
+    float isoY = camera.offset.y / camera.zoom;
+    float isoW = (float)SPRITE_X_SCALE / 2;
+    float isoH = (float)SPRITE_Y_SCALE / 2;
+    float localX = ((scaledY - isoY) / isoH + (scaledX - isoX) / isoW) / 2;
+    float localY = ((scaledY - isoY) / isoH - (scaledX - isoX) / isoW) / 2;
+    return (Vector2){localX, localY};
 }
 
 void draw_mouse_coords() {

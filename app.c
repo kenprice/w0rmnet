@@ -1,8 +1,6 @@
 #include <stdlib.h>
 #include <time.h>
 #include "raylib.h"
-
-
 #define RAYGUI_IMPLEMENTATION
 #define RAYGUI_CUSTOM_ICONS
 #include "gui_icons.h"
@@ -30,8 +28,10 @@ int main(void)
 {
     // Initialization
     //--------------------------------------------------------------------------------------
-    const int screenWidth = 1024;
-    const int screenHeight = 768;
+    const int screenWidth = 1920;
+    const int screenHeight = 1080;
+//    const int screenWidth = 1024;
+//    const int screenHeight = 768;
 
     SetConfigFlags(FLAG_WINDOW_RESIZABLE | FLAG_VSYNC_HINT);
     InitWindow(screenWidth, screenHeight, "w0rmnet");

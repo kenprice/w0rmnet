@@ -4,8 +4,6 @@
 #include "raylib.h"
 #include "../components/components.h"
 
-extern
-
 void initialize_device_ui_system();
 
 void update_device_ui_system();
