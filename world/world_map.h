@@ -24,11 +24,16 @@ typedef struct {
     char parentRegionId[REGION_ID_MAX_LEN];
     char parentZoneId[ZONE_ID_MAX_LEN];
 
+    // Entities in area
     char entities[100][UUID_STR_LEN];
     int numEntities;
 
+    // Map stuff
     int width;
     int height;
+
+    char zoneRouterEntityId[UUID_STR_LEN];
+    Vector2 zoneRouterCoord;
 } Area;
 
 typedef struct {
@@ -38,6 +43,9 @@ typedef struct {
 
     Area areas[100];
     int numAreas;
+
+    // Special entities
+    char gateway[UUID_STR_LEN]; // Gateway for zone
 } Zone;
 
 typedef struct {
@@ -58,5 +66,7 @@ typedef struct {
 extern WorldMap worldMap;
 
 void initialize_world();
+
+bool is_entity_in_area(Area area, char* entityId);
 
 #endif //W0RMNET_WORLD_MAP_H

@@ -7,6 +7,7 @@
 #include "utils/rendering.h"
 #include "../components/component_registry.h"
 #include "../world/world_state.h"
+#include "../world/world_map.h"
 
 #define MAX_AREA_VIEWER_WINDOWS 3
 
@@ -25,7 +26,7 @@ void initialize_device_ui_system() {
     areaViewerWindowState[0].camera.zoom = 1.0f;
 
 
-    areaViewerWindowState[1] = init_area_viewer_window(worldState.currentArea);
+    areaViewerWindowState[1] = init_area_viewer_window(&worldMap.regions[0].zones[0].areas[1]);
     areaViewerWindowState[1].window.windowBounds.x = screenWidth/2;
     areaViewerWindowState[1].window.windowBounds.y = 20;
     areaViewerWindowState[1].window.windowBounds.width = screenWidth/2;

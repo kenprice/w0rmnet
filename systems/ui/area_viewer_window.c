@@ -23,9 +23,7 @@ AreaViewerWindowState init_area_viewer_window(Area* area) {
     state.window.supportDrag = true;
     state.window.dragMode = false;
     state.window.panOffset = (Vector2){ 0, 0 };
-
-    char buffer[50] = "#100# Area";
-    strcpy(state.window.windowTitle, buffer);
+    sprintf(state.window.windowTitle, "#100# %s", area->areaName);
 
     // Area
     state.area = area;
@@ -80,21 +78,28 @@ void update_area_viewer_camera_control(AreaViewerWindowState* state) {
 void update_area_viewer_selected_device(AreaViewerWindowState* state) {
     if (update_device_info_window(&state->deviceInfoWindowState)) return;
 
-    Vector2 mouse_pos = GetMousePosition();
+    Vector2 mousePos = GetMousePosition();
 
     if (IsMouseButtonPressed(MOUSE_BUTTON_LEFT)) {
-        Vector2 clicked_tile = window_convert_global_to_local(state, mouse_pos.x, mouse_pos.y);
-        Device* device = find_device_by_coord(clicked_tile.x, clicked_tile.y);
+        Vector2 clickedTile = window_convert_global_to_local(state, mousePos.x, mousePos.y);
+        clickedTile = (Vector2){(int)clickedTile.x, (int)clickedTile.y};
 
-        if (device != NULL && device->visible) {
-            state->selectedDevice = device;
+        for (int i = 0; i < state->area->numEntities; i++) {
+            Position* position = g_hash_table_lookup(componentRegistry.positions, state->area->entities[i]);
+            if (position->coord.x != clickedTile.x || position->coord.y != clickedTile.y) continue;
 
-            char buffer[50] = "";
-            strcat(buffer, (device == NULL || device->type != DEVICE_TYPE_ROUTER) ? "#224#" : "#225#");
-            state->deviceInfoWindowState.device = device;
-            strcat(buffer, (device != NULL ? device->name : "Device"));
-            strcpy(state->deviceInfoWindowState.windowTitle, buffer);
-            state->deviceInfoWindowState.windowActive = true;
+            Device* device = g_hash_table_lookup(componentRegistry.devices, state->area->entities[i]);
+            if (device != NULL && device->visible) {
+                state->selectedDevice = device;
+
+                char buffer[50] = "";
+                strcat(buffer, (device == NULL || device->type != DEVICE_TYPE_ROUTER) ? "#224#" : "#225#");
+                state->deviceInfoWindowState.device = device;
+                strcat(buffer, (device != NULL ? device->name : "Device"));
+                strcpy(state->deviceInfoWindowState.windowTitle, buffer);
+                state->deviceInfoWindowState.windowActive = true;
+                break;
+            }
         }
     }
 }
@@ -105,7 +110,6 @@ int update_area_viewer_window(AreaViewerWindowState* state) {
     Vector2 mousePosition = GetMousePosition();
 
     update_area_viewer_camera_control(state);
-
     update_area_viewer_selected_device(state);
 
     // Update viewport
@@ -237,12 +241,22 @@ void render_area_connection(AreaViewerWindowState* state, char* entityId, Connec
     char* toEntity = connection->parentEntityId;
     if (!toEntity || strlen(toEntity) == 0) return;
 
-    Position* from_pos = (Position*)g_hash_table_lookup(componentRegistry.positions, fromEntity);
-    Position* to_pos = (Position*)g_hash_table_lookup(componentRegistry.positions, toEntity);
+    Vector2 fromCoord;
+    if (strcmp(fromEntity, state->area->zoneRouterEntityId) == 0) {
+        fromCoord = window_convert_local_to_global(state, state->area->zoneRouterCoord.x, state->area->zoneRouterCoord.y);
+    } else {
+        Position* fromPos = (Position*)g_hash_table_lookup(componentRegistry.positions, fromEntity);
+        fromCoord = window_convert_local_to_global(state, fromPos->coord.x, fromPos->coord.y);
+    }
+    Vector2 toCoord;
+    if (strcmp(toEntity, state->area->zoneRouterEntityId) == 0) {
+        toCoord = window_convert_local_to_global(state, state->area->zoneRouterCoord.x, state->area->zoneRouterCoord.y);
+    } else {
+        Position* toPos = (Position*)g_hash_table_lookup(componentRegistry.positions, toEntity);
+        toCoord = window_convert_local_to_global(state, toPos->coord.x, toPos->coord.y);
+    }
 
-    Vector2 fromCoord = window_convert_local_to_global(state, from_pos->coord.x, from_pos->coord.y);
     fromCoord.y += SPRITE_Y_SCALE / 2;
-    Vector2 toCoord = window_convert_local_to_global(state, to_pos->coord.x, to_pos->coord.y);
     toCoord.y += SPRITE_Y_SCALE / 2;
 
     DrawLineEx(fromCoord, toCoord, 3, WHITE);
@@ -274,6 +288,34 @@ void render_area_window_selected_device(AreaViewerWindowState* state) {
     EndMode2D();
 }
 
+void render_area_packet(AreaViewerWindowState* state, char* entityId, PacketBuffer* packetBuffer) {
+    Position* fromPos = (Position*)g_hash_table_lookup(componentRegistry.positions, entityId);
+    Vector2 globalCoord = window_convert_local_to_global(state, fromPos->coord.x, fromPos->coord.y);
+
+    // Render SEND messages
+    PacketQueue q = packetBuffer->sendQ;
+    int offset = 12;
+    for (int i = q.tail; i < q.head; i++) {
+        Packet* packet = q.packets[i];
+        char message[100] = "";
+        strcat(message, packet->message);
+        strcat(message, " to ");
+        strcat(message, packet->toAddress);
+        DrawRectangle(globalCoord.x - 1, globalCoord.y + offset, MeasureText(message, 10) + 2, 10, BLACK);
+        DrawText(message, globalCoord.x, globalCoord.y + offset, 10, GREEN);
+        offset += 12;
+    }
+    // Render RECV messages
+    q = packetBuffer->recvQ;
+    for (int i = q.tail; i < q.head; i++) {
+        Packet* packet = q.packets[i];
+        char* message = packet->message;
+        DrawRectangle(globalCoord.x - 1, globalCoord.y + offset, MeasureText(message, 10) + 2, 10, BLACK);
+        DrawText(message, globalCoord.x, globalCoord.y + offset, 10, BLUE);
+        offset += 12;
+    }
+}
+
 void render_area(AreaViewerWindowState* state) {
     BeginMode2D(state->camera);
 
@@ -293,6 +335,13 @@ void render_area(AreaViewerWindowState* state) {
         Device* device = (Device*)g_hash_table_lookup(componentRegistry.devices, entityId);
         if (device == NULL) continue;
         render_area_device_sprites(state, entityId, device);
+    }
+
+    for (int i = 0; i < currentArea->numEntities; i++) {
+        char* entity_id = currentArea->entities[i];
+        PacketBuffer* pbuffer = (PacketBuffer*)g_hash_table_lookup(componentRegistry.packetBuffers, entity_id);
+        if (pbuffer == NULL) continue;
+        render_area_packet(state, entity_id, pbuffer);
     }
 
     EndMode2D();
@@ -315,13 +364,20 @@ void _area_viewer_render_device_mouseover_hover(AreaViewerWindowState* state) {
 
     Vector2 mousePos = GetMousePosition();
     Vector2 currentTile = window_convert_global_to_local(state, mousePos.x, mousePos.y);
+    currentTile = (Vector2){(int)currentTile.x, (int)currentTile.y};
 
-    Device* device = find_device_by_coord(currentTile.x, currentTile.y);
-    if (device != NULL) {
-        if (device->visible) {
-            _area_viewer_draw_device_id(*device, mousePos);
-        } else {
-            _area_viewer_draw_label("???", mousePos);
+    for (int i = 0; i < state->area->numEntities; i++) {
+        Position* position = g_hash_table_lookup(componentRegistry.positions, state->area->entities[i]);
+        if (position->coord.x != currentTile.x || position->coord.y != currentTile.y) continue;
+
+        Device* device = g_hash_table_lookup(componentRegistry.devices, state->area->entities[i]);
+        if (device != NULL && is_entity_in_area(*state->area, device->entityId)) {
+            if (device->visible) {
+                _area_viewer_draw_device_id(*device, mousePos);
+            } else {
+                _area_viewer_draw_label("???", mousePos);
+            }
+            break;
         }
     }
 }

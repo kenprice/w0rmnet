@@ -1,3 +1,4 @@
+#include <stdio.h>
 #include "world_map.h"
 #include "../components/component_registry.h"
 #include "../entities/machine.h"
@@ -6,6 +7,25 @@
 WorldMap worldMap;
 
 void initialize_world() {
+    Router* zoneRouter = entity_router_create_blank();
+    Router* areaRouter = entity_router_create_blank();
+    Router* router = entity_router_create_blank();
+    Machine* machine1 = entity_machine_create_blank();
+    Machine* machine2 = entity_machine_create_blank();
+    Machine* machine3 = entity_machine_create_blank();
+
+    // Some other area
+    Area* playerArea = &worldMap.regions[0].zones[0].areas[0];
+    Area* firstArea = &worldMap.regions[0].zones[0].areas[1];
+    Router* firstAreaRouter = entity_router_create_blank();
+    Machine* firstAreaMachine = entity_machine_create_blank();
+
+    strcpy(playerArea->zoneRouterEntityId, zoneRouter->entityId);
+    playerArea->zoneRouterCoord = (Vector2){4, -5};
+    strcpy(firstArea->zoneRouterEntityId, zoneRouter->entityId);
+    firstArea->zoneRouterCoord = (Vector2){4, -5};
+
+
     ///////////////////////////////
     /// REGION
     ///////////////////////////////
@@ -19,12 +39,21 @@ void initialize_world() {
     strcpy(worldMap.regions[0].zones[0].zoneId, "metro");
     strcpy(worldMap.regions[0].zones[0].zoneLabel, "Night City Metro Zone");
     strcpy(worldMap.regions[0].zones[0].parentRegion, "nightcity");
-    worldMap.regions[0].zones[0].numAreas = 1;
+    worldMap.regions[0].zones[0].numAreas = 2;
+
+    zoneRouter->position.coord = (Vector2){0, 0};
+    sprintf(zoneRouter->device.address, "nightcity.metro");
+    sprintf(zoneRouter->device.name, "metro");
+    zoneRouter->device.owner = DEVICE_OWNER_PLAYER;
+    zoneRouter->device.visible = 1;
+    zoneRouter->connection.numConns = 2;
+    strcpy(zoneRouter->connection.toEntityIds[0], areaRouter->entityId);
+    strcpy(zoneRouter->connection.toEntityIds[1], firstAreaRouter->entityId);
+    entity_router_register_components(entity_router_deserialize(entity_router_serialize(*zoneRouter)));
 
     ///////////////////////////////
     /// PLAYER AREA
     ///////////////////////////////
-    Area* playerArea = &worldMap.regions[0].zones[0].areas[0];
     worldMap.playerArea = playerArea;
     strcpy(playerArea->areaId, generate_uuid());
     strcpy(playerArea->areaName, "Your House");
@@ -34,11 +63,6 @@ void initialize_world() {
     playerArea->width = 12;
 
     playerArea->numEntities = 5;
-    Router* areaRouter = entity_router_create_blank();
-    Router* router = entity_router_create_blank();
-    Machine* machine1 = entity_machine_create_blank();
-    Machine* machine2 = entity_machine_create_blank();
-    Machine* machine3 = entity_machine_create_blank();
     strncpy(playerArea->entities[0], machine1->entityId, UUID_STR_LEN);
     strncpy(playerArea->entities[1], machine2->entityId, UUID_STR_LEN);
     strncpy(playerArea->entities[2], machine3->entityId, UUID_STR_LEN);
@@ -56,9 +80,11 @@ void initialize_world() {
     strcat(areaRouter->device.address, areaRouter->device.name);
     areaRouter->device.owner = DEVICE_OWNER_PLAYER;
     areaRouter->device.visible = 1;
-    areaRouter->connection.numConns = 2;
-    strcpy(areaRouter->connection.toEntityIds[0], machine1->entityId);
-    strcpy(areaRouter->connection.toEntityIds[1], router->entityId);
+    areaRouter->connection.numConns = 3;
+    strcpy(areaRouter->connection.parentEntityId, zoneRouter->entityId);
+    strcpy(areaRouter->connection.toEntityIds[0], zoneRouter->entityId);
+    strcpy(areaRouter->connection.toEntityIds[1], machine1->entityId);
+    strcpy(areaRouter->connection.toEntityIds[2], router->entityId);
     entity_router_register_components(entity_router_deserialize(entity_router_serialize(*areaRouter)));
 
     // Router
@@ -148,5 +174,62 @@ void initialize_world() {
     strcpy(machine3->processManager.processes[2].state, "root:root");
     entity_machine_register_components(entity_machine_deserialize(entity_machine_serialize(*machine3)));
 
+
+    ///////////////////////////////
+    /// SOME OTHER AREA
+    ///////////////////////////////
+    strcpy(firstArea->areaId, generate_uuid());
+    strcpy(firstArea->areaName, "Somearea");
+    strcpy(firstArea->parentRegionId, "nightcity");
+    strcpy(firstArea->parentZoneId, "metro");
+    firstArea->height = 12;
+    firstArea->width = 12;
+
+    firstArea->numEntities = 2;
+    strncpy(firstArea->entities[0], firstAreaRouter->entityId, UUID_STR_LEN);
+    strncpy(firstArea->entities[1], firstAreaMachine->entityId, UUID_STR_LEN);
+
+    // Area Router
+    // ============
+    firstAreaRouter->position.coord = (Vector2){4, 1};
+    strcpy(firstAreaRouter->device.address, "nightcity.metro.");
+    strcat(firstAreaRouter->device.address, firstAreaRouter->device.name);
+    firstAreaRouter->device.owner = DEVICE_OWNER_NOBODY;
+    firstAreaRouter->device.visible = 1;
+    firstAreaRouter->connection.numConns = 2;
+    strcpy(firstAreaRouter->connection.parentEntityId, zoneRouter->entityId);
+    strcpy(firstAreaRouter->connection.toEntityIds[0], zoneRouter->entityId);
+    strcpy(firstAreaRouter->connection.toEntityIds[1], firstAreaMachine->entityId);
+    entity_router_register_components(entity_router_deserialize(entity_router_serialize(*firstAreaRouter)));
+
+    // Machine
+    // ============
+    firstAreaMachine->position.coord = (Vector2){2, 3};
+    strcpy(firstAreaMachine->device.address, firstAreaRouter->device.address);
+    strcat(firstAreaMachine->device.address, ".");
+    strcat(firstAreaMachine->device.address, firstAreaMachine->device.name);
+    firstAreaMachine->device.owner = DEVICE_OWNER_NOBODY;
+    firstAreaMachine->device.visible = 1;
+    firstAreaMachine->connection.numConns = 1;
+    firstAreaMachine->connection.maxConns = 1;
+    strcpy(firstAreaMachine->connection.parentEntityId, firstAreaRouter->entityId);
+    strcpy(firstAreaMachine->connection.toEntityIds[0], firstAreaRouter->entityId);
+    // Processes
+    firstAreaMachine->processManager.maxProcs = 10;
+    firstAreaMachine->processManager.numProcs = 1;
+    firstAreaMachine->processManager.processes[0].type = PROCESS_TYPE_PING;
+    firstAreaMachine->processManager.processes[0].invocable = true;
+    memset(firstAreaMachine->processManager.processes[0].state, '\0', PROCESS_STATE_LEN);
+    entity_machine_register_components(entity_machine_deserialize(entity_machine_serialize(*firstAreaMachine)));
+
 //    SaveFileText("world.sav", buffer);
+}
+
+bool is_entity_in_area(Area area, char* entityId) {
+    for (int i = 0; i < area.numEntities; i++) {
+        if (strcmp(area.entities[i], entityId)) {
+            return true;
+        }
+    }
+    return false;
 }

@@ -19,30 +19,30 @@ void proc_netscan_handle_packet(char* entity_id, Process* process, Packet* packe
 }
 
 /**
- * @param entity_id entity on which the process is running
+ * @param entityId entity on which the process is running
  * @param process the process
  * @param message received message
  */
-void proc_netscan_handle_message(char* entity_id, Process* process, ProcMessage* message) {
-    PacketBuffer* packet_buffer = (PacketBuffer*)g_hash_table_lookup(componentRegistry.packetBuffers, entity_id);
-    if (!packet_buffer) return;
+void proc_netscan_handle_message(char* entityId, Process* process, ProcMessage* message) {
+    PacketBuffer* packetBuffer = (PacketBuffer*)g_hash_table_lookup(componentRegistry.packetBuffers, entityId);
+    if (!packetBuffer) return;
 
     // Message contains address of target router
-    char* target_router_address = message->args;
-    char* found_entity_id = search_device_by_address(entity_id, target_router_address);
-    if (!found_entity_id) return;
+    char* targetRouterAddress = message->args;
+    char* foundEntityId = search_device_by_address(entityId, targetRouterAddress);
+    if (!foundEntityId) return;
 
     // Perform a ping scan against target router's connections
-    Connection* connection = (Connection*)g_hash_table_lookup(componentRegistry.connections, found_entity_id);
+    Connection* connection = (Connection*)g_hash_table_lookup(componentRegistry.connections, foundEntityId);
     for (int i = 0; i < connection->numConns; i++) {
         if (strcmp(connection->toEntityIds[i], connection->parentEntityId) == 0) continue;
 
         Device* device = g_hash_table_lookup(componentRegistry.devices, connection->toEntityIds[i]);
 
         char to_address[110];
-        strcpy(to_address, target_router_address);
+        strcpy(to_address, targetRouterAddress);
         strcat(to_address, ".");
         strcat(to_address, device->name);
-        packet_queue_write(&packet_buffer->sendQ, packet_alloc(entity_id, to_address, "Ping?"));
+        packet_queue_write(&packetBuffer->sendQ, packet_alloc(entityId, to_address, "Ping?"));
     }
 }

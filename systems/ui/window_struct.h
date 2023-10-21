@@ -10,7 +10,7 @@ typedef struct {
     Vector2 panOffset;
     bool dragMode;
     bool supportDrag;
-    char windowTitle[50];
+    char windowTitle[100];
 } WindowStruct;
 
 #endif //W0RMNET_WINDOW_STRUCT_H

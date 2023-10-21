@@ -2,7 +2,7 @@
 #include "../../components/component_registry.h"
 #include "../../components/components.h"
 
-char* search_device_by_address(char* entity_id, char* address) {
+char* search_device_by_address(char* entityId, char* address) {
     char buffer[200];
     strcpy(buffer, address);
     char* token = strtok(buffer, ".");
@@ -14,39 +14,39 @@ char* search_device_by_address(char* entity_id, char* address) {
         parts++;
     }
 
-    char* first_part = path[0];
-    Device* cur_device = (Device*)g_hash_table_lookup(componentRegistry.devices, entity_id);
+    char* firstPart = path[0];
+    Device* curDevice = (Device*)g_hash_table_lookup(componentRegistry.devices, entityId);
 
     // Find top-level
-    while(strcmp(cur_device->name, first_part) != 0) {
-        Connection* connection = (Connection*)g_hash_table_lookup(componentRegistry.connections, cur_device->entityId);
-        char* to_entity = connection->parentEntityId;
+    while(strcmp(curDevice->name, firstPart) != 0) {
+        Connection* connection = (Connection*)g_hash_table_lookup(componentRegistry.connections, curDevice->entityId);
+        char* toEntity = connection->parentEntityId;
 
-        Device* device = (Device*)g_hash_table_lookup(componentRegistry.devices, to_entity);
+        Device* device = (Device*)g_hash_table_lookup(componentRegistry.devices, toEntity);
         if (device->type != DEVICE_TYPE_ROUTER) continue;
 
-        cur_device = device;
+        curDevice = device;
     }
 
-    if (parts == 1) return cur_device->entityId;
+    if (parts == 1) return curDevice->entityId;
 
     // Find target
-    Connection* connection = (Connection*)g_hash_table_lookup(componentRegistry.connections, cur_device->entityId);
-    char* cur_part = path[parts];
+    Connection* connection = (Connection*)g_hash_table_lookup(componentRegistry.connections, curDevice->entityId);
+    char* curPart = path[parts];
     while(parts) {
         parts--;
         for (int i = 0; i < connection->numConns; i++) {
-            char* to_entity = connection->toEntityIds[i];
-            Device* device = g_hash_table_lookup(componentRegistry.devices, to_entity);
-            if (strcmp(cur_part, device->name) != 0) continue;
+            char* toEntity = connection->toEntityIds[i];
+            Device* device = g_hash_table_lookup(componentRegistry.devices, toEntity);
+            if (strcmp(curPart, device->name) != 0) continue;
 
             if (parts == 0) {
-                return to_entity; // found
+                return toEntity; // found
             }
 
-            connection = (Connection*)g_hash_table_lookup(componentRegistry.connections, to_entity);
+            connection = (Connection*)g_hash_table_lookup(componentRegistry.connections, toEntity);
         }
-        cur_part = path[parts];
+        curPart = path[parts];
     }
 
     return NULL;
