@@ -2,7 +2,7 @@
 #define W0RMNET_AREA_VIEWER_WINDOW_H
 
 #include "raylib.h"
-#include "window_struct.h"
+#include "ui_window.h"
 #include "device_info_window.h"
 #include "../../world/world_map.h"
 

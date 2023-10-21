@@ -95,7 +95,8 @@ add_executable(${PROJECT_NAME} app.c
         components/components.c
         systems/ui/area_viewer_window.h
         systems/ui/area_viewer_window.c
-        systems/ui/window_struct.h
+        systems/ui/ui_window.h
+        systems/ui/ui_window.c
 )
 #set(raylib_VERBOSE 1)
 target_link_libraries(${PROJECT_NAME} raylib)

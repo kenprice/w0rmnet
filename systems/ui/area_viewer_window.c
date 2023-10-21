@@ -8,7 +8,6 @@
 #include "../../graphics/tiles.h"
 #include "../../lib/raygui.h"
 
-#define TITLEBAR_HEIGHT 24
 #define STATUSBAR_HEIGHT 18
 #define UI_COMPONENT_PADDING 8
 #define WINDOW_HEIGHT 400
@@ -71,8 +70,6 @@ void update_area_viewer_camera_control(AreaViewerWindowState* state) {
     else if (IsKeyDown(KEY_A)) state->camera.offset.x += offset;
     if (IsKeyDown(KEY_W)) state->camera.offset.y += offset;
     else if (IsKeyDown(KEY_S)) state->camera.offset.y -= offset;
-
-
 }
 
 void update_area_viewer_selected_device(AreaViewerWindowState* state) {
@@ -96,8 +93,8 @@ void update_area_viewer_selected_device(AreaViewerWindowState* state) {
                 strcat(buffer, (device == NULL || device->type != DEVICE_TYPE_ROUTER) ? "#224#" : "#225#");
                 state->deviceInfoWindowState.device = device;
                 strcat(buffer, (device != NULL ? device->name : "Device"));
-                strcpy(state->deviceInfoWindowState.windowTitle, buffer);
-                state->deviceInfoWindowState.windowActive = true;
+                strcpy(state->deviceInfoWindowState.window.windowTitle, buffer);
+                state->deviceInfoWindowState.window.windowActive = true;
                 break;
             }
         }
@@ -106,8 +103,6 @@ void update_area_viewer_selected_device(AreaViewerWindowState* state) {
 
 int update_area_viewer_window(AreaViewerWindowState* state) {
     if (!state->window.windowActive) return 0;
-
-    Vector2 mousePosition = GetMousePosition();
 
     update_area_viewer_camera_control(state);
     update_area_viewer_selected_device(state);
@@ -120,39 +115,7 @@ int update_area_viewer_window(AreaViewerWindowState* state) {
         state->window.windowBounds.height - TITLEBAR_HEIGHT - (UI_COMPONENT_PADDING*2),
     };
 
-    // Update window drag
-    if (state->window.supportDrag) {
-        if (IsMouseButtonPressed(MOUSE_LEFT_BUTTON)) {
-            // Window can be dragged from the top window bar
-            if (CheckCollisionPointRec(mousePosition, (Rectangle) {state->window.windowBounds.x, state->window.windowBounds.y,
-                                                                   (float) state->window.windowBounds.width,
-                                                                   TITLEBAR_HEIGHT})) {
-                state->window.dragMode = true;
-                state->window.panOffset.x = mousePosition.x - state->window.windowBounds.x;
-                state->window.panOffset.y = mousePosition.y - state->window.windowBounds.y;
-            }
-        }
-
-        if (state->window.dragMode) {
-            state->window.windowBounds.x = (mousePosition.x - state->window.panOffset.x);
-            state->window.windowBounds.y = (mousePosition.y - state->window.panOffset.y);
-
-            // Check screen limits to avoid moving out of screen
-            if (state->window.windowBounds.x < 0) state->window.windowBounds.x = 0;
-            else if (state->window.windowBounds.x > (GetScreenWidth() - state->window.windowBounds.width)) state->window.windowBounds.x =
-                                                                                                     GetScreenWidth() -
-                                                                                                     state->window.windowBounds.width;
-
-            if (state->window.windowBounds.y < 0) state->window.windowBounds.y = 0;
-            else if (state->window.windowBounds.y > (GetScreenHeight() - state->window.windowBounds.height)) state->window.windowBounds.y =
-                                                                                                       GetScreenHeight() -
-                                                                                                       state->window.windowBounds.height;
-
-            if (IsMouseButtonReleased(MOUSE_LEFT_BUTTON)) state->window.dragMode = false;
-        }
-    }
-
-    return CheckCollisionPointRec(mousePosition, state->window.windowBounds);
+    return update_window(&state->window);
 }
 
 void render_window(AreaViewerWindowState* state) {

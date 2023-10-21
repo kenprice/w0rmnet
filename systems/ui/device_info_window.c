@@ -4,7 +4,6 @@
 #include "device_info_window.h"
 #include "../../lib/raygui.h"
 #include "../../components/component_registry.h"
-#include "../../world/world_map.h"
 
 #define TITLEBAR_HEIGHT 24
 #define STATUSBAR_HEIGHT 18
@@ -16,20 +15,20 @@ DeviceInfoWindowState init_device_info_window(Device* device) {
     DeviceInfoWindowState state;
 
     // Init window data
-    state.windowBounds = (Rectangle){
+    state.window.windowBounds = (Rectangle){
         0,
         (float)GetScreenHeight() - WINDOW_HEIGHT,
         WINDOW_WIDTH,
         WINDOW_HEIGHT
     };
-    state.windowActive = false;
-    state.supportDrag = true;
-    state.dragMode = false;
-    state.panOffset = (Vector2){ 0, 0 };
+    state.window.windowActive = false;
+    state.window.supportDrag = true;
+    state.window.dragMode = false;
+    state.window.panOffset = (Vector2){ 0, 0 };
 
     char buffer[50] = "#181#";
     strcat(buffer, (device != NULL ? device->name : "Device"));
-    strcpy(state.windowTitle, buffer);
+    strcpy(state.window.windowTitle, buffer);
 
     // Device info data
     state.device = device;
@@ -47,50 +46,17 @@ DeviceInfoWindowState init_device_info_window(Device* device) {
 }
 
 int update_device_info_window(DeviceInfoWindowState* state) {
-    if (!state->windowActive) return 0;
+    if (!state->window.windowActive) return 0;
 
-    Vector2 mousePosition = GetMousePosition();
-
-    if (state->supportDrag) {
-        if (IsMouseButtonPressed(MOUSE_LEFT_BUTTON)) {
-            // Window can be dragged from the top window bar
-            if (CheckCollisionPointRec(mousePosition, (Rectangle) {state->windowBounds.x, state->windowBounds.y,
-                                                                   (float) state->windowBounds.width,
-                                                                   TITLEBAR_HEIGHT})) {
-                state->dragMode = true;
-                state->panOffset.x = mousePosition.x - state->windowBounds.x;
-                state->panOffset.y = mousePosition.y - state->windowBounds.y;
-            }
-        }
-
-        if (state->dragMode) {
-            state->windowBounds.x = (mousePosition.x - state->panOffset.x);
-            state->windowBounds.y = (mousePosition.y - state->panOffset.y);
-
-            // Check screen limits to avoid moving out of screen
-            if (state->windowBounds.x < 0) state->windowBounds.x = 0;
-            else if (state->windowBounds.x > (GetScreenWidth() - state->windowBounds.width)) state->windowBounds.x =
-                                                                                                     GetScreenWidth() -
-                                                                                                     state->windowBounds.width;
-
-            if (state->windowBounds.y < 0) state->windowBounds.y = 0;
-            else if (state->windowBounds.y > (GetScreenHeight() - state->windowBounds.height)) state->windowBounds.y =
-                                                                                                       GetScreenHeight() -
-                                                                                                       state->windowBounds.height;
-
-            if (IsMouseButtonReleased(MOUSE_LEFT_BUTTON)) state->dragMode = false;
-        }
-    }
-
-    return CheckCollisionPointRec(mousePosition, state->windowBounds);
+    return update_window(&state->window);
 }
 
 void render_info_panel(DeviceInfoWindowState* state) {
     Rectangle groupBoxRect = (Rectangle){
-            state->windowBounds.x+UI_COMPONENT_PADDING,
-            state->windowBounds.y + (TITLEBAR_HEIGHT*2) + (UI_COMPONENT_PADDING*2),
-            state->windowBounds.width - (UI_COMPONENT_PADDING*2),
-            state->windowBounds.height - (TITLEBAR_HEIGHT*2) - (UI_COMPONENT_PADDING*3) - STATUSBAR_HEIGHT
+            state->window.windowBounds.x+UI_COMPONENT_PADDING,
+            state->window.windowBounds.y + (TITLEBAR_HEIGHT*2) + (UI_COMPONENT_PADDING*2),
+            state->window.windowBounds.width - (UI_COMPONENT_PADDING*2),
+            state->window.windowBounds.height - (TITLEBAR_HEIGHT*2) - (UI_COMPONENT_PADDING*3) - STATUSBAR_HEIGHT
     };
 
     GuiGroupBox(groupBoxRect, "Info");
@@ -152,14 +118,19 @@ int render_device_target_dropdown(DeviceInfoWindowState* state, Rectangle rect) 
     }
 
     Rectangle actionButtonRect = (Rectangle){
-            state->windowBounds.x + state->windowBounds.width-100-(UI_COMPONENT_PADDING),
-            state->windowBounds.y + state->windowBounds.height-30-(UI_COMPONENT_PADDING*3),
+            state->window.windowBounds.x + state->window.windowBounds.width-100-(UI_COMPONENT_PADDING),
+            state->window.windowBounds.y + state->window.windowBounds.height-30-(UI_COMPONENT_PADDING*3),
             100, 24
     };
 
     return GuiButton(actionButtonRect, "Go");
 }
 
+/**
+ * Resolve target address (for whichever prog uses it) to its simplest form
+ *
+ * @param state
+ */
 void refresh_prog_target_device_address(DeviceInfoWindowState* state) {
     Device* device = (Device*) g_hash_table_lookup(componentRegistry.devices, state->progTargetDevice);
     if (!device) return;
@@ -192,9 +163,9 @@ void refresh_prog_target_device_address(DeviceInfoWindowState* state) {
 
 void render_progs_ping_options(DeviceInfoWindowState* state) {
     Rectangle groupBoxRect = (Rectangle){
-            state->windowBounds.x+100+(UI_COMPONENT_PADDING*2),
-            state->windowBounds.y + (TITLEBAR_HEIGHT*2) + (UI_COMPONENT_PADDING*2),
-            state->windowBounds.width-100-(UI_COMPONENT_PADDING*3), 24
+            state->window.windowBounds.x+100+(UI_COMPONENT_PADDING*2),
+            state->window.windowBounds.y + (TITLEBAR_HEIGHT*2) + (UI_COMPONENT_PADDING*2),
+            state->window.windowBounds.width-100-(UI_COMPONENT_PADDING*3), 24
     };
 
     if (render_device_target_dropdown(state, groupBoxRect)) {
@@ -208,9 +179,9 @@ void render_progs_ping_options(DeviceInfoWindowState* state) {
 
 void render_progs_scan_options(DeviceInfoWindowState* state) {
     Rectangle groupBoxRect = (Rectangle){
-            state->windowBounds.x+100+(UI_COMPONENT_PADDING*2),
-            state->windowBounds.y + (TITLEBAR_HEIGHT*2) + (UI_COMPONENT_PADDING*2),
-            state->windowBounds.width-100-(UI_COMPONENT_PADDING*3), 24
+            state->window.windowBounds.x+100+(UI_COMPONENT_PADDING*2),
+            state->window.windowBounds.y + (TITLEBAR_HEIGHT*2) + (UI_COMPONENT_PADDING*2),
+            state->window.windowBounds.width-100-(UI_COMPONENT_PADDING*3), 24
     };
 
     if (render_device_target_dropdown(state, groupBoxRect)) {
@@ -224,15 +195,15 @@ void render_progs_scan_options(DeviceInfoWindowState* state) {
 
 void render_progs_login_options(DeviceInfoWindowState* state) {
     Rectangle groupBoxRect = (Rectangle){
-            state->windowBounds.x+100+(UI_COMPONENT_PADDING*2),
-            state->windowBounds.y + (TITLEBAR_HEIGHT*2) + (UI_COMPONENT_PADDING*2),
-            state->windowBounds.width-100-(UI_COMPONENT_PADDING*3), 24
+            state->window.windowBounds.x+100+(UI_COMPONENT_PADDING*2),
+            state->window.windowBounds.y + (TITLEBAR_HEIGHT*2) + (UI_COMPONENT_PADDING*2),
+            state->window.windowBounds.width-100-(UI_COMPONENT_PADDING*3), 24
     };
 
     Rectangle textboxRect = (Rectangle){
-            state->windowBounds.x+100+(UI_COMPONENT_PADDING*2),
-            state->windowBounds.y + state->windowBounds.height-30-(UI_COMPONENT_PADDING*3),
-            state->windowBounds.width-100-(UI_COMPONENT_PADDING*3), 24
+            state->window.windowBounds.x+100+(UI_COMPONENT_PADDING*2),
+            state->window.windowBounds.y + state->window.windowBounds.height-30-(UI_COMPONENT_PADDING*3),
+            state->window.windowBounds.width-100-(UI_COMPONENT_PADDING*3), 24
     };
 
     if (GuiTextBox(textboxRect, state->progInputText, 100, state->progInputTextEditMode)) {
@@ -260,9 +231,9 @@ void render_progs_panel(DeviceInfoWindowState* state) {
     }
 
     Rectangle listviewRect = (Rectangle){
-            state->windowBounds.x+UI_COMPONENT_PADDING,
-            state->windowBounds.y + (TITLEBAR_HEIGHT*2) + (UI_COMPONENT_PADDING*2),
-            100, state->windowBounds.height - (TITLEBAR_HEIGHT*2) - (UI_COMPONENT_PADDING*3) - STATUSBAR_HEIGHT
+            state->window.windowBounds.x+UI_COMPONENT_PADDING,
+            state->window.windowBounds.y + (TITLEBAR_HEIGHT*2) + (UI_COMPONENT_PADDING*2),
+            100, state->window.windowBounds.height - (TITLEBAR_HEIGHT*2) - (UI_COMPONENT_PADDING*3) - STATUSBAR_HEIGHT
     };
 
     char buffer[100] = "";
@@ -294,15 +265,15 @@ void render_progs_panel(DeviceInfoWindowState* state) {
 }
 
 int render_device_window(DeviceInfoWindowState* state) {
-    if (!state->windowActive) return 0;
+    if (!state->window.windowActive) return 0;
     if (!state->device) return 0;
 
-    state->windowActive = !GuiWindowBox(state->windowBounds, state->windowTitle);
+    state->window.windowActive = !GuiWindowBox(state->window.windowBounds, state->window.windowTitle);
 
     Rectangle toggleGroupRect = (Rectangle){
-        state->windowBounds.x+UI_COMPONENT_PADDING,
-        state->windowBounds.y + TITLEBAR_HEIGHT + UI_COMPONENT_PADDING,
-        (state->windowBounds.width-(UI_COMPONENT_PADDING*2)-3)/3, TITLEBAR_HEIGHT
+        state->window.windowBounds.x+UI_COMPONENT_PADDING,
+        state->window.windowBounds.y + TITLEBAR_HEIGHT + UI_COMPONENT_PADDING,
+        (state->window.windowBounds.width-(UI_COMPONENT_PADDING*2)-3)/3, TITLEBAR_HEIGHT
     };
 
     GuiToggleGroup(toggleGroupRect, state->device->owner == DEVICE_OWNER_PLAYER ? "INFO;LOGS;PROGS" : "INFO", &state->activeToggleGroup);
@@ -323,9 +294,9 @@ int render_device_window(DeviceInfoWindowState* state) {
     }
 
     GuiStatusBar((Rectangle){
-            state->windowBounds.x, state->windowBounds.y + state->windowBounds.height - STATUSBAR_HEIGHT,
-            state->windowBounds.width, STATUSBAR_HEIGHT
+            state->window.windowBounds.x, state->window.windowBounds.y + state->window.windowBounds.height - STATUSBAR_HEIGHT,
+            state->window.windowBounds.width, STATUSBAR_HEIGHT
     }, "Online");
 
-    return !state->windowActive;
+    return !state->window.windowActive;
 }

@@ -2,16 +2,12 @@
 #define W0RMNET_DEVICE_INFO_WINDOW_H
 
 #include "raylib.h"
+#include "ui_window.h"
 #include "../../components/components.h"
 
 typedef struct {
     // Window management variables
-    bool windowActive;
-    Rectangle windowBounds;
-    Vector2 panOffset;
-    bool dragMode;
-    bool supportDrag;
-    char windowTitle[50];
+    WindowStruct window;
 
     // Device info variables
     Device* device;
