@@ -13,12 +13,123 @@ typedef struct {
 
     int progScrollIndex;
     int progActiveIndex;
+    char progTargetDevice[UUID_STR_LEN];
+    char progTargetDeviceAddress[100];
+    char progInputText[100];
+    bool progInputTextEditMode;
 } DeviceInfoPanelState;
 
 DeviceInfoPanelState state;
 
 void init_device_info_panel() {
     state.activePanelIndex = 0;
+}
+
+static int render_device_target_dropdown(Rectangle rect) {
+    GHashTableIter iter;
+    char* entityId;
+    Device* device;
+    g_hash_table_iter_init(&iter, componentRegistry.devices);
+    float offsetY = 0;
+
+    Rectangle groupBoxRect = (Rectangle){
+            rect.x+100+UI_COMPONENT_PADDING, rect.y,
+            rect.width-100-(UI_COMPONENT_PADDING*3), 24
+    };
+
+    while (g_hash_table_iter_next (&iter, (gpointer) &entityId, (gpointer) &device)) {
+        if (!device) continue;
+        if (!device->visible) continue;
+
+        char buffer[100];
+        if (strcmp(state.progTargetDevice, device->entityId) == 0) {
+            sprintf(buffer, "#119#%s", device->address);
+        } else {
+            sprintf(buffer, "#0#%s", device->address);
+        }
+        if (GuiLabelButton((Rectangle){groupBoxRect.x, groupBoxRect.y+offsetY, groupBoxRect.width, groupBoxRect.height}, buffer)) {
+            strcpy(state.progTargetDevice, device->entityId);
+        }
+        offsetY += 20;
+    }
+
+    Rectangle actionButtonRect = (Rectangle){
+            rect.x + rect.width-100-(UI_COMPONENT_PADDING*2),
+            rect.y + rect.height-24-(UI_COMPONENT_PADDING*2),
+            100, 24
+    };
+
+    return GuiButton(actionButtonRect, "Go");
+}
+
+/**
+ * Resolve target address (for whichever prog uses it) to its simplest form
+ *
+ * @param state
+ */
+static void refresh_prog_target_device_address(Device* device) {
+    Device* targetDevice = (Device*) g_hash_table_lookup(componentRegistry.devices, state.progTargetDevice);
+    if (!targetDevice) return;
+
+    char** splitOriginAddress = g_strsplit(device->address, ".", 10);
+    char** splitTargetAddress = g_strsplit(targetDevice->address, ".", 10);
+    char targetAddress[100] = "";
+
+    int i;
+    for (i = 0; i < 10; i++) {
+        if (splitOriginAddress[i] == NULL || splitTargetAddress[i] == NULL) {
+            break;
+        }
+        if (strcmp(splitOriginAddress[i], splitTargetAddress[i]) != 0) {
+            break;
+        }
+    }
+    for (int j = i-1; j < 10; j++) {
+        if (splitTargetAddress[j] != NULL && strlen(splitTargetAddress[j])) {
+            strcat(targetAddress, splitTargetAddress[j]);
+            strcat(targetAddress, ".");
+        } else {
+            break;
+        }
+    }
+    targetAddress[strlen(targetAddress)-1] = '\0';
+
+    strcpy(state.progTargetDeviceAddress, targetAddress);
+}
+
+static void render_prog_options_single_target_only(Rectangle rect, Device* device) {
+    if (render_device_target_dropdown(rect)) {
+        refresh_prog_target_device_address(device);
+
+        // ACTION: Send PING, SCAN, etc.
+        ProcMessage* msg = proc_msg_alloc(state.progActiveIndex, state.progTargetDeviceAddress);
+        proc_msg_queue_write(g_hash_table_lookup(componentRegistry.procMsgQueues, device->entityId), msg);
+    }
+}
+
+static void render_progs_login_options(Rectangle rect, Device* device) {
+    Rectangle textboxRect = (Rectangle){
+        rect.x+100+UI_COMPONENT_PADDING,
+        rect.y + rect.height-24-(UI_COMPONENT_PADDING*2),
+        rect.width-200-(UI_COMPONENT_PADDING*2), 24
+    };
+
+    if (GuiTextBox(textboxRect, state.progInputText, 100, state.progInputTextEditMode)) {
+        state.progInputTextEditMode = !state.progInputTextEditMode;
+    }
+
+    if (render_device_target_dropdown(rect)) {
+        refresh_prog_target_device_address(device);
+
+        // ACTION: Send LOGIN
+        char buffer[100];
+        strcpy(buffer, state.progTargetDeviceAddress);
+        strcat(buffer, ":");
+        strcat(buffer, state.progInputText);
+
+        ProcMessage* msg = proc_msg_alloc(state.progActiveIndex, buffer);
+        proc_msg_queue_write(g_hash_table_lookup(componentRegistry.procMsgQueues, device->entityId), msg);
+    }
 }
 
 void render_device_prog_controls(Rectangle rect, Device* device) {
@@ -39,6 +150,22 @@ void render_device_prog_controls(Rectangle rect, Device* device) {
     }
 
     GuiListView(listviewRect, buffer, &state.progScrollIndex, &state.progActiveIndex);
+
+    if (state.progActiveIndex < 0 || state.progActiveIndex >= processManager->numProcs || processManager->numProcs == 0) {
+        return;
+    }
+
+    switch(processManager->processes[state.progActiveIndex].type) {
+        case PROCESS_TYPE_PING:
+            render_prog_options_single_target_only(rect, device);
+            break;
+        case PROCESS_TYPE_SCAN:
+            render_prog_options_single_target_only(rect, device);
+            break;
+        case PROCESS_TYPE_LOGIN:
+            render_progs_login_options(rect, device);
+            break;
+    }
 }
 
 void render_device_info_stats(Rectangle rect, Device* device) {
