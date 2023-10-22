@@ -3,7 +3,6 @@
 
 #include "raylib.h"
 #include "ui_window.h"
-#include "device_info_window.h"
 #include "../../world/world_map.h"
 
 typedef struct {

@@ -5,7 +5,7 @@
 
 Timer timer;
 
-#define TIME_PACKET_SEND 1.0
+#define TIME_PACKET_SEND 0.1
 
 /**
  * returns 0 if error, 1 if success

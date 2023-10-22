@@ -86,8 +86,6 @@ add_executable(${PROJECT_NAME} app.c
         systems/utils/routing.h
         systems/utils/routing.c
         lib/style_cyber.h
-        systems/ui/device_info_window.h
-        systems/ui/device_info_window.c
         world/world_state.h
         world/world_state.c
         systems/process_runner/login_runner.h
