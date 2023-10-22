@@ -16,13 +16,12 @@ typedef struct {
 
     // Selected device
     Device* selectedDevice;
-    DeviceInfoWindowState deviceInfoWindowState;
 
     // Area rendering
     Camera2D camera;
 } AreaViewerWindowState;
 
-AreaViewerWindowState init_area_viewer_window(Area* area);
+AreaViewerWindowState init_area_viewer_window(Area* area, Rectangle rect);
 
 int update_area_viewer_window(AreaViewerWindowState* state);
 

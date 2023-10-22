@@ -13,7 +13,7 @@ static unsigned int *guiIconsPtr = guiIcons;
 #include "graphics/tiles.h"
 #include "components/component_registry.h"
 #include "systems/device_rendering_system.h"
-#include "systems/device_ui_system.h"
+#include "systems/main_gui_system.h"
 #include "systems/packet_routing_system.h"
 #include "systems/process_running_system.h"
 #include "world/world_map.h"
@@ -28,8 +28,10 @@ int main(void)
 {
     // Initialization
     //--------------------------------------------------------------------------------------
-    const int screenWidth = 1920;
-    const int screenHeight = 1080;
+//    const int screenWidth = 1920;
+//    const int screenHeight = 1080;
+    const int screenWidth = 1440;
+    const int screenHeight = 847;
 //    const int screenWidth = 1024;
 //    const int screenHeight = 768;
 
@@ -49,7 +51,7 @@ int main(void)
     init_world_state();
 
     initialize_device_rendering_system();
-    initialize_device_ui_system();
+    initialize_main_gui_system();
     initialize_packet_routing_system();
     //////////////
 
@@ -60,7 +62,7 @@ int main(void)
     {
         // Update
         update_device_rendering_system();
-        update_device_ui_system();
+        update_main_gui_system();
         update_packet_routing_system();
         update_process_running_system();
 
@@ -71,7 +73,7 @@ int main(void)
         ClearBackground(BLACK);
 
         render_device_rendering_system();
-        render_device_ui_system();
+        render_main_gui_system();
 
         EndDrawing();
         //----------------------------------------------------------------------------------

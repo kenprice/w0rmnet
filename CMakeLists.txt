@@ -71,8 +71,8 @@ add_executable(${PROJECT_NAME} app.c
         components/process.c
         systems/process_running_system.h
         systems/process_running_system.c
-        systems/device_ui_system.h
-        systems/device_ui_system.c
+        systems/main_gui_system.h
+        systems/main_gui_system.c
         world/world_map.h
         world/world_map.c
         graphics/tiles.h
@@ -97,6 +97,8 @@ add_executable(${PROJECT_NAME} app.c
         systems/ui/area_viewer_window.c
         systems/ui/ui_window.h
         systems/ui/ui_window.c
+        systems/ui/device_info_panel.h
+        systems/ui/device_info_panel.c
 )
 #set(raylib_VERBOSE 1)
 target_link_libraries(${PROJECT_NAME} raylib)

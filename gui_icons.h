@@ -14,7 +14,7 @@
 //----------------------------------------------------------------------------------
 #define RAYGUI_ICON_SIZE             16   // Size of icons (squared)
 #define RAYGUI_ICON_MAX_ICONS       256   // Maximum number of icons
-#define RAYGUI_ICON_MAX_NAME_LENGTH  32   // Maximum length of icon name name
+#define RAYGUI_ICON_MAX_NAME_LENGTH  32   // Maximum length of icon name id
 
 // Icons data is defined by bit array (every bit represents one pixel)
 // Those arrays are stored as unsigned int data arrays, so every array
@@ -269,7 +269,7 @@ typedef enum {
     ICON_IDCARD                   = 240,
     ICON_NETWORK                  = 241,
     ICON_ADDRESS                  = 242,
-    ICON_243                      = 243,
+    ICON_PROGS                    = 243,
     ICON_244                      = 244,
     ICON_245                      = 245,
     ICON_246                      = 246,
@@ -531,7 +531,7 @@ static unsigned int guiIcons[RAYGUI_ICON_MAX_ICONS*RAYGUI_ICON_DATA_ELEMENTS] = 
     0x00000000, 0x7ffe0000, 0x5fba4002, 0x5fba403a, 0x5ffa4002, 0x40024002, 0x00007ffe, 0x00000000,      // ICON_IDCARD
     0x00000000, 0x44007c00, 0x45004600, 0x00627c9c, 0x00620022, 0x45007c9c, 0x44004600, 0x00007c00,      // ICON_NETWORK
     0x03c00000, 0x1ff80ff0, 0x399c1c38, 0x3bdc3bdc, 0x1c38399c, 0x0ff01ff8, 0x03c007e0, 0x00000180,      // ICON_ADDRESS
-    0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000,      // ICON_243
+    0x00000000, 0x40027ffe, 0x7ffe4002, 0x40124002, 0x40424022, 0x4f124022, 0x7ffe4002, 0x00000000,      // ICON_PROGS
     0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000,      // ICON_244
     0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000,      // ICON_245
     0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000,      // ICON_246

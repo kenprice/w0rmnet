@@ -13,11 +13,11 @@
 #define WINDOW_HEIGHT 400
 #define WINDOW_WIDTH 512
 
-AreaViewerWindowState init_area_viewer_window(Area* area) {
+AreaViewerWindowState init_area_viewer_window(Area* area, Rectangle rect) {
     AreaViewerWindowState state;
 
     // Init window data
-    state.window.windowBounds = (Rectangle){ 0, 0, WINDOW_WIDTH, WINDOW_HEIGHT };
+    state.window.windowBounds = rect;
     state.window.windowActive = true;
     state.window.supportDrag = true;
     state.window.dragMode = false;
@@ -29,12 +29,11 @@ AreaViewerWindowState init_area_viewer_window(Area* area) {
 
     // Area rendering
     state.camera.target = (Vector2){0, 0};
-    state.camera.offset = (Vector2){state.window.windowBounds.width/2, state.window.windowBounds.height/2};
+    state.camera.offset = (Vector2){state.window.windowBounds.width/2, state.window.windowBounds.height/3};
     state.camera.rotation = 0.0f;
     state.camera.zoom = 0.5f;
 
     state.selectedDevice = NULL;
-    state.deviceInfoWindowState = init_device_info_window(NULL);
 
     return state;
 }
@@ -61,6 +60,39 @@ Vector2 window_convert_global_to_local(AreaViewerWindowState* state, float x, fl
     return (Vector2){localX, localY};
 }
 
+void draw_isometric_grid(AreaViewerWindowState* state) {
+    Color color = GetColor(GuiGetStyle(DEFAULT, LINE_COLOR));
+    color = (Color){color.r, color.g, color.b, color.a*0.25f};
+
+    float isoX = state->window.windowBounds.x / state->camera.zoom;
+    float isoY = state->window.windowBounds.y / state->camera.zoom;
+    int isoW = SPRITE_X_SCALE / 2;
+    int isoH = SPRITE_Y_SCALE / 2;
+
+    int numXTiles = state->area->width;
+    int numYTiles = state->area->height;
+
+    BeginMode2D(state->camera);
+    for (int y = -numYTiles; y < numYTiles*2; y++) {
+        for (int x = -numXTiles; x < numXTiles*2; x++) {
+            int globalX = isoX + (x - y) * isoW;
+            int globalY = isoY + (x + y) * isoH;
+
+            if (y == -numYTiles && x == -numXTiles) continue;
+
+            if (y == -numYTiles) {
+                DrawLine(globalX, globalY+(isoH * 2), globalX - isoW, globalY + isoH, color);
+            } else if (x == -numXTiles) {
+                DrawLine(globalX, globalY+(isoH * 2), globalX + isoW, globalY + isoH, color);
+            } else {
+                DrawLine(globalX, globalY+(isoH * 2), globalX + isoW, globalY + isoH, color);
+                DrawLine(globalX, globalY+(isoH * 2), globalX - isoW, globalY + isoH, color);
+            }
+        }
+    }
+    EndMode2D();
+}
+
 void update_area_viewer_camera_control(AreaViewerWindowState* state) {
     if (!CheckCollisionPointRec(GetMousePosition(), state->window.windowBounds)) return;
 
@@ -73,8 +105,6 @@ void update_area_viewer_camera_control(AreaViewerWindowState* state) {
 }
 
 void update_area_viewer_selected_device(AreaViewerWindowState* state) {
-    if (update_device_info_window(&state->deviceInfoWindowState)) return;
-
     Vector2 mousePos = GetMousePosition();
 
     if (IsMouseButtonPressed(MOUSE_BUTTON_LEFT)) {
@@ -88,14 +118,6 @@ void update_area_viewer_selected_device(AreaViewerWindowState* state) {
             Device* device = g_hash_table_lookup(componentRegistry.devices, state->area->entities[i]);
             if (device != NULL && device->visible) {
                 state->selectedDevice = device;
-
-                char buffer[50] = "";
-                strcat(buffer, (device == NULL || device->type != DEVICE_TYPE_ROUTER) ? "#224#" : "#225#");
-                state->deviceInfoWindowState.device = device;
-                strcat(buffer, (device != NULL ? device->name : "Device"));
-                strcpy(state->deviceInfoWindowState.window.windowTitle, buffer);
-                state->deviceInfoWindowState.window.windowActive = true;
-                break;
             }
         }
     }
@@ -110,36 +132,12 @@ int update_area_viewer_window(AreaViewerWindowState* state) {
     // Update viewport
     state->viewport = (Rectangle){
         state->window.windowBounds.x + UI_COMPONENT_PADDING,
-        state->window.windowBounds.y + TITLEBAR_HEIGHT + UI_COMPONENT_PADDING,
+        state->window.windowBounds.y + UI_COMPONENT_PADDING,
         state->window.windowBounds.width - (UI_COMPONENT_PADDING*2),
-        state->window.windowBounds.height - TITLEBAR_HEIGHT - (UI_COMPONENT_PADDING*2),
+        state->window.windowBounds.height - (UI_COMPONENT_PADDING*2),
     };
 
     return update_window(&state->window);
-}
-
-void render_window(AreaViewerWindowState* state) {
-    state->window.windowActive = !GuiWindowBox(state->window.windowBounds, state->window.windowTitle);
-
-    Rectangle viewportRect = state->viewport;
-
-    // Grid funnn
-    int color = GuiGetStyle(DEFAULT, LINE_COLOR);
-    GuiSetStyle(DEFAULT, LINE_COLOR, GuiGetStyle(DEFAULT, BORDER_COLOR_DISABLED));
-    GuiGrid(viewportRect, NULL, 16, 2, NULL);
-    GuiSetStyle(DEFAULT, LINE_COLOR, color);
-
-    // All of this just to add another button to the title lmao
-    int tempBorderWidth = GuiGetStyle(BUTTON, BORDER_WIDTH);
-    int tempTextAlignment = GuiGetStyle(BUTTON, TEXT_ALIGNMENT);
-    Rectangle statusBar = { state->window.windowBounds.x, state->window.windowBounds.y, state->window.windowBounds.width, (float)TITLEBAR_HEIGHT };
-    Rectangle closeButtonRec = { statusBar.x + statusBar.width - GuiGetStyle(STATUSBAR, BORDER_WIDTH) - 40,
-                                 statusBar.y + TITLEBAR_HEIGHT/2.0f - 18.0f/2.0f, 18, 18 };
-    GuiSetStyle(BUTTON, BORDER_WIDTH, 1);
-    GuiSetStyle(BUTTON, TEXT_ALIGNMENT, TEXT_ALIGN_CENTER);
-    GuiButton(closeButtonRec, GuiIconText(ICON_CROSS_SMALL, NULL));
-    GuiSetStyle(BUTTON, BORDER_WIDTH, tempBorderWidth);
-    GuiSetStyle(BUTTON, TEXT_ALIGNMENT, tempTextAlignment);
 }
 
 void render_area_tiles(AreaViewerWindowState* state) {
@@ -350,11 +348,11 @@ void _area_viewer_draw_mouse_coords(AreaViewerWindowState* state) {
     char buffer[1000];
 
     Vector2 localPos = window_convert_global_to_local(state, mousePos.x, mousePos.y);
-    sprintf(buffer, "Mouse Local: (%d,%d)", (int)localPos.x, (int)localPos.y);
-    DrawText(buffer, state->viewport.x, state->viewport.y, 10, WHITE);
+    sprintf(buffer, "Mouse Local: (%d, %d)", (int)localPos.x, (int)localPos.y);
+    DrawText(buffer, state->viewport.x+5, state->viewport.height+state->viewport.y-24, 10, WHITE);
 
-    sprintf(buffer, "Camera Offset: (%d,%d)", (int)state->camera.offset.x, (int)state->camera.offset.y);
-    DrawText(buffer, state->viewport.x, state->viewport.y+12, 10, WHITE);
+    sprintf(buffer, "Camera Offset: (%d, %d)", (int)state->camera.offset.x, (int)state->camera.offset.y);
+    DrawText(buffer, state->viewport.x+5, state->viewport.height+state->viewport.y-12, 10, WHITE);
 }
 
 /**
@@ -364,9 +362,10 @@ int render_area_viewer_window(AreaViewerWindowState* state) {
     if (!state->window.windowActive) return 0;
     if (!state->area) return 0;
 
-    render_window(state);
+    GuiPanel(state->window.windowBounds, NULL);
 
     BeginScissorMode(state->viewport.x, state->viewport.y, state->viewport.width, state->viewport.height);
+    draw_isometric_grid(state);
     render_area(state);
     render_area_window_selected_device(state);
 
@@ -374,10 +373,6 @@ int render_area_viewer_window(AreaViewerWindowState* state) {
     _area_viewer_draw_mouse_coords(state);
 
     EndScissorMode();
-
-    if (render_device_window(&state->deviceInfoWindowState)) {
-        state->selectedDevice = NULL;
-    }
 
     return !state->window.windowActive;
 }
