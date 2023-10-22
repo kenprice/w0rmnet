@@ -26,6 +26,22 @@ char* find_device_entity_id_by_device_id(char* deviceId) {
     return NULL;
 }
 
+Device* find_device_by_address(char* address) {
+    GHashTableIter iter;
+    g_hash_table_iter_init(&iter, componentRegistry.devices);
+
+    guint* key_;
+    Device* device;
+
+    while (g_hash_table_iter_next (&iter, (gpointer) &key_, (gpointer) &device)) {
+        if (strcmp(device->address, address) == 0) {
+            return device;
+        }
+    }
+
+    return NULL;
+}
+
 Device* find_device_by_coord(int x, int y) {
     GHashTableIter iter;
     char* entityId;

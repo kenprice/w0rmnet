@@ -29,6 +29,8 @@ typedef struct {
 
 char* find_device_entity_id_by_device_id(char* deviceId);
 
+Device* find_device_by_address(char* address);
+
 Device* find_device_by_coord(int x, int y);
 
 void register_device(Device device, char* entityId);

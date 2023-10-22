@@ -1,4 +1,5 @@
 #include "ping_runner.h"
+#include "../utils/routing.h"
 #include "../../components/component_registry.h"
 
 /**
@@ -31,7 +32,7 @@ int count_address_depth(char* address) {
     return parts;
 }
 
-void proc_ping_handle_packet(char* entity_id, Process* process, Packet* packet) {
+void proc_ping_handle_packet(char* entityId, Process* process, Packet* packet) {
     if (packet == NULL) return;
 
     bool isValid = false;
@@ -43,8 +44,8 @@ void proc_ping_handle_packet(char* entity_id, Process* process, Packet* packet) 
             respond = address_depth <= 2;
         }
         if (respond) {
-            PacketBuffer* packet_buffer = (PacketBuffer*)g_hash_table_lookup(componentRegistry.packetBuffers, entity_id);
-            packet_queue_write(&packet_buffer->sendQ, packet_alloc(entity_id, packet->fromAddress, "Pong!"));
+            PacketBuffer* packet_buffer = (PacketBuffer*)g_hash_table_lookup(componentRegistry.packetBuffers, entityId);
+            packet_queue_write(&packet_buffer->sendQ, packet_alloc(entityId, packet->fromAddress, "Pong!"));
         }
         isValid = true;
     }
@@ -55,7 +56,7 @@ void proc_ping_handle_packet(char* entity_id, Process* process, Packet* packet) 
 
     // Received packet is valid ping-pong packet, make sender visible if recipient is owned by player
     if (isValid) {
-        Device* recipient_device = (Device*)g_hash_table_lookup(componentRegistry.devices, entity_id);
+        Device* recipient_device = (Device*)g_hash_table_lookup(componentRegistry.devices, entityId);
         if (recipient_device->owner == DEVICE_OWNER_PLAYER) {
             // Target entity is the one we want to determine the new visibility of
             char* target_entity = packet->fromEntityId;
@@ -67,12 +68,19 @@ void proc_ping_handle_packet(char* entity_id, Process* process, Packet* packet) 
     }
 }
 
-void proc_ping_handle_message(char* entity_id, Process* process, ProcMessage* message) {
+void proc_ping_handle_message(char* entityId, Process* process, ProcMessage* message) {
     if (message == NULL) return;
     if (strlen(message->args) == 0) return;
 
     // Sends Ping to address specified by args
-    char* address = message->args;
-    PacketBuffer* packet_buffer = (PacketBuffer*)g_hash_table_lookup(componentRegistry.packetBuffers, entity_id);
-    packet_queue_write(&packet_buffer->sendQ, packet_alloc(entity_id, address, "Ping?"));
+    char* targetRouterAddress = message->args;
+    Device* targetDevice = find_device_by_address(targetRouterAddress);
+    if (!targetDevice) return;
+
+    char* relativeTargetAddress = convert_full_address_to_relative_address(entityId, targetRouterAddress);
+
+    PacketBuffer* packet_buffer = (PacketBuffer*)g_hash_table_lookup(componentRegistry.packetBuffers, entityId);
+    packet_queue_write(&packet_buffer->sendQ, packet_alloc(entityId, relativeTargetAddress, "Ping?"));
+
+    free(relativeTargetAddress);
 }

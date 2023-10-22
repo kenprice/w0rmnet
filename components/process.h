@@ -1,6 +1,8 @@
 #ifndef W0RMNET_PROCESS_H
 #define W0RMNET_PROCESS_H
 
+#include "../utils/uuid.h"
+
 #define PROCESS_ARGS_LEN 100
 #define PROCESS_STATE_LEN 100
 
@@ -31,7 +33,7 @@ typedef struct {
 typedef struct {
     int pid; // "PID" here is index of process_manager.processes
     char* args;
-    // TODO: Track who sent?
+    char fromEntityId[UUID_STR_LEN]; // Source entity ID, empty if none
 } ProcMessage;
 
 typedef struct {

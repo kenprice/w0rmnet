@@ -6,7 +6,16 @@
  * @param address
  * @return entityId of device, if found, else NULL
  */
-char* search_device_by_address(char* entityId, char* address);
+char* search_device_by_relative_address(char* entityId, char* address);
+
+/**
+ * Convert a full address to a relative address, relative to device specified by fromEntityId
+ *
+ * @param fromEntityId
+ * @param targetAddress
+ * @return Shortened, relative address
+ */
+char* convert_full_address_to_relative_address(char* fromEntityId, char* targetAddress);
 
 /**
  * Find Device ID of the common ancestor of two entities with Connection

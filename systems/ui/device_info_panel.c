@@ -14,7 +14,7 @@ typedef struct {
     int progScrollIndex;
     int progActiveIndex;
     char progTargetDevice[UUID_STR_LEN];
-    char progTargetDeviceAddress[100];
+    char progTargetDeviceAddress[110];
     char progInputText[100];
     bool progInputTextEditMode;
 } DeviceInfoPanelState;
@@ -49,6 +49,7 @@ static int render_device_target_dropdown(Rectangle rect) {
         }
         if (GuiLabelButton((Rectangle){groupBoxRect.x, groupBoxRect.y+offsetY, groupBoxRect.width, groupBoxRect.height}, buffer)) {
             strcpy(state.progTargetDevice, device->entityId);
+            strcpy(state.progTargetDeviceAddress, device->address);
         }
         offsetY += 20;
     }
@@ -62,44 +63,8 @@ static int render_device_target_dropdown(Rectangle rect) {
     return GuiButton(actionButtonRect, "Go");
 }
 
-/**
- * Resolve target address (for whichever prog uses it) to its simplest form
- *
- * @param state
- */
-static void refresh_prog_target_device_address(Device* device) {
-    Device* targetDevice = (Device*) g_hash_table_lookup(componentRegistry.devices, state.progTargetDevice);
-    if (!targetDevice) return;
-
-    char** splitOriginAddress = g_strsplit(device->address, ".", 10);
-    char** splitTargetAddress = g_strsplit(targetDevice->address, ".", 10);
-    char targetAddress[100] = "";
-
-    int i;
-    for (i = 0; i < 10; i++) {
-        if (splitOriginAddress[i] == NULL || splitTargetAddress[i] == NULL) {
-            break;
-        }
-        if (strcmp(splitOriginAddress[i], splitTargetAddress[i]) != 0) {
-            break;
-        }
-    }
-    for (int j = i-1; j < 10; j++) {
-        if (splitTargetAddress[j] != NULL && strlen(splitTargetAddress[j])) {
-            strcat(targetAddress, splitTargetAddress[j]);
-            strcat(targetAddress, ".");
-        } else {
-            break;
-        }
-    }
-    targetAddress[strlen(targetAddress)-1] = '\0';
-
-    strcpy(state.progTargetDeviceAddress, targetAddress);
-}
-
 static void render_prog_options_single_target_only(Rectangle rect, Device* device) {
     if (render_device_target_dropdown(rect)) {
-        refresh_prog_target_device_address(device);
 
         // ACTION: Send PING, SCAN, etc.
         ProcMessage* msg = proc_msg_alloc(state.progActiveIndex, state.progTargetDeviceAddress);
@@ -119,10 +84,9 @@ static void render_progs_login_options(Rectangle rect, Device* device) {
     }
 
     if (render_device_target_dropdown(rect)) {
-        refresh_prog_target_device_address(device);
-
         // ACTION: Send LOGIN
         char buffer[100];
+
         strcpy(buffer, state.progTargetDeviceAddress);
         strcat(buffer, ":");
         strcat(buffer, state.progInputText);

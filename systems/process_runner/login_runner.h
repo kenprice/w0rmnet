@@ -15,11 +15,11 @@ void proc_login_handle_packet(char* entity_id, Process* process, Packet* packet)
 /**
  * Sends remote login, message is "<address>:<username>:<password>"
  *
- * @param entity_id entity on which the process is running
+ * @param entityId entity on which the process is running
  * @param process the process
  * @param message received message
  */
-void proc_login_handle_message(char* entity_id, Process* process, ProcMessage* message);
+void proc_login_handle_message(char* entityId, Process* process, ProcMessage* message);
 
 
 #endif //W0RMNET_LOGIN_RUNNER_H
