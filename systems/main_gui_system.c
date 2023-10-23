@@ -14,6 +14,8 @@
 typedef struct {
     Rectangle leftPanelRect;
     Rectangle rightPanelRect;
+
+    Device* selectedDevice;
 } MainGuiState;
 
 MainGuiState mainGuiState;
@@ -32,6 +34,8 @@ void initialize_main_gui_system() {
     mainGuiState.rightPanelRect = (Rectangle){screenWidth/2, 34, screenWidth/2+1, 2*screenHeight/3+1};
     areaViewerWindowState[1] = init_area_viewer_window(&worldMap.regions[0].zones[0].areas[1], mainGuiState.rightPanelRect);
     areaViewerWindowState[1].camera.zoom = 1.0f;
+
+    mainGuiState.selectedDevice = NULL;
 
     init_device_info_panel();
 }
@@ -54,6 +58,23 @@ void update_main_gui_system() {
 
     update_area_viewer_window(&areaViewerWindowState[0]);
     update_area_viewer_window(&areaViewerWindowState[1]);
+
+    // Janky way of selecting exactly one selected device out of the two area windows
+    if (!mainGuiState.selectedDevice) {
+        if (areaViewerWindowState[0].selectedDevice) {
+            mainGuiState.selectedDevice = areaViewerWindowState[0].selectedDevice;
+        } else if (areaViewerWindowState[1].selectedDevice) {
+            mainGuiState.selectedDevice = areaViewerWindowState[1].selectedDevice;
+        }
+    } else {
+        if (areaViewerWindowState[0].selectedDevice && mainGuiState.selectedDevice != areaViewerWindowState[0].selectedDevice) {
+            mainGuiState.selectedDevice = areaViewerWindowState[0].selectedDevice;
+            areaViewerWindowState[1].selectedDevice = NULL;
+        } else if (areaViewerWindowState[1].selectedDevice && mainGuiState.selectedDevice != areaViewerWindowState[1].selectedDevice) {
+            mainGuiState.selectedDevice = areaViewerWindowState[1].selectedDevice;
+            areaViewerWindowState[0].selectedDevice = NULL;
+        }
+    }
 }
 
 
@@ -71,7 +92,7 @@ void render_main_gui_system() {
         screenWidth/2+1, screenHeight - areaViewerWindowState[0].window.windowBounds.height - 34
     };
 
-    if (render_device_info_panel(infoPanelRect,areaViewerWindowState[0].selectedDevice)) {
+    if (render_device_info_panel(infoPanelRect, mainGuiState.selectedDevice)) {
         areaViewerWindowState[0].selectedDevice = NULL;
     }
 

@@ -30,7 +30,7 @@ typedef struct {
     int progTargetEntityIndex;
 } DeviceInfoPanelState;
 
-DeviceInfoPanelState state;
+static DeviceInfoPanelState state;
 
 void init_device_info_panel() {
     state.activePanelIndex = 0;
@@ -98,9 +98,17 @@ int render_device_target_dropdown(Rectangle rect) {
     char addressPrefix[100] = "";
     sprintf(addressPrefix, "%s.%s.", selectedRegion->regionId, selectedZone->zoneId);
     int prefixEnd = strlen(addressPrefix);
+
+    Device* visibleDevices[selectedArea->numEntities];
+    int numVisibleDevices = 0;
     for (int i = 0; i < selectedArea->numEntities; i++) {
         Device* device = g_hash_table_lookup(componentRegistry.devices, selectedArea->entities[i]);
-        if (!device) continue;
+        if (device && device->visible) {
+            visibleDevices[numVisibleDevices++] = device;
+        }
+    }
+    for (int i = 0; i < numVisibleDevices; i++) {
+        Device* device = visibleDevices[i];
         char buffer[100];
         sprintf(buffer, "%s%s", device->type == DEVICE_TYPE_ROUTER ? "#225#" : "#224#", &device->address[prefixEnd]);
         strcat(optionsBuffer, buffer);
