@@ -196,6 +196,13 @@ void render_area_device_sprites(AreaViewerWindowState* state, char* entityId, De
     }
 }
 
+/**
+ * Renders connection to parent
+ *
+ * @param state
+ * @param entityId Entity ID of connection
+ * @param connection The connection
+ */
 void render_area_connection(AreaViewerWindowState* state, char* entityId, Connection* connection) {
     char* fromEntity = entityId;
 
@@ -220,7 +227,13 @@ void render_area_connection(AreaViewerWindowState* state, char* entityId, Connec
     fromCoord.y += SPRITE_Y_SCALE / 2;
     toCoord.y += SPRITE_Y_SCALE / 2;
 
-    DrawLineEx(fromCoord, toCoord, 3, WHITE);
+    // Animate connection if either direction is "active" (receiving packet in either direction)
+    Connection* toConnection = g_hash_table_lookup(componentRegistry.connections, toEntity);
+    if (strcmp(connection->activeEntityId, toEntity) == 0 || (toConnection && strcmp(toConnection->activeEntityId, fromEntity) == 0)) {
+        DrawLineEx(fromCoord, toCoord, 3, GREEN);
+    } else {
+        DrawLineEx(fromCoord, toCoord, 3, WHITE);
+    }
 }
 
 void render_area_window_selected_device(AreaViewerWindowState* state) {
@@ -298,12 +311,13 @@ void render_area(AreaViewerWindowState* state) {
         render_area_device_sprites(state, entityId, device);
     }
 
-    for (int i = 0; i < currentArea->numEntities; i++) {
-        char* entity_id = currentArea->entities[i];
-        PacketBuffer* pbuffer = (PacketBuffer*)g_hash_table_lookup(componentRegistry.packetBuffers, entity_id);
-        if (pbuffer == NULL) continue;
-        render_area_packet(state, entity_id, pbuffer);
-    }
+    // For debugging purposes:
+//    for (int i = 0; i < currentArea->numEntities; i++) {
+//        char* entity_id = currentArea->entities[i];
+//        PacketBuffer* pbuffer = (PacketBuffer*)g_hash_table_lookup(componentRegistry.packetBuffers, entity_id);
+//        if (pbuffer == NULL) continue;
+//        render_area_packet(state, entity_id, pbuffer);
+//    }
 
     EndMode2D();
 }
@@ -362,9 +376,9 @@ int render_area_viewer_window(AreaViewerWindowState* state) {
     if (!state->window.windowActive) return 0;
     if (!state->area) return 0;
 
-    GuiPanel(state->window.windowBounds, NULL);
+    GuiPanel(state->window.windowBounds, state->area->areaName);
 
-    BeginScissorMode(state->viewport.x, state->viewport.y, state->viewport.width, state->viewport.height);
+    BeginScissorMode(state->viewport.x, state->viewport.y+TITLEBAR_HEIGHT, state->viewport.width, state->viewport.height-TITLEBAR_HEIGHT);
     draw_isometric_grid(state);
     render_area(state);
     render_area_window_selected_device(state);

@@ -1,6 +1,7 @@
 #ifndef W0RMNET_CONNECTION_H
 #define W0RMNET_CONNECTION_H
 
+#include <stdbool.h>
 #include "utils/device_id.h"
 #include "../utils/uuid.h"
 
@@ -9,6 +10,9 @@ typedef struct {
     char toEntityIds[20][UUID_STR_LEN];
     int numConns;
     int maxConns;
+
+    // Which one of the connections is currently active
+    char activeEntityId[UUID_STR_LEN];
 } Connection; // Wire-like structure
 
 int connection_add_device(char* entityId, char* deviceId);

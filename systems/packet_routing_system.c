@@ -5,7 +5,7 @@
 
 Timer timer;
 
-#define TIME_PACKET_SEND 0.1
+#define TIME_PACKET_SEND 0.025
 
 /**
  * returns 0 if error, 1 if success
@@ -40,11 +40,12 @@ int send_packet(char* entity_id, Packet* packet, Connection* connection) {
             // End search! Found!
             packet->topLevelFound = true;
         } else {
-            char* to_entity = connection->parentEntityId;
+            char* toEntity = connection->parentEntityId;
 
-            PacketBuffer* to_packet_buffer = (PacketBuffer*)g_hash_table_lookup(componentRegistry.packetBuffers, to_entity);
+            PacketBuffer* to_packet_buffer = (PacketBuffer*)g_hash_table_lookup(componentRegistry.packetBuffers, toEntity);
             if (!to_packet_buffer) return 0;
 
+            strcpy(connection->activeEntityId, toEntity);
             packet_queue_write(&to_packet_buffer->recvQ, packet);
             return 1;
         }
@@ -57,10 +58,11 @@ int send_packet(char* entity_id, Packet* packet, Connection* connection) {
             char* cur_part = path[packet->hops];
 
             for (int i = 0; i < connection->numConns; i++) {
-                char* to_entity = find_device_entity_id_by_device_id(cur_part);
+                char* toEntity = find_device_entity_id_by_device_id(cur_part);
 
-                if (strcmp(to_entity, connection->toEntityIds[i]) == 0) {
-                    PacketBuffer* to_packet_buffer = (PacketBuffer*)g_hash_table_lookup(componentRegistry.packetBuffers, to_entity);
+                if (strcmp(toEntity, connection->toEntityIds[i]) == 0) {
+                    PacketBuffer* to_packet_buffer = (PacketBuffer*)g_hash_table_lookup(componentRegistry.packetBuffers, toEntity);
+                    strcpy(connection->activeEntityId, toEntity);
                     packet_queue_write(&to_packet_buffer->recvQ, packet);
                     return 1;
                 }
@@ -90,13 +92,17 @@ void update_routers() {
     }
 }
 
-void update_packet_buffer(char* entity_id, PacketBuffer* packet_buffer) {
+void update_packet_buffer(char* entityId, PacketBuffer* packetBuffer) {
     // Pop one and send
-    Packet* packet = packet_queue_read(&packet_buffer->sendQ);
-    if (!packet) return;
-    Connection* connection = (Connection*) g_hash_table_lookup(componentRegistry.connections, entity_id);
+    Packet* packet = packet_queue_read(&packetBuffer->sendQ);
+    Connection* connection = (Connection*) g_hash_table_lookup(componentRegistry.connections, entityId);
 
-    send_packet(entity_id, packet, connection);
+    if (packet) {
+        send_packet(entityId, packet, connection);
+    } else {
+        // clear active connection
+        connection->activeEntityId[0] = '\0';
+    }
 }
 
 void initialize_packet_routing_system() {

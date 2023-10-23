@@ -15,7 +15,6 @@ typedef struct {
     // Prog panel options, common to all
     int progScrollIndex;
     int progActiveIndex;
-    char progTargetDevice[UUID_STR_LEN];
     char progTargetDeviceAddress[110];
     char progInputText[100];
     bool progInputTextEditMode;
@@ -29,7 +28,6 @@ typedef struct {
     bool progTargetAreaEditMode;
     int progTargetEntityScrollIndex;
     int progTargetEntityIndex;
-    bool progTargetEntityEditMode;
 } DeviceInfoPanelState;
 
 DeviceInfoPanelState state;
