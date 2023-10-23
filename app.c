@@ -32,8 +32,8 @@ int main(void)
 //    const int screenHeight = 1080;
     const int screenWidth = 1440;
     const int screenHeight = 847;
-//    const int screenWidth = 1024;
-//    const int screenHeight = 768;
+    const int minScreenWidth = 1024;
+    const int minScreenHeight = 768;
 
     SetConfigFlags(FLAG_WINDOW_RESIZABLE | FLAG_VSYNC_HINT);
     InitWindow(screenWidth, screenHeight, "w0rmnet");
@@ -44,6 +44,7 @@ int main(void)
 
     // RayGui
     GuiLoadStyleCyber();
+    GuiSetStyle(LISTVIEW, TEXT_ALIGNMENT, TEXT_ALIGN_LEFT);
 
     //////////////
     init_component_registry();
@@ -60,6 +61,14 @@ int main(void)
     // Main game loop
     while (!WindowShouldClose())    // Detect window close button or ESC key
     {
+        // Window resizing, set minimum
+        int curScreenWidth = GetScreenWidth();
+        int curScreenHeight = GetScreenHeight();
+        if (curScreenWidth < minScreenWidth || curScreenHeight < minScreenHeight) {
+            SetWindowSize(curScreenWidth >= minScreenWidth ? curScreenWidth : minScreenWidth,
+                          curScreenHeight >= minScreenHeight ? curScreenHeight : minScreenHeight);
+        }
+
         // Update
         update_device_rendering_system();
         update_main_gui_system();

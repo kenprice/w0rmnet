@@ -4,6 +4,7 @@
 #include "device_info_panel.h"
 #include "../../components/component_registry.h"
 #include "../../lib/raygui.h"
+#include "../../world/world_map.h"
 
 #define TITLEBAR_HEIGHT 24
 #define UI_COMPONENT_PADDING 8
@@ -11,59 +12,119 @@
 typedef struct {
     int activePanelIndex;
 
+    // Prog panel options, common to all
     int progScrollIndex;
     int progActiveIndex;
     char progTargetDevice[UUID_STR_LEN];
     char progTargetDeviceAddress[110];
     char progInputText[100];
     bool progInputTextEditMode;
+
+    // Device target set of dropdowns
+    int progTargetRegionIndex;
+    bool progTargetRegionEditMode;
+    int progTargetZoneIndex;
+    bool progTargetZoneEditMode;
+    int progTargetAreaIndex;
+    bool progTargetAreaEditMode;
+    int progTargetEntityScrollIndex;
+    int progTargetEntityIndex;
+    bool progTargetEntityEditMode;
 } DeviceInfoPanelState;
 
 DeviceInfoPanelState state;
 
 void init_device_info_panel() {
     state.activePanelIndex = 0;
+
+    state.progTargetRegionIndex = 0;
+    state.progTargetRegionEditMode = false;
+    state.progTargetZoneIndex = 0;
+    state.progTargetZoneEditMode = false;
+    state.progTargetAreaIndex = 0;
+    state.progTargetAreaEditMode = false;
 }
 
-static int render_device_target_dropdown(Rectangle rect) {
-    GHashTableIter iter;
-    char* entityId;
-    Device* device;
-    g_hash_table_iter_init(&iter, componentRegistry.devices);
-    float offsetY = 0;
-
-    Rectangle groupBoxRect = (Rectangle){
+int render_device_target_dropdown(Rectangle rect) {
+    Rectangle dropdownRect = (Rectangle){
             rect.x+100+UI_COMPONENT_PADDING, rect.y,
-            rect.width-100-(UI_COMPONENT_PADDING*3), 24
+            150, 24
     };
+    char optionsBuffer[1000] = "";
 
-    while (g_hash_table_iter_next (&iter, (gpointer) &entityId, (gpointer) &device)) {
-        if (!device) continue;
-        if (!device->visible) continue;
+    GuiLabel(dropdownRect, "Region:");
+    dropdownRect.y += 24;
+    for (int i = 0; i < worldMap.numRegions; i++) {
+        strcat(optionsBuffer, worldMap.regions[i].regionId);
+        if (i < worldMap.numRegions-1) strcat(optionsBuffer, ";");
+    }
+    if (GuiDropdownBox(dropdownRect, optionsBuffer, &state.progTargetRegionIndex, state.progTargetRegionEditMode)) {
+        state.progTargetRegionEditMode = !state.progTargetRegionEditMode;
+    }
+    dropdownRect.y += 24;
+    optionsBuffer[0] = '\0';
 
-        char buffer[100];
-        if (strcmp(state.progTargetDevice, device->entityId) == 0) {
-            sprintf(buffer, "#119#%s", device->address);
-        } else {
-            sprintf(buffer, "#0#%s", device->address);
-        }
-        if (GuiLabelButton((Rectangle){groupBoxRect.x, groupBoxRect.y+offsetY, groupBoxRect.width, groupBoxRect.height}, buffer)) {
-            strcpy(state.progTargetDevice, device->entityId);
-            strcpy(state.progTargetDeviceAddress, device->address);
-        }
-        offsetY += 20;
+    Region* selectedRegion = &worldMap.regions[state.progTargetRegionIndex];
+    GuiLabel(dropdownRect, "Zone:");
+    dropdownRect.y += 24;
+    for (int i = 0; i < selectedRegion->numZones; i++) {
+        strcat(optionsBuffer, selectedRegion->zones[i].zoneId);
+        if (i < selectedRegion->numZones-1) strcat(optionsBuffer, ";");
+    }
+    if (GuiDropdownBox(dropdownRect, optionsBuffer, &state.progTargetZoneIndex, state.progTargetZoneEditMode)) {
+        state.progTargetZoneEditMode = !state.progTargetZoneEditMode;
+    }
+    dropdownRect.y += 24;
+    optionsBuffer[0] = '\0';
+
+    Zone* selectedZone = &selectedRegion->zones[state.progTargetZoneIndex];
+    GuiLabel(dropdownRect, "Area:");
+    dropdownRect.y += 24;
+    for (int i = 0; i < selectedZone->numAreas; i++) {
+        strcat(optionsBuffer, selectedZone->areas[i].areaName);
+        if (i < selectedZone->numAreas-1) strcat(optionsBuffer, ";");
+    }
+    if (GuiDropdownBox(dropdownRect, optionsBuffer, &state.progTargetAreaIndex, state.progTargetAreaEditMode)) {
+        state.progTargetAreaEditMode = !state.progTargetAreaEditMode;
     }
 
+    dropdownRect.y = rect.y;
+    dropdownRect.x += 150 + UI_COMPONENT_PADDING;
+    dropdownRect.height = 24;
+    GuiLabel(dropdownRect, "Target:");
+    dropdownRect.y += 24;
+    dropdownRect.width = rect.width - 100 - 150 - 40 + UI_COMPONENT_PADDING;
+    dropdownRect.height = rect.height - (UI_COMPONENT_PADDING*2) - 30 - 24;
+    optionsBuffer[0] = '\0';
+    Area* selectedArea = &selectedZone->areas[state.progTargetAreaIndex];
+    char addressPrefix[100] = "";
+    sprintf(addressPrefix, "%s.%s.", selectedRegion->regionId, selectedZone->zoneId);
+    int prefixEnd = strlen(addressPrefix);
+    for (int i = 0; i < selectedArea->numEntities; i++) {
+        Device* device = g_hash_table_lookup(componentRegistry.devices, selectedArea->entities[i]);
+        if (!device) continue;
+        char buffer[100];
+        sprintf(buffer, "%s%s", device->type == DEVICE_TYPE_ROUTER ? "#225#" : "#224#", &device->address[prefixEnd]);
+        strcat(optionsBuffer, buffer);
+
+        if (i == state.progTargetEntityIndex) {
+            strcpy(state.progTargetDeviceAddress, device->address);
+        }
+
+        if (i < selectedArea->numEntities-1) strcat(optionsBuffer, ";");
+    }
+    GuiListView(dropdownRect, optionsBuffer, &state.progTargetEntityScrollIndex, &state.progTargetEntityIndex);
+
     Rectangle actionButtonRect = (Rectangle){
-            rect.x + rect.width-100-(UI_COMPONENT_PADDING*2),
-            rect.y + rect.height-24-(UI_COMPONENT_PADDING*2),
-            100, 24
+        rect.x + rect.width-100-(UI_COMPONENT_PADDING*2),
+        rect.y + rect.height-24-(UI_COMPONENT_PADDING*2),
+        100, 24
     };
 
     return GuiButton(actionButtonRect, "Go");
 }
 
-static void render_prog_options_single_target_only(Rectangle rect, Device* device) {
+void render_prog_options_single_target_only(Rectangle rect, Device* device) {
     if (render_device_target_dropdown(rect)) {
 
         // ACTION: Send PING, SCAN, etc.
@@ -72,7 +133,7 @@ static void render_prog_options_single_target_only(Rectangle rect, Device* devic
     }
 }
 
-static void render_progs_login_options(Rectangle rect, Device* device) {
+void render_progs_login_options(Rectangle rect, Device* device) {
     Rectangle textboxRect = (Rectangle){
         rect.x+100+UI_COMPONENT_PADDING,
         rect.y + rect.height-24-(UI_COMPONENT_PADDING*2),
@@ -98,7 +159,7 @@ static void render_progs_login_options(Rectangle rect, Device* device) {
 
 void render_device_prog_controls(Rectangle rect, Device* device) {
     ProcessManager* processManager = (ProcessManager *)g_hash_table_lookup(componentRegistry.processManagers, device->entityId);
-    if (!processManager) {
+    if (!processManager || processManager->numProcs == 0) {
         return;
     }
 
