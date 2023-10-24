@@ -164,6 +164,8 @@ void render_progs_login_options(Rectangle rect, Device* device) {
 }
 
 void render_device_prog_controls(Rectangle rect, Device* device) {
+    if (device->owner != DEVICE_OWNER_PLAYER) return;
+
     ProcessManager* processManager = (ProcessManager *)g_hash_table_lookup(componentRegistry.processManagers, device->entityId);
     if (!processManager || processManager->numProcs == 0) {
         return;

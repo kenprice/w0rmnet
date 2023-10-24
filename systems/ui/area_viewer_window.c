@@ -106,11 +106,10 @@ void update_area_viewer_camera_control(AreaViewerWindowState* state) {
 
 void update_area_viewer_selected_device(AreaViewerWindowState* state) {
     Vector2 mousePos = GetMousePosition();
+    Vector2 clickedTile = window_convert_global_to_local(state, mousePos.x, mousePos.y);
+    clickedTile = (Vector2){(int)clickedTile.x, (int)clickedTile.y};
 
     if (IsMouseButtonPressed(MOUSE_BUTTON_LEFT)) {
-        Vector2 clickedTile = window_convert_global_to_local(state, mousePos.x, mousePos.y);
-        clickedTile = (Vector2){(int)clickedTile.x, (int)clickedTile.y};
-
         for (int i = 0; i < state->area->numEntities; i++) {
             Position* position = g_hash_table_lookup(componentRegistry.positions, state->area->entities[i]);
             if (position->coord.x != clickedTile.x || position->coord.y != clickedTile.y) continue;

@@ -10,6 +10,7 @@
 #include "../world/world_map.h"
 
 #define MAX_AREA_VIEWER_WINDOWS 3
+#define UI_COMPONENT_PADDING 8
 
 typedef struct {
     Rectangle leftPanelRect;
@@ -36,7 +37,6 @@ void initialize_main_gui_system() {
     areaViewerWindowState[1].camera.zoom = 1.0f;
 
     mainGuiState.selectedDevice = NULL;
-
     init_device_info_panel();
 }
 
@@ -63,8 +63,10 @@ void update_main_gui_system() {
     if (!mainGuiState.selectedDevice) {
         if (areaViewerWindowState[0].selectedDevice) {
             mainGuiState.selectedDevice = areaViewerWindowState[0].selectedDevice;
+            areaViewerWindowState[1].selectedDevice = NULL;
         } else if (areaViewerWindowState[1].selectedDevice) {
             mainGuiState.selectedDevice = areaViewerWindowState[1].selectedDevice;
+            areaViewerWindowState[0].selectedDevice = NULL;
         }
     } else {
         if (areaViewerWindowState[0].selectedDevice && mainGuiState.selectedDevice != areaViewerWindowState[0].selectedDevice) {
@@ -73,6 +75,8 @@ void update_main_gui_system() {
         } else if (areaViewerWindowState[1].selectedDevice && mainGuiState.selectedDevice != areaViewerWindowState[1].selectedDevice) {
             mainGuiState.selectedDevice = areaViewerWindowState[1].selectedDevice;
             areaViewerWindowState[0].selectedDevice = NULL;
+        } else if (!areaViewerWindowState[0].selectedDevice && !areaViewerWindowState[1].selectedDevice) {
+            mainGuiState.selectedDevice = NULL;
         }
     }
 }
@@ -87,20 +91,39 @@ void render_main_gui_system() {
 
     Rectangle leftPanel = mainGuiState.leftPanelRect;
 
+    // Left info panel
     Rectangle infoPanelRect = (Rectangle){
         leftPanel.x, leftPanel.y+(2*screenHeight/3),
         screenWidth/2+1, screenHeight - areaViewerWindowState[0].window.windowBounds.height - 34
     };
-
     if (render_device_info_panel(infoPanelRect, mainGuiState.selectedDevice)) {
         areaViewerWindowState[0].selectedDevice = NULL;
+        areaViewerWindowState[1].selectedDevice = NULL;
+        mainGuiState.selectedDevice = NULL;
     }
 
+    // Right log panel
+    Rectangle logPanelRect = (Rectangle){
+        leftPanel.x+(screenWidth/2), leftPanel.y+(2*screenHeight/3),
+        screenWidth/2, screenHeight - areaViewerWindowState[0].window.windowBounds.height - 34
+    };
+    GuiPanel(logPanelRect, "Logs");
+
+    Rectangle logPanelText = (Rectangle){
+        logPanelRect.x + UI_COMPONENT_PADDING,
+        logPanelRect.y + TITLEBAR_HEIGHT - 1,
+        logPanelRect.width, 24
+    };
+    char text[1000] = "";
+    GuiLabel(logPanelText, text);
+
+
+    // Top navbar
     Rectangle rectangle = (Rectangle){0, 1, screenWidth, 34};
     GuiPanel(rectangle, NULL);
-
     GuiToggleGroup((Rectangle){6, 6, 24, 24}, "#149#;#149#", &active);
 
+    // left and right area views
     render_area_viewer_window(&areaViewerWindowState[0]);
     render_area_viewer_window(&areaViewerWindowState[1]);
 }
