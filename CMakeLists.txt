@@ -91,8 +91,8 @@ add_executable(${PROJECT_NAME} app.c
         systems/process_runner/login_runner.h
         systems/process_runner/login_runner.c
         components/components.c
-        systems/ui/area_viewer_window.h
-        systems/ui/area_viewer_window.c
+        systems/main_gui_system/area_viewer_window.h
+        systems/main_gui_system/area_viewer_window.c
         systems/ui/ui_window.h
         systems/ui/ui_window.c
         systems/ui/device_info_panel.h

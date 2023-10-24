@@ -2,7 +2,7 @@
 #include "../lib/raygui.h"
 #include "glib.h"
 #include "main_gui_system.h"
-#include "ui/area_viewer_window.h"
+#include "main_gui_system/area_viewer_window.h"
 #include "ui/device_info_panel.h"
 #include "utils/rendering.h"
 #include "../components/component_registry.h"
