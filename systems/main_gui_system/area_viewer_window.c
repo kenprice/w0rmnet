@@ -2,11 +2,12 @@
 #include <stdio.h>
 #include "glib.h"
 #include "raylib.h"
+#include "../../lib/raygui.h"
 #include "area_viewer_window.h"
+#include "isometric_map_rendering.h"
 #include "../../components/components.h"
 #include "../../components/component_registry.h"
 #include "../../graphics/tiles.h"
-#include "../../lib/raygui.h"
 
 #define STATUSBAR_HEIGHT 18
 #define UI_COMPONENT_PADDING 8
@@ -38,61 +39,6 @@ AreaViewerWindowState init_area_viewer_window(Area* area, Rectangle rect) {
     return state;
 }
 
-Vector2 window_convert_local_to_global(AreaViewerWindowState* state, float x, float y) {
-    float isoX = state->window.windowBounds.x / state->camera.zoom;
-    float isoY = state->window.windowBounds.y / state->camera.zoom;
-    float isoW = (float)SPRITE_X_SCALE / 2;
-    float isoH = (float)SPRITE_Y_SCALE / 2;
-    float globalX = isoX + (x - y) * isoW;
-    float globalY = isoY + (x + y) * isoH;
-    return (Vector2){globalX, globalY};
-}
-
-Vector2 window_convert_global_to_local(AreaViewerWindowState* state, float x, float y) {
-    float scaledX = (x - state->window.windowBounds.x) / state->camera.zoom;
-    float scaledY = (y - state->window.windowBounds.y) / state->camera.zoom;
-    float isoX = state->camera.offset.x / state->camera.zoom;
-    float isoY = state->camera.offset.y / state->camera.zoom;
-    float isoW = (float)SPRITE_X_SCALE / 2;
-    float isoH = (float)SPRITE_Y_SCALE / 2;
-    float localX = ((scaledY - isoY) / isoH + (scaledX - isoX) / isoW) / 2;
-    float localY = ((scaledY - isoY) / isoH - (scaledX - isoX) / isoW) / 2;
-    return (Vector2){localX, localY};
-}
-
-void draw_isometric_grid(AreaViewerWindowState* state) {
-    Color color = GetColor(GuiGetStyle(DEFAULT, LINE_COLOR));
-    color = (Color){color.r, color.g, color.b, color.a*0.25f};
-
-    float isoX = state->window.windowBounds.x / state->camera.zoom;
-    float isoY = state->window.windowBounds.y / state->camera.zoom;
-    int isoW = SPRITE_X_SCALE / 2;
-    int isoH = SPRITE_Y_SCALE / 2;
-
-    int numXTiles = state->area->width;
-    int numYTiles = state->area->height;
-
-    BeginMode2D(state->camera);
-    for (int y = -numYTiles; y < numYTiles*2; y++) {
-        for (int x = -numXTiles; x < numXTiles*2; x++) {
-            int globalX = isoX + (x - y) * isoW;
-            int globalY = isoY + (x + y) * isoH;
-
-            if (y == -numYTiles && x == -numXTiles) continue;
-
-            if (y == -numYTiles) {
-                DrawLine(globalX, globalY+(isoH * 2), globalX - isoW, globalY + isoH, color);
-            } else if (x == -numXTiles) {
-                DrawLine(globalX, globalY+(isoH * 2), globalX + isoW, globalY + isoH, color);
-            } else {
-                DrawLine(globalX, globalY+(isoH * 2), globalX + isoW, globalY + isoH, color);
-                DrawLine(globalX, globalY+(isoH * 2), globalX - isoW, globalY + isoH, color);
-            }
-        }
-    }
-    EndMode2D();
-}
-
 void update_area_viewer_camera_control(AreaViewerWindowState* state) {
     if (!CheckCollisionPointRec(GetMousePosition(), state->window.windowBounds)) return;
 
@@ -106,7 +52,8 @@ void update_area_viewer_camera_control(AreaViewerWindowState* state) {
 
 void update_area_viewer_selected_device(AreaViewerWindowState* state) {
     Vector2 mousePos = GetMousePosition();
-    Vector2 clickedTile = window_convert_global_to_local(state, mousePos.x, mousePos.y);
+    Vector2 clickedTile = isometric_map_global_to_local(state->window.windowBounds, state->camera.offset,
+                                                        mousePos.x, mousePos.y, state->camera.zoom);
     clickedTile = (Vector2){(int)clickedTile.x, (int)clickedTile.y};
 
     if (IsMouseButtonPressed(MOUSE_BUTTON_LEFT)) {
@@ -161,15 +108,15 @@ void render_area_tiles(AreaViewerWindowState* state) {
     }
 }
 
-void draw_device_sprite(AreaViewerWindowState* state, SpriteRect sprite_rect, Vector2 coord) {
-    Vector2 global_coord = window_convert_local_to_global(state, coord.x, coord.y);
-    float global_x = global_coord.x;
-    float global_y = global_coord.y;
+void draw_device_sprite(AreaViewerWindowState* state, SpriteRect spriteRect, Vector2 coord) {
+    Vector2 globalCoord = isometric_map_local_to_global(state->window.windowBounds, coord.x, coord.y, state->camera.zoom);
+    float globalX = globalCoord.x;
+    float globalY = globalCoord.y;
 
-    Rectangle rect = sprite_rect.rect;
-    Vector2 offset = sprite_rect.offset;
+    Rectangle rect = spriteRect.rect;
+    Vector2 offset = spriteRect.offset;
     offset = (Vector2){-rect.width/2-offset.x, -offset.y};
-    Vector2 position = (Vector2){global_x+offset.x, global_y+offset.y};
+    Vector2 position = (Vector2){globalX + offset.x, globalY + offset.y};
 
     DrawTextureRec(textureSpriteSheet, rect, position, WHITE);
 }
@@ -188,10 +135,10 @@ void render_area_device_sprites(AreaViewerWindowState* state, char* entityId, De
     }
 
     if (device->owner != DEVICE_OWNER_PLAYER) {
-        Vector2 global_coord = window_convert_local_to_global(state, position->coord.x, position->coord.y);
-        float global_x = global_coord.x;
-        float global_y = global_coord.y;
-        DrawText("L", global_x, global_y, 10, BLUE);
+        Vector2 globalCoord = isometric_map_local_to_global(state->window.windowBounds, position->coord.x, position->coord.y, state->camera.zoom);
+        float globalX = globalCoord.x;
+        float globalY = globalCoord.y;
+        DrawText("L", globalX, globalY, 10, BLUE);
     }
 }
 
@@ -210,17 +157,21 @@ void render_area_connection(AreaViewerWindowState* state, char* entityId, Connec
 
     Vector2 fromCoord;
     if (strcmp(fromEntity, state->area->zoneRouterEntityId) == 0) {
-        fromCoord = window_convert_local_to_global(state, state->area->zoneRouterCoord.x, state->area->zoneRouterCoord.y);
+       fromCoord = isometric_map_local_to_global(state->window.windowBounds, state->area->zoneRouterCoord.x,
+                                                 state->area->zoneRouterCoord.y, state->camera.zoom);
     } else {
         Position* fromPos = (Position*)g_hash_table_lookup(componentRegistry.positions, fromEntity);
-        fromCoord = window_convert_local_to_global(state, fromPos->coord.x, fromPos->coord.y);
+        fromCoord = isometric_map_local_to_global(state->window.windowBounds, fromPos->coord.x, fromPos->coord.y,
+                                                  state->camera.zoom);
     }
     Vector2 toCoord;
     if (strcmp(toEntity, state->area->zoneRouterEntityId) == 0) {
-        toCoord = window_convert_local_to_global(state, state->area->zoneRouterCoord.x, state->area->zoneRouterCoord.y);
+        toCoord = isometric_map_local_to_global(state->window.windowBounds, state->area->zoneRouterCoord.x,
+                                                state->area->zoneRouterCoord.y, state->camera.zoom);
     } else {
         Position* toPos = (Position*)g_hash_table_lookup(componentRegistry.positions, toEntity);
-        toCoord = window_convert_local_to_global(state, toPos->coord.x, toPos->coord.y);
+        toCoord = isometric_map_local_to_global(state->window.windowBounds, toPos->coord.x, toPos->coord.y,
+                                                  state->camera.zoom);
     }
 
     fromCoord.y += SPRITE_Y_SCALE / 2;
@@ -246,24 +197,24 @@ void render_area_window_selected_device(AreaViewerWindowState* state) {
     Vector2 coord = position->coord;
     SpriteRect sprite_rect = spriteSheet[sprite->spriteId];
 
-    Vector2 global_coord = window_convert_local_to_global(state, coord.x, coord.y);
-    float global_x = global_coord.x;
-    float global_y = global_coord.y;
+    Vector2 globalCoord = isometric_map_local_to_global(state->window.windowBounds, coord.x, coord.y, state->camera.zoom);
+    float globalX = globalCoord.x;
+    float globalY = globalCoord.y;
 
     Vector2 offset = sprite_rect.offset;
     offset = (Vector2){-sprite_rect.rect.width/2-offset.x, -offset.y};
 
     BeginMode2D(state->camera);
 
-    DrawTextureRec(textureSpriteSheet, spriteSheet[SPRITE_SELECTED].rect, (Vector2){global_x + offset.x, global_y + offset.y}, WHITE);
-    DrawTextureRec(textureSpriteSheet, sprite_rect.rect, (Vector2){global_x + offset.x, global_y + offset.y}, WHITE);
+    DrawTextureRec(textureSpriteSheet, spriteSheet[SPRITE_SELECTED].rect, (Vector2){globalX + offset.x, globalY + offset.y}, WHITE);
+    DrawTextureRec(textureSpriteSheet, sprite_rect.rect, (Vector2){globalX + offset.x, globalY + offset.y}, WHITE);
 
     EndMode2D();
 }
 
 void render_area_packet(AreaViewerWindowState* state, char* entityId, PacketBuffer* packetBuffer) {
     Position* fromPos = (Position*)g_hash_table_lookup(componentRegistry.positions, entityId);
-    Vector2 globalCoord = window_convert_local_to_global(state, fromPos->coord.x, fromPos->coord.y);
+    Vector2 globalCoord = isometric_map_local_to_global(state->window.windowBounds, fromPos->coord.x, fromPos->coord.y, state->camera.zoom);
 
     // Render SEND messages
     PacketQueue q = packetBuffer->sendQ;
@@ -291,8 +242,6 @@ void render_area_packet(AreaViewerWindowState* state, char* entityId, PacketBuff
 
 void render_area(AreaViewerWindowState* state) {
     BeginMode2D(state->camera);
-
-    render_area_tiles(state);
 
     Area* currentArea = state->area;
 
@@ -337,8 +286,9 @@ void _area_viewer_render_device_mouseover_hover(AreaViewerWindowState* state) {
     if (!CheckCollisionPointRec(GetMousePosition(), state->window.windowBounds)) return;
 
     Vector2 mousePos = GetMousePosition();
-    Vector2 currentTile = window_convert_global_to_local(state, mousePos.x, mousePos.y);
-    currentTile = (Vector2){(int)currentTile.x, (int)currentTile.y};
+    Vector2 currentTile = isometric_map_global_to_local(state->window.windowBounds, state->camera.offset,
+                                                        mousePos.x, mousePos.y, state->camera.zoom);
+    currentTile = (Vector2){(float)currentTile.x, (float)currentTile.y};
 
     for (int i = 0; i < state->area->numEntities; i++) {
         Position* position = g_hash_table_lookup(componentRegistry.positions, state->area->entities[i]);
@@ -360,7 +310,8 @@ void _area_viewer_draw_mouse_coords(AreaViewerWindowState* state) {
     Vector2 mousePos = GetMousePosition();
     char buffer[1000];
 
-    Vector2 localPos = window_convert_global_to_local(state, mousePos.x, mousePos.y);
+    Vector2 localPos = isometric_map_global_to_local(state->window.windowBounds, state->camera.offset,
+                                                     mousePos.x, mousePos.y, state->camera.zoom);
     sprintf(buffer, "Mouse Local: (%d, %d)", (int)localPos.x, (int)localPos.y);
     DrawText(buffer, state->viewport.x+5, state->viewport.height+state->viewport.y-24, 10, WHITE);
 
@@ -378,7 +329,12 @@ int render_area_viewer_window(AreaViewerWindowState* state) {
     GuiPanel(state->window.windowBounds, state->area->areaName);
 
     BeginScissorMode(state->viewport.x, state->viewport.y+TITLEBAR_HEIGHT, state->viewport.width, state->viewport.height-TITLEBAR_HEIGHT);
-    draw_isometric_grid(state);
+
+    BeginMode2D(state->camera);
+    isometric_map_draw_grid(state->window.windowBounds, state->area->width, state->area->height, state->camera.zoom);
+    isometric_map_render_tiles(state->window.windowBounds, state->area->width, state->area->height, state->camera.zoom);
+    EndMode2D();
+
     render_area(state);
     render_area_window_selected_device(state);
 

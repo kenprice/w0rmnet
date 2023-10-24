@@ -97,6 +97,8 @@ add_executable(${PROJECT_NAME} app.c
         systems/ui/ui_window.c
         systems/ui/device_info_panel.h
         systems/ui/device_info_panel.c
+        systems/main_gui_system/isometric_map_rendering.h
+        systems/main_gui_system/isometric_map_rendering.c
 )
 #set(raylib_VERBOSE 1)
 target_link_libraries(${PROJECT_NAME} raylib)
