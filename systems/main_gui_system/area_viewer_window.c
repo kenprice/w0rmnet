@@ -14,6 +14,16 @@
 #define WINDOW_HEIGHT 400
 #define WINDOW_WIDTH 512
 
+static void render_connections(AreaViewerWindowState* state);
+static void render_devices(AreaViewerWindowState* state);
+static void render_area_connection(AreaViewerWindowState* state, char* entityId, Connection* connection);
+static void render_area_window_selected_device(AreaViewerWindowState* state);
+static void render_area_packet_messages(AreaViewerWindowState* state);
+static void render_device_mouseover_hover(AreaViewerWindowState* state);
+static void draw_mouse_coords(AreaViewerWindowState* state);
+static void update_area_viewer_camera_control(AreaViewerWindowState* state);
+static void update_area_viewer_selected_device(AreaViewerWindowState* state);
+
 AreaViewerWindowState init_area_viewer_window(Area* area, Rectangle rect) {
     AreaViewerWindowState state;
 
@@ -39,34 +49,29 @@ AreaViewerWindowState init_area_viewer_window(Area* area, Rectangle rect) {
     return state;
 }
 
-void update_area_viewer_camera_control(AreaViewerWindowState* state) {
-    if (!CheckCollisionPointRec(GetMousePosition(), state->window.windowBounds)) return;
+int render_area_viewer_window(AreaViewerWindowState* state) {
+    if (!state->window.windowActive) return 0;
+    if (!state->area) return 0;
 
-    int offset = 10;
+    GuiPanel(state->window.windowBounds, state->area->areaName);
 
-    if (IsKeyDown(KEY_D)) state->camera.offset.x -= offset;
-    else if (IsKeyDown(KEY_A)) state->camera.offset.x += offset;
-    if (IsKeyDown(KEY_W)) state->camera.offset.y += offset;
-    else if (IsKeyDown(KEY_S)) state->camera.offset.y -= offset;
-}
+    BeginScissorMode(state->viewport.x, state->viewport.y+TITLEBAR_HEIGHT, state->viewport.width, state->viewport.height-TITLEBAR_HEIGHT);
 
-void update_area_viewer_selected_device(AreaViewerWindowState* state) {
-    Vector2 mousePos = GetMousePosition();
-    Vector2 clickedTile = isometric_map_global_to_local(state->window.windowBounds, state->camera.offset,
-                                                        mousePos.x, mousePos.y, state->camera.zoom);
-    clickedTile = (Vector2){(int)clickedTile.x, (int)clickedTile.y};
+    BeginMode2D(state->camera);
+    isometric_map_draw_grid(state->window.windowBounds, state->area->width, state->area->height, state->camera.zoom);
+    isometric_map_render_tiles(state->window.windowBounds, state->area->width, state->area->height, state->camera.zoom);
+    render_connections(state);
+    render_devices(state);
+    render_area_packet_messages(state);
+    render_area_window_selected_device(state);
+    EndMode2D();
 
-    if (IsMouseButtonPressed(MOUSE_BUTTON_LEFT)) {
-        for (int i = 0; i < state->area->numEntities; i++) {
-            Position* position = g_hash_table_lookup(componentRegistry.positions, state->area->entities[i]);
-            if (position->coord.x != clickedTile.x || position->coord.y != clickedTile.y) continue;
+    render_device_mouseover_hover(state);
+    draw_mouse_coords(state);
 
-            Device* device = g_hash_table_lookup(componentRegistry.devices, state->area->entities[i]);
-            if (device != NULL && device->visible) {
-                state->selectedDevice = device;
-            }
-        }
-    }
+    EndScissorMode();
+
+    return !state->window.windowActive;
 }
 
 int update_area_viewer_window(AreaViewerWindowState* state) {
@@ -86,29 +91,37 @@ int update_area_viewer_window(AreaViewerWindowState* state) {
     return update_window(&state->window);
 }
 
-void render_area_tiles(AreaViewerWindowState* state) {
-    float isoX = state->window.windowBounds.x / state->camera.zoom;
-    float isoY = state->window.windowBounds.y / state->camera.zoom;
-    int isoW = SPRITE_X_SCALE / 2;
-    int isoH = SPRITE_Y_SCALE / 2;
+static void update_area_viewer_camera_control(AreaViewerWindowState* state) {
+    if (!CheckCollisionPointRec(GetMousePosition(), state->window.windowBounds)) return;
 
-    int numXTiles = state->area->width;
-    int numYTiles = state->area->height;
+    int offset = 10;
 
-    for (int y = 0; y < numYTiles; y++) {
-        for (int x = 0; x < numXTiles; x++) {
-            int globalX = isoX + (x - y) * isoW;
-            int globalY = isoY + (x + y) * isoH;
+    if (IsKeyDown(KEY_D)) state->camera.offset.x -= offset;
+    else if (IsKeyDown(KEY_A)) state->camera.offset.x += offset;
+    if (IsKeyDown(KEY_W)) state->camera.offset.y += offset;
+    else if (IsKeyDown(KEY_S)) state->camera.offset.y -= offset;
+}
 
-            Vector2 offset = tileSheet[0].offset;
-            offset = (Vector2){-tileSheet[0].rect.width / 2 - offset.x, -offset.y};
+static void update_area_viewer_selected_device(AreaViewerWindowState* state) {
+    Vector2 mousePos = GetMousePosition();
+    Vector2 clickedTile = isometric_map_global_to_local(state->window.windowBounds, state->camera.offset,
+                                                        mousePos.x, mousePos.y, state->camera.zoom);
+    clickedTile = (Vector2){(int)clickedTile.x, (int)clickedTile.y};
 
-            DrawTextureRec(textureTileSheet, tileSheet[0].rect, (Vector2){globalX + offset.x, globalY + offset.y}, WHITE);
+    if (IsMouseButtonPressed(MOUSE_BUTTON_LEFT)) {
+        for (int i = 0; i < state->area->numEntities; i++) {
+            Position* position = g_hash_table_lookup(componentRegistry.positions, state->area->entities[i]);
+            if (position->coord.x != clickedTile.x || position->coord.y != clickedTile.y) continue;
+
+            Device* device = g_hash_table_lookup(componentRegistry.devices, state->area->entities[i]);
+            if (device != NULL && device->visible) {
+                state->selectedDevice = device;
+            }
         }
     }
 }
 
-void draw_device_sprite(AreaViewerWindowState* state, SpriteRect spriteRect, Vector2 coord) {
+static void draw_device_sprite(AreaViewerWindowState* state, SpriteRect spriteRect, Vector2 coord) {
     Vector2 globalCoord = isometric_map_local_to_global(state->window.windowBounds, coord.x, coord.y, state->camera.zoom);
     float globalX = globalCoord.x;
     float globalY = globalCoord.y;
@@ -121,7 +134,7 @@ void draw_device_sprite(AreaViewerWindowState* state, SpriteRect spriteRect, Vec
     DrawTextureRec(textureSpriteSheet, rect, position, WHITE);
 }
 
-void render_area_device_sprites(AreaViewerWindowState* state, char* entityId, Device* device) {
+static void render_area_device_sprites(AreaViewerWindowState* state, char* entityId, Device* device) {
     Sprite* sprite = (Sprite*)g_hash_table_lookup(componentRegistry.sprites, entityId);
 
     // Render Sprite
@@ -142,6 +155,16 @@ void render_area_device_sprites(AreaViewerWindowState* state, char* entityId, De
     }
 }
 
+static void render_devices(AreaViewerWindowState* state) {
+    Area* currentArea = state->area;
+
+    for (int i = 0; i < currentArea->numEntities; i++) { char* entityId = currentArea->entities[i];
+        Device* device = (Device*)g_hash_table_lookup(componentRegistry.devices, entityId);
+        if (device == NULL) continue;
+        render_area_device_sprites(state, entityId, device);
+    }
+}
+
 /**
  * Renders connection to parent
  *
@@ -149,7 +172,7 @@ void render_area_device_sprites(AreaViewerWindowState* state, char* entityId, De
  * @param entityId Entity ID of connection
  * @param connection The connection
  */
-void render_area_connection(AreaViewerWindowState* state, char* entityId, Connection* connection) {
+static void render_area_connection(AreaViewerWindowState* state, char* entityId, Connection* connection) {
     char* fromEntity = entityId;
 
     char* toEntity = connection->parentEntityId;
@@ -186,7 +209,7 @@ void render_area_connection(AreaViewerWindowState* state, char* entityId, Connec
     }
 }
 
-void render_area_window_selected_device(AreaViewerWindowState* state) {
+static void render_area_window_selected_device(AreaViewerWindowState* state) {
     if (state->selectedDevice == NULL) return;
 
     char* entity_id = state->selectedDevice->entityId;
@@ -204,45 +227,46 @@ void render_area_window_selected_device(AreaViewerWindowState* state) {
     Vector2 offset = sprite_rect.offset;
     offset = (Vector2){-sprite_rect.rect.width/2-offset.x, -offset.y};
 
-    BeginMode2D(state->camera);
-
     DrawTextureRec(textureSpriteSheet, spriteSheet[SPRITE_SELECTED].rect, (Vector2){globalX + offset.x, globalY + offset.y}, WHITE);
     DrawTextureRec(textureSpriteSheet, sprite_rect.rect, (Vector2){globalX + offset.x, globalY + offset.y}, WHITE);
-
-    EndMode2D();
 }
 
-void render_area_packet(AreaViewerWindowState* state, char* entityId, PacketBuffer* packetBuffer) {
-    Position* fromPos = (Position*)g_hash_table_lookup(componentRegistry.positions, entityId);
-    Vector2 globalCoord = isometric_map_local_to_global(state->window.windowBounds, fromPos->coord.x, fromPos->coord.y, state->camera.zoom);
+static void render_area_packet_messages(AreaViewerWindowState* state) {
+    Area* currentArea = state->area;
+    for (int i = 0; i < currentArea->numEntities; i++) {
+        char* entityId = currentArea->entities[i];
+        PacketBuffer* packetBuffer = g_hash_table_lookup(componentRegistry.packetBuffers, entityId);
+        if (packetBuffer == NULL) continue;
 
-    // Render SEND messages
-    PacketQueue q = packetBuffer->sendQ;
-    int offset = 12;
-    for (int i = q.tail; i < q.head; i++) {
-        Packet* packet = q.packets[i];
-        char message[100] = "";
-        strcat(message, packet->message);
-        strcat(message, " to ");
-        strcat(message, packet->toAddress);
-        DrawRectangle(globalCoord.x - 1, globalCoord.y + offset, MeasureText(message, 10) + 2, 10, BLACK);
-        DrawText(message, globalCoord.x, globalCoord.y + offset, 10, GREEN);
-        offset += 12;
-    }
-    // Render RECV messages
-    q = packetBuffer->recvQ;
-    for (int i = q.tail; i < q.head; i++) {
-        Packet* packet = q.packets[i];
-        char* message = packet->message;
-        DrawRectangle(globalCoord.x - 1, globalCoord.y + offset, MeasureText(message, 10) + 2, 10, BLACK);
-        DrawText(message, globalCoord.x, globalCoord.y + offset, 10, BLUE);
-        offset += 12;
+        Position* fromPos = (Position*)g_hash_table_lookup(componentRegistry.positions, entityId);
+        Vector2 globalCoord = isometric_map_local_to_global(state->window.windowBounds, fromPos->coord.x, fromPos->coord.y, state->camera.zoom);
+
+        // Render SEND messages
+        PacketQueue q = packetBuffer->sendQ;
+        int offset = 12;
+        for (int i = q.tail; i < q.head; i++) {
+            Packet* packet = q.packets[i];
+            char message[100] = "";
+            strcat(message, packet->message);
+            strcat(message, " to ");
+            strcat(message, packet->toAddress);
+            DrawRectangle(globalCoord.x - 1, globalCoord.y + offset, MeasureText(message, 10) + 2, 10, BLACK);
+            DrawText(message, globalCoord.x, globalCoord.y + offset, 10, GREEN);
+            offset += 12;
+        }
+        // Render RECV messages
+        q = packetBuffer->recvQ;
+        for (int i = q.tail; i < q.head; i++) {
+            Packet* packet = q.packets[i];
+            char* message = packet->message;
+            DrawRectangle(globalCoord.x - 1, globalCoord.y + offset, MeasureText(message, 10) + 2, 10, BLACK);
+            DrawText(message, globalCoord.x, globalCoord.y + offset, 10, BLUE);
+            offset += 12;
+        }
     }
 }
 
-void render_area(AreaViewerWindowState* state) {
-    BeginMode2D(state->camera);
-
+static void render_connections(AreaViewerWindowState* state) {
     Area* currentArea = state->area;
 
     for (int i = 0; i < currentArea->numEntities; i++) {
@@ -251,38 +275,9 @@ void render_area(AreaViewerWindowState* state) {
         if (conn == NULL) continue;
         render_area_connection(state, entity_id, conn);
     }
-
-    for (int i = 0; i < currentArea->numEntities; i++) {
-        char* entityId = currentArea->entities[i];
-        Device* device = (Device*)g_hash_table_lookup(componentRegistry.devices, entityId);
-        if (device == NULL) continue;
-        render_area_device_sprites(state, entityId, device);
-    }
-
-    // For debugging purposes:
-//    for (int i = 0; i < currentArea->numEntities; i++) {
-//        char* entity_id = currentArea->entities[i];
-//        PacketBuffer* pbuffer = (PacketBuffer*)g_hash_table_lookup(componentRegistry.packetBuffers, entity_id);
-//        if (pbuffer == NULL) continue;
-//        render_area_packet(state, entity_id, pbuffer);
-//    }
-
-    EndMode2D();
 }
 
-void _area_viewer_draw_label(char* label, Vector2 coord) {
-    int width = MeasureText(label, 10);
-    DrawRectangle(coord.x-1, coord.y-11, width+2, 10, BLACK);
-    DrawText(label, coord.x, coord.y-11, 10, GREEN);
-}
-
-void _area_viewer_draw_device_id(Device device, Vector2 coord) {
-    int width = MeasureText(device.name, 10);
-    DrawRectangle(coord.x-1, coord.y-11, width+2, 10, BLACK);
-    DrawText(device.name, coord.x, coord.y - 11, 10, GREEN);
-}
-
-void _area_viewer_render_device_mouseover_hover(AreaViewerWindowState* state) {
+static void render_device_mouseover_hover(AreaViewerWindowState* state) {
     if (!CheckCollisionPointRec(GetMousePosition(), state->window.windowBounds)) return;
 
     Vector2 mousePos = GetMousePosition();
@@ -296,17 +291,16 @@ void _area_viewer_render_device_mouseover_hover(AreaViewerWindowState* state) {
 
         Device* device = g_hash_table_lookup(componentRegistry.devices, state->area->entities[i]);
         if (device != NULL && is_entity_in_area(*state->area, device->entityId)) {
-            if (device->visible) {
-                _area_viewer_draw_device_id(*device, mousePos);
-            } else {
-                _area_viewer_draw_label("???", mousePos);
-            }
+            char* label = device->visible ? device->name : "???";
+            int width = MeasureText(label, 10);
+            DrawRectangle(mousePos.x-1, mousePos.y-11, width+2, 10, BLACK);
+            DrawText(label, mousePos.x, mousePos.y - 11, 10, GREEN);
             break;
         }
     }
 }
 
-void _area_viewer_draw_mouse_coords(AreaViewerWindowState* state) {
+static void draw_mouse_coords(AreaViewerWindowState* state) {
     Vector2 mousePos = GetMousePosition();
     char buffer[1000];
 
@@ -317,31 +311,4 @@ void _area_viewer_draw_mouse_coords(AreaViewerWindowState* state) {
 
     sprintf(buffer, "Camera Offset: (%d, %d)", (int)state->camera.offset.x, (int)state->camera.offset.y);
     DrawText(buffer, state->viewport.x+5, state->viewport.height+state->viewport.y-12, 10, WHITE);
-}
-
-/**
- * Returns 1 when closing
- */
-int render_area_viewer_window(AreaViewerWindowState* state) {
-    if (!state->window.windowActive) return 0;
-    if (!state->area) return 0;
-
-    GuiPanel(state->window.windowBounds, state->area->areaName);
-
-    BeginScissorMode(state->viewport.x, state->viewport.y+TITLEBAR_HEIGHT, state->viewport.width, state->viewport.height-TITLEBAR_HEIGHT);
-
-    BeginMode2D(state->camera);
-    isometric_map_draw_grid(state->window.windowBounds, state->area->width, state->area->height, state->camera.zoom);
-    isometric_map_render_tiles(state->window.windowBounds, state->area->width, state->area->height, state->camera.zoom);
-    EndMode2D();
-
-    render_area(state);
-    render_area_window_selected_device(state);
-
-    _area_viewer_render_device_mouseover_hover(state);
-    _area_viewer_draw_mouse_coords(state);
-
-    EndScissorMode();
-
-    return !state->window.windowActive;
 }
