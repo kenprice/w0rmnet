@@ -26,6 +26,38 @@ void initialize_world() {
     strcpy(firstArea->zoneRouterEntityId, zoneRouter->entityId);
     firstArea->zoneRouterCoord = (Vector2){4, -5};
 
+    strcpy(areaRouter->device.address, "nightcity.metro.");
+    strcat(areaRouter->device.address, areaRouter->device.name);
+    strcpy(router->device.address, areaRouter->device.address);
+    strcat(router->device.address, ".");
+    strcat(router->device.address, router->device.name);
+    strcpy(machine1->device.address, areaRouter->device.address);
+    strcat(machine1->device.address, ".");
+    strcat(machine1->device.address, machine1->device.name);
+    strcpy(machine2->device.address, router->device.address);
+    strcat(machine2->device.address, ".");
+    strcat(machine2->device.address, machine2->device.name);
+    strcpy(machine3->device.address, router->device.address);
+    strcat(machine3->device.address, ".");
+    strcat(machine3->device.address, machine3->device.name);
+    strcpy(firstAreaRouter->device.address, "nightcity.metro.");
+    strcat(firstAreaRouter->device.address, firstAreaRouter->device.name);
+    strcpy(firstAreaMachine->device.address, firstAreaRouter->device.address);
+    strcat(firstAreaMachine->device.address, ".");
+    strcat(firstAreaMachine->device.address, firstAreaMachine->device.name);
+
+    ////
+    // Wire experiment
+    // TODO: Serialize Wire
+    ////
+    char* wireZoneRouterAreaRouter = create_and_register_wire(areaRouter->entityId, zoneRouter->entityId);
+    char* wireZoneRouterFirstArea = create_and_register_wire(firstAreaRouter->entityId, zoneRouter->entityId);
+    char* wireAreaRouterRouter = create_and_register_wire(areaRouter->entityId, router->entityId);
+    char* wireAreaRouterMachine1 = create_and_register_wire(areaRouter->entityId, machine1->entityId);
+    char* wireRouterMachine2 = create_and_register_wire(router->entityId, machine2->entityId);
+    char* wireRouterMachine3 = create_and_register_wire(router->entityId, machine3->entityId);
+    char* wireFirstAreaRouterMachine = create_and_register_wire(firstAreaRouter->entityId, firstAreaMachine->entityId);
+
 
     ///////////////////////////////
     /// REGION
@@ -50,7 +82,14 @@ void initialize_world() {
     zoneRouter->connection.numConns = 2;
     strcpy(zoneRouter->connection.toEntityIds[0], areaRouter->entityId);
     strcpy(zoneRouter->connection.toEntityIds[1], firstAreaRouter->entityId);
+    zoneRouter->routeTable.numRecords = 2;
+    strcpy(zoneRouter->routeTable.records[0].prefix, areaRouter->device.address);
+    strcpy(zoneRouter->routeTable.records[0].wireEntityId, wireZoneRouterAreaRouter);
+    strcpy(zoneRouter->routeTable.records[1].prefix, firstAreaRouter->device.address);
+    strcpy(zoneRouter->routeTable.records[1].wireEntityId, wireZoneRouterFirstArea);
     entity_router_register_components(entity_router_deserialize(entity_router_serialize(*zoneRouter)));
+
+
 
     ///////////////////////////////
     /// PLAYER AREA
@@ -70,33 +109,9 @@ void initialize_world() {
     strncpy(playerArea->entities[3], router->entityId, UUID_STR_LEN);
     strncpy(playerArea->entities[4], areaRouter->entityId, UUID_STR_LEN);
 
-    ////
-    // Wire experiment
-    // TODO: Serialize Wire
-    ////
-    char* wireZoneRouterAreaRouter = create_and_register_wire(areaRouter->entityId, zoneRouter->entityId);
-    char* wireAreaRouterRouter = create_and_register_wire(areaRouter->entityId, router->entityId);
-    char* wireAreaRouterMachine1 = create_and_register_wire(areaRouter->entityId, machine1->entityId);
-    char* wireRouterMachine2 = create_and_register_wire(router->entityId, machine2->entityId);
-    char* wireRouterMachine3 = create_and_register_wire(router->entityId, machine3->entityId);
-
     ///////////////////////////////
     /// DEVICES
     ///////////////////////////////
-    strcpy(areaRouter->device.address, "nightcity.metro.");
-    strcat(areaRouter->device.address, areaRouter->device.name);
-    strcpy(router->device.address, areaRouter->device.address);
-    strcat(router->device.address, ".");
-    strcat(router->device.address, router->device.name);
-    strcpy(machine1->device.address, areaRouter->device.address);
-    strcat(machine1->device.address, ".");
-    strcat(machine1->device.address, machine1->device.name);
-    strcpy(machine2->device.address, router->device.address);
-    strcat(machine2->device.address, ".");
-    strcat(machine2->device.address, machine2->device.name);
-    strcpy(machine3->device.address, router->device.address);
-    strcat(machine3->device.address, ".");
-    strcat(machine3->device.address, machine3->device.name);
 
     // Area Router
     // ============
@@ -226,22 +241,22 @@ void initialize_world() {
     // Area Router
     // ============
     firstAreaRouter->position.coord = (Vector2){4, 1};
-    strcpy(firstAreaRouter->device.address, "nightcity.metro.");
-    strcat(firstAreaRouter->device.address, firstAreaRouter->device.name);
     firstAreaRouter->device.owner = DEVICE_OWNER_NOBODY;
     firstAreaRouter->device.visible = 1;
     firstAreaRouter->connection.numConns = 2;
     strcpy(firstAreaRouter->connection.parentEntityId, zoneRouter->entityId);
     strcpy(firstAreaRouter->connection.toEntityIds[0], zoneRouter->entityId);
     strcpy(firstAreaRouter->connection.toEntityIds[1], firstAreaMachine->entityId);
+    firstAreaRouter->routeTable.numRecords = 2;
+    strcpy(firstAreaRouter->routeTable.records[0].prefix, "*");
+    strcpy(firstAreaRouter->routeTable.records[0].wireEntityId, wireZoneRouterFirstArea);
+    strcpy(firstAreaRouter->routeTable.records[1].prefix, firstAreaMachine->device.address);
+    strcpy(firstAreaRouter->routeTable.records[1].wireEntityId, wireFirstAreaRouterMachine);
     entity_router_register_components(entity_router_deserialize(entity_router_serialize(*firstAreaRouter)));
 
     // Machine
     // ============
     firstAreaMachine->position.coord = (Vector2){2, 3};
-    strcpy(firstAreaMachine->device.address, firstAreaRouter->device.address);
-    strcat(firstAreaMachine->device.address, ".");
-    strcat(firstAreaMachine->device.address, firstAreaMachine->device.name);
     firstAreaMachine->device.owner = DEVICE_OWNER_NOBODY;
     firstAreaMachine->device.visible = 1;
     firstAreaMachine->connection.numConns = 1;
@@ -253,6 +268,9 @@ void initialize_world() {
     firstAreaMachine->processManager.numProcs = 1;
     firstAreaMachine->processManager.processes[0].type = PROCESS_TYPE_PING;
     firstAreaMachine->processManager.processes[0].invocable = true;
+    firstAreaMachine->routeTable.numRecords = 1;
+    strcpy(firstAreaMachine->routeTable.records[0].prefix, "*");
+    strcpy(firstAreaMachine->routeTable.records[0].wireEntityId, wireFirstAreaRouterMachine);
     memset(firstAreaMachine->processManager.processes[0].state, '\0', PROCESS_STATE_LEN);
     entity_machine_register_components(entity_machine_deserialize(entity_machine_serialize(*firstAreaMachine)));
 

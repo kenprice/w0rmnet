@@ -63,8 +63,7 @@ void proc_login_handle_message(char* entityId, Process* process, ProcMessage* me
     char packetMessage[100] = "LOGIN ";
     char** args = g_strsplit(message->args, ":", 2);
 
-    char* address = convert_full_address_to_relative_address(entityId, args[0]);
-    if (!address) return;
+    char* toAddress =  args[0];
 
     char* creds = args[1]; // username:password
     strcat(packetMessage, creds);
@@ -73,6 +72,6 @@ void proc_login_handle_message(char* entityId, Process* process, ProcMessage* me
     char* fromAddress = device->address;
 
     PacketBuffer* packet_buffer = (PacketBuffer*)g_hash_table_lookup(componentRegistry.packetBuffers, entityId);
-    packet_queue_write(&packet_buffer->sendQ, packet_alloc(entityId, fromAddress, address, packetMessage));
+    packet_queue_write(&packet_buffer->sendQ, packet_alloc(entityId, fromAddress, toAddress, packetMessage));
 }
 

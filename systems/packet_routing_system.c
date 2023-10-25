@@ -7,7 +7,7 @@
 
 Timer timer;
 
-//#define TIME_PACKET_SEND 0.025
+//#define TIME_PACKET_SEND 0.075
 #define TIME_PACKET_SEND 1.0
 
 
@@ -66,68 +66,6 @@ int send_packet(char* fromEntity, Packet* packet) {
     return 0;
 }
 
-/**
- * returns 0 if error, 1 if success
- */
-int send_packetX(char* fromEntity, Packet* packet, Connection* connection) {
-    char** path = g_strsplit(packet->toAddress, ".", 10);
-    int parts = 0;
-    while (path[parts]) {
-        parts++;
-    }
-
-    // Searching for top
-    if (!packet->topLevelFound) {
-        char* curPart = path[0];
-        Device* curDevice = (Device*)g_hash_table_lookup(componentRegistry.devices, fromEntity);
-
-        // Shitty prepend, update from address
-        char fromAddress[110];
-        strcpy(fromAddress, curDevice->name);
-        if (strlen(packet->fromAddress) > 0) {
-            strcat(fromAddress, ".");
-            strcat(fromAddress, packet->fromAddress);
-        }
-        strcpy(packet->fromAddress, fromAddress);
-
-        if (strcmp(curPart, curDevice->name) == 0) {
-            // End search! Found!
-            packet->topLevelFound = true;
-        } else {
-            char* toEntity = connection->parentEntityId;
-
-            PacketBuffer* to_packet_buffer = (PacketBuffer*)g_hash_table_lookup(componentRegistry.packetBuffers, toEntity);
-            if (!to_packet_buffer) return 0;
-
-            strcpy(connection->activeEntityId, toEntity);
-            packet_queue_write(&to_packet_buffer->recvQ, packet);
-            return 1;
-        }
-    }
-    if (packet->topLevelFound) {
-        // Top found, traverse back down
-        packet->hops++;
-
-        if (packet->hops < parts) { // More hops to go
-            char* cur_part = path[packet->hops];
-
-            for (int i = 0; i < connection->numConns; i++) {
-                char* toEntity = find_device_entity_id_by_device_id(cur_part);
-
-                if (strcmp(toEntity, connection->toEntityIds[i]) == 0) {
-                    PacketBuffer* to_packet_buffer = (PacketBuffer*)g_hash_table_lookup(componentRegistry.packetBuffers, toEntity);
-                    strcpy(connection->activeEntityId, toEntity);
-                    packet_queue_write(&to_packet_buffer->recvQ, packet);
-                    return 1;
-                }
-            }
-            // Not found!
-            return 0;
-        }
-    }
-    return 0;
-}
-
 void update_routers() {
     GHashTableIter iter;
     guint* key_;
@@ -151,16 +89,10 @@ void update_routers() {
 }
 
 void update_packet_buffer(char* entityId, PacketBuffer* packetBuffer) {
-    // Pop one and send
     Packet* packet = packet_queue_read(&packetBuffer->sendQ);
-//    Connection* connection = (Connection*) g_hash_table_lookup(componentRegistry.connections, entityId);
 
     if (packet) {
-//        send_packet(entityId, packet, connection);
         send_packet(entityId, packet);
-    } else {
-        // clear active connection
-//        connection->activeEntityId[0] = '\0';
     }
 }
 
