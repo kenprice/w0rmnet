@@ -1,6 +1,7 @@
 #include "netscan_runner.h"
 #include "../../components/component_registry.h"
 #include "../utils/routing.h"
+#include "../../components/wire.h"
 
 /**
  * Netscan
@@ -27,25 +28,19 @@ void proc_netscan_handle_message(char* entityId, Process* process, ProcMessage* 
     PacketBuffer* packetBuffer = (PacketBuffer*)g_hash_table_lookup(componentRegistry.packetBuffers, entityId);
     if (!packetBuffer) return;
 
+    Device* fromDevice = g_hash_table_lookup(componentRegistry.devices, entityId);
+    char* fromAddress = fromDevice->address;
+
     // Message contains address of target router
-    char* targetRouterAddress = message->args;
-    Device* targetDevice = find_device_by_address(targetRouterAddress);
+    char* targetAddress = message->args;
+    Device* targetDevice = find_device_by_address(targetAddress);
     if (!targetDevice) return;
 
-    char* relativeTargetAddress = convert_full_address_to_relative_address(entityId, targetRouterAddress);
-
     // Perform a ping scan against target router's connections
-    Connection* connection = (Connection*)g_hash_table_lookup(componentRegistry.connections, targetDevice->entityId);
-    for (int i = 0; i < connection->numConns; i++) {
-        if (strcmp(connection->toEntityIds[i], connection->parentEntityId) == 0) continue;
+    RouteTable* routeTable = g_hash_table_lookup(componentRegistry.routeTable, targetDevice->entityId);
+    for (int i = 0; i < routeTable->numRecords; i++) {
+        if (strcmp(routeTable->records[i].prefix, "*") == 0) continue;
 
-        Device* device = g_hash_table_lookup(componentRegistry.devices, connection->toEntityIds[i]);
-
-        char toAddress[110];
-        strcpy(toAddress, relativeTargetAddress);
-        strcat(toAddress, ".");
-        strcat(toAddress, device->name);
-        packet_queue_write(&packetBuffer->sendQ, packet_alloc(entityId, toAddress, "Ping?"));
+        packet_queue_write(&packetBuffer->sendQ, packet_alloc(entityId, fromAddress, routeTable->records[i].prefix, "Ping?"));
     }
-    free(relativeTargetAddress);
 }

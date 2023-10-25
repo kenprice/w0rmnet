@@ -1,6 +1,7 @@
 #ifndef W0RMNET_PACKET_H
 #define W0RMNET_PACKET_H
 
+#include <stdbool.h>
 #include "../utils/uuid.h"
 
 typedef struct {
@@ -26,7 +27,7 @@ typedef struct {
     PacketQueue recvQ;
 } PacketBuffer;
 
-Packet* packet_alloc(char* from_entity_id, char* to_address, char* message);
+Packet* packet_alloc(char* fromEntityId, char* fromAddress, char* toAddress, char* message);
 
 PacketQueue packet_queue_alloc(size_t size);
 

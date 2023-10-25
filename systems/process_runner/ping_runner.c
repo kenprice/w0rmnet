@@ -45,7 +45,7 @@ void proc_ping_handle_packet(char* entityId, Process* process, Packet* packet) {
         }
         if (respond) {
             PacketBuffer* packet_buffer = (PacketBuffer*)g_hash_table_lookup(componentRegistry.packetBuffers, entityId);
-            packet_queue_write(&packet_buffer->sendQ, packet_alloc(entityId, packet->fromAddress, "Pong!"));
+            packet_queue_write(&packet_buffer->sendQ, packet_alloc(entityId, packet->toAddress, packet->fromAddress, "Pong!"));
         }
         isValid = true;
     }
@@ -72,15 +72,17 @@ void proc_ping_handle_message(char* entityId, Process* process, ProcMessage* mes
     if (message == NULL) return;
     if (strlen(message->args) == 0) return;
 
-    // Sends Ping to address specified by args
-    char* targetRouterAddress = message->args;
-    Device* targetDevice = find_device_by_address(targetRouterAddress);
-    if (!targetDevice) return;
+    Device* fromDevice = g_hash_table_lookup(componentRegistry.devices, entityId);
+    char* fromAddress = fromDevice->address;
 
-    char* relativeTargetAddress = convert_full_address_to_relative_address(entityId, targetRouterAddress);
+    // Sends Ping to address specified by args
+    char* targetAddress = message->args;
+
+//    char* relativeTargetAddress = convert_full_address_to_relative_address(entityId, targetAddress);
+
 
     PacketBuffer* packet_buffer = (PacketBuffer*)g_hash_table_lookup(componentRegistry.packetBuffers, entityId);
-    packet_queue_write(&packet_buffer->sendQ, packet_alloc(entityId, relativeTargetAddress, "Ping?"));
+    packet_queue_write(&packet_buffer->sendQ, packet_alloc(entityId, fromAddress, targetAddress, "Ping?"));
 
-    free(relativeTargetAddress);
+//    free(relativeTargetAddress);
 }

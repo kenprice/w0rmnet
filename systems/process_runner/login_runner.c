@@ -69,7 +69,10 @@ void proc_login_handle_message(char* entityId, Process* process, ProcMessage* me
     char* creds = args[1]; // username:password
     strcat(packetMessage, creds);
 
+    Device* device = g_hash_table_lookup(componentRegistry.devices, entityId);
+    char* fromAddress = device->address;
+
     PacketBuffer* packet_buffer = (PacketBuffer*)g_hash_table_lookup(componentRegistry.packetBuffers, entityId);
-    packet_queue_write(&packet_buffer->sendQ, packet_alloc(entityId, address, packetMessage));
+    packet_queue_write(&packet_buffer->sendQ, packet_alloc(entityId, fromAddress, address, packetMessage));
 }
 

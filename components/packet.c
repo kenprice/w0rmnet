@@ -6,14 +6,16 @@
 // simple fifo queue
 // https://gist.github.com/ryankurte/61f95dc71133561ed055ff62b33585f8
 
-Packet* packet_alloc(char* from_entity_id, char* to_address, char* message) {
+Packet* packet_alloc(char* fromEntityId, char* fromAddress, char* toAddress, char* message) {
     Packet* packet = calloc(1, sizeof(Packet));
-    packet->fromEntityId = calloc(1, sizeof(char) * strlen(from_entity_id));
-    strcpy(packet->fromEntityId, from_entity_id);
-    packet->fromAddress = calloc(1, sizeof(char) * 110);
-    packet->fromAddress[0] = '\0';
-    packet->toAddress = calloc(1, sizeof(char) * strlen(to_address) + 1);
-    strcpy(packet->toAddress, to_address);
+    packet->fromEntityId = calloc(1, sizeof(char) * strlen(fromEntityId));
+    strcpy(packet->fromEntityId, fromEntityId);
+
+    packet->fromAddress = calloc(strlen(fromAddress), sizeof(char) * 110);
+    strcpy(packet->fromAddress, fromAddress);
+
+    packet->toAddress = calloc(1, sizeof(char) * strlen(toAddress) + 1);
+    strcpy(packet->toAddress, toAddress);
     packet->message = calloc(1, sizeof(char) * strlen(message) + 1);
     strcpy(packet->message, message);
     packet->hops = 0;

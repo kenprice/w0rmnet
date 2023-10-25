@@ -283,7 +283,7 @@ static void render_device_mouseover_hover(AreaViewerWindowState* state) {
     Vector2 mousePos = GetMousePosition();
     Vector2 currentTile = isometric_map_global_to_local(state->window.windowBounds, state->camera.offset,
                                                         mousePos.x, mousePos.y, state->camera.zoom);
-    currentTile = (Vector2){(float)currentTile.x, (float)currentTile.y};
+    currentTile = (Vector2){(int)currentTile.x, (int)currentTile.y};
 
     for (int i = 0; i < state->area->numEntities; i++) {
         Position* position = g_hash_table_lookup(componentRegistry.positions, state->area->entities[i]);

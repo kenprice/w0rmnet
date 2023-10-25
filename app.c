@@ -51,7 +51,6 @@ int main(void)
     initialize_world();
     init_world_state();
 
-    initialize_device_rendering_system();
     initialize_main_gui_system();
     initialize_packet_routing_system();
     //////////////
@@ -70,7 +69,6 @@ int main(void)
         }
 
         // Update
-        update_device_rendering_system();
         update_main_gui_system();
         update_packet_routing_system();
         update_process_running_system();
@@ -81,7 +79,6 @@ int main(void)
 
         ClearBackground(BLACK);
 
-        render_device_rendering_system();
         render_main_gui_system();
 
         EndDrawing();

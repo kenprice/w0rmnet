@@ -10,6 +10,7 @@ typedef struct {
     Sprite sprite;
     Connection connection;
     PacketBuffer packetBuffer;
+    RouteTable routeTable;
     ProcessManager processManager;
     ProcMessageQueue procMessageQueue;
 } Machine;

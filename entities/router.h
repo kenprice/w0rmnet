@@ -10,6 +10,7 @@ typedef struct {
     Sprite sprite;
     Connection connection;
     PacketBuffer packetBuffer;
+    RouteTable routeTable;
 } Router;
 
 Router* entity_router_create_blank();
