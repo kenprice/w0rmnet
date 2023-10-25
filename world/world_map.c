@@ -102,12 +102,17 @@ void initialize_world() {
     playerArea->height = 12;
     playerArea->width = 12;
 
-    playerArea->numEntities = 5;
+    playerArea->numEntities = 10;
     strncpy(playerArea->entities[0], machine1->entityId, UUID_STR_LEN);
     strncpy(playerArea->entities[1], machine2->entityId, UUID_STR_LEN);
     strncpy(playerArea->entities[2], machine3->entityId, UUID_STR_LEN);
     strncpy(playerArea->entities[3], router->entityId, UUID_STR_LEN);
     strncpy(playerArea->entities[4], areaRouter->entityId, UUID_STR_LEN);
+    strncpy(playerArea->entities[5], wireAreaRouterRouter, UUID_STR_LEN);
+    strncpy(playerArea->entities[6], wireAreaRouterMachine1, UUID_STR_LEN);
+    strncpy(playerArea->entities[7], wireRouterMachine2, UUID_STR_LEN);
+    strncpy(playerArea->entities[8], wireRouterMachine3, UUID_STR_LEN);
+    strncpy(playerArea->entities[9], wireZoneRouterAreaRouter, UUID_STR_LEN);
 
     ///////////////////////////////
     /// DEVICES
@@ -234,9 +239,11 @@ void initialize_world() {
     firstArea->height = 12;
     firstArea->width = 12;
 
-    firstArea->numEntities = 2;
+    firstArea->numEntities = 4;
     strncpy(firstArea->entities[0], firstAreaRouter->entityId, UUID_STR_LEN);
     strncpy(firstArea->entities[1], firstAreaMachine->entityId, UUID_STR_LEN);
+    strncpy(firstArea->entities[2], wireZoneRouterFirstArea, UUID_STR_LEN);
+    strncpy(firstArea->entities[3], wireFirstAreaRouterMachine, UUID_STR_LEN);
 
     // Area Router
     // ============
@@ -273,6 +280,51 @@ void initialize_world() {
     strcpy(firstAreaMachine->routeTable.records[0].wireEntityId, wireFirstAreaRouterMachine);
     memset(firstAreaMachine->processManager.processes[0].state, '\0', PROCESS_STATE_LEN);
     entity_machine_register_components(entity_machine_deserialize(entity_machine_serialize(*firstAreaMachine)));
+
+
+    ///// Wire gfx
+    Polygon polyZoneRouterAreaRouter;
+    polyZoneRouterAreaRouter.points[0] = (PolyPoint){ areaRouter->position.coord.x, areaRouter->position.coord.y };
+    polyZoneRouterAreaRouter.points[1] = (PolyPoint){ areaRouter->position.coord.x, areaRouter->position.coord.y - 4 };
+    polyZoneRouterAreaRouter.numPoints = 2;
+    register_polygon(polyZoneRouterAreaRouter, wireZoneRouterAreaRouter);
+    Polygon polyAreaRouterRouter;
+    polyAreaRouterRouter.points[0] = (PolyPoint){ areaRouter->position.coord.x, areaRouter->position.coord.y };
+    polyAreaRouterRouter.points[1] = (PolyPoint){ router->position.coord.x, areaRouter->position.coord.y };
+    polyAreaRouterRouter.points[2] = (PolyPoint){ router->position.coord.x, router->position.coord.y };
+    polyAreaRouterRouter.numPoints = 3;
+    register_polygon(polyAreaRouterRouter, wireAreaRouterRouter);
+    Polygon polyAreaRouterMachine1;
+    polyAreaRouterMachine1.points[0] = (PolyPoint){ areaRouter->position.coord.x, areaRouter->position.coord.y };
+    polyAreaRouterMachine1.points[1] = (PolyPoint){ machine1->position.coord.x, areaRouter->position.coord.y };
+    polyAreaRouterMachine1.points[2] = (PolyPoint){ machine1->position.coord.x, machine1->position.coord.y };
+    polyAreaRouterMachine1.numPoints = 3;
+    register_polygon(polyAreaRouterMachine1, wireAreaRouterMachine1);
+    Polygon polyAreaRouterMachine2;
+    polyAreaRouterMachine2.points[0] = (PolyPoint){ router->position.coord.x, router->position.coord.y };
+    polyAreaRouterMachine2.points[1] = (PolyPoint){ machine2->position.coord.x, machine2->position.coord.y };
+    polyAreaRouterMachine2.numPoints = 2;
+    register_polygon(polyAreaRouterMachine2, wireRouterMachine2);
+    Polygon polyAreaRouterMachine3;
+    polyAreaRouterMachine3.points[0] = (PolyPoint){ router->position.coord.x, router->position.coord.y };
+    polyAreaRouterMachine3.points[1] = (PolyPoint){ machine3->position.coord.x, router->position.coord.y };
+    polyAreaRouterMachine3.points[2] = (PolyPoint){ machine3->position.coord.x, machine3->position.coord.y };
+    polyAreaRouterMachine3.numPoints = 3;
+    register_polygon(polyAreaRouterMachine3, wireRouterMachine3);
+    Polygon polyZoneRouterFirstArea;
+    polyZoneRouterFirstArea.points[0] = (PolyPoint){ firstAreaRouter->position.coord.x, firstAreaRouter->position.coord.y };
+    polyZoneRouterFirstArea.points[1] = (PolyPoint){ firstAreaRouter->position.coord.x, firstAreaRouter->position.coord.y - 4 };
+    polyZoneRouterFirstArea.numPoints = 2;
+    register_polygon(polyZoneRouterFirstArea, wireZoneRouterFirstArea);
+    Polygon polyFirstAreaRouterMachine;
+    polyFirstAreaRouterMachine.points[0] = (PolyPoint){ firstAreaRouter->position.coord.x, firstAreaRouter->position.coord.y };
+    polyFirstAreaRouterMachine.points[1] = (PolyPoint){ firstAreaRouter->position.coord.x, firstAreaMachine->position.coord.y };
+    polyFirstAreaRouterMachine.points[2] = (PolyPoint){ firstAreaMachine->position.coord.x, firstAreaMachine->position.coord.y };
+    polyFirstAreaRouterMachine.numPoints = 3;
+    register_polygon(polyFirstAreaRouterMachine, wireFirstAreaRouterMachine);
+
+//    wireZoneRouterFirstArea = create_and_register_wire(firstAreaRouter->entityId, zoneRouter->entityId);
+//    wireFirstAreaRouterMachine = create_and_register_wire(firstAreaRouter->entityId, firstAreaMachine->entityId);
 
 //    SaveFileText("world.sav", buffer);
 }

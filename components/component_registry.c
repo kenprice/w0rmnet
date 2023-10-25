@@ -12,4 +12,5 @@ void init_component_registry() {
     componentRegistry.processManagers = g_hash_table_new_full(g_str_hash, g_str_equal, g_free, free);
     componentRegistry.procMsgQueues = g_hash_table_new_full(g_str_hash, g_str_equal, g_free, free);
     componentRegistry.wires = g_hash_table_new_full(g_str_hash, g_str_equal, g_free, free);
+    componentRegistry.polygons = g_hash_table_new_full(g_str_hash, g_str_equal, g_free, free);
 }

@@ -26,7 +26,7 @@ char* create_and_register_wire(char* entityA, char* entityB) {
     return entityId;
 }
 
-Wire* search_wire_by_entityIds(char* entityId1, char* entityId2) {
+Wire* search_wire_by_entity_ids(char* entityId1, char* entityId2) {
     GHashTableIter iter;
     char* entityId;
     Wire* wire;

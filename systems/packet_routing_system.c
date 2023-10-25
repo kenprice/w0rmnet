@@ -7,8 +7,8 @@
 
 Timer timer;
 
-//#define TIME_PACKET_SEND 0.075
-#define TIME_PACKET_SEND 1.0
+#define TIME_PACKET_SEND 0.075
+//#define TIME_PACKET_SEND 1.0
 
 
 
@@ -123,9 +123,9 @@ void initialize_packet_routing_system() {
 void update_packet_routing_system() {
     if (!TimerDone(timer)) return;
 
+    update_wires();
     iterate_packet_buffers(update_packet_buffer);
     update_routers();
-    update_wires();
 
     StartTimer(&timer, TIME_PACKET_SEND);
 }

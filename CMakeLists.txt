@@ -99,6 +99,8 @@ add_executable(${PROJECT_NAME} app.c
         systems/main_gui_system/isometric_map_rendering.c
         components/wire.h
         components/wire.c
+        components/polygon.h
+        components/polygon.c
 )
 #set(raylib_VERBOSE 1)
 target_link_libraries(${PROJECT_NAME} raylib)

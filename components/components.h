@@ -8,6 +8,8 @@
 #include "route_table.h"
 #include "sprite.h"
 #include "process.h"
+#include "wire.h"
+#include "polygon.h"
 
 // Components
 

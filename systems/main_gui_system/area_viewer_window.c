@@ -111,7 +111,7 @@ static void update_area_viewer_selected_device(AreaViewerWindowState* state) {
     if (IsMouseButtonPressed(MOUSE_BUTTON_LEFT)) {
         for (int i = 0; i < state->area->numEntities; i++) {
             Position* position = g_hash_table_lookup(componentRegistry.positions, state->area->entities[i]);
-            if (position->coord.x != clickedTile.x || position->coord.y != clickedTile.y) continue;
+            if (!position || position->coord.x != clickedTile.x || position->coord.y != clickedTile.y) continue;
 
             Device* device = g_hash_table_lookup(componentRegistry.devices, state->area->entities[i]);
             if (device != NULL && device->visible) {
@@ -270,10 +270,34 @@ static void render_connections(AreaViewerWindowState* state) {
     Area* currentArea = state->area;
 
     for (int i = 0; i < currentArea->numEntities; i++) {
-        char* entity_id = currentArea->entities[i];
-        Connection* conn = (Connection*)g_hash_table_lookup(componentRegistry.connections, entity_id);
-        if (conn == NULL) continue;
-        render_area_connection(state, entity_id, conn);
+        char* entityId = currentArea->entities[i];
+//        Connection* conn = (Connection*)g_hash_table_lookup(componentRegistry.connections, entityId);
+//        if (conn != NULL) {
+//            render_area_connection(state, entityId, conn);
+//        }
+
+        // Rendering wires
+        Polygon* poly = g_hash_table_lookup(componentRegistry.polygons, entityId);
+        if (poly != NULL) {
+            for (int j=0; j<poly->numPoints-1; j++) {
+                Vector2 fromCoord = isometric_map_local_to_global(state->window.windowBounds, (float)poly->points[j].x,
+                                                                  (float)poly->points[j].y, state->camera.zoom);
+                Vector2 toCoord = isometric_map_local_to_global(state->window.windowBounds, (float)poly->points[j+1].x,
+                                                                (float)poly->points[j+1].y, state->camera.zoom);
+                fromCoord.y += SPRITE_Y_SCALE / 2;
+                toCoord.y += SPRITE_Y_SCALE / 2;
+
+                Wire* wire = g_hash_table_lookup(componentRegistry.wires, entityId);
+                if (!wire) {
+                    // ??? prolly not empty, or Wire could be in outer loop
+                    DrawLineEx(fromCoord, toCoord, 3, WHITE);
+                } else if (wire->sendQtoA.head != wire->sendQtoA.tail || wire->sendQtoB.head != wire->sendQtoB.tail) {
+                    DrawLineEx(fromCoord, toCoord, 3, GREEN);
+                } else {
+                    DrawLineEx(fromCoord, toCoord, 3, WHITE);
+                }
+            }
+        }
     }
 }
 
@@ -287,7 +311,7 @@ static void render_device_mouseover_hover(AreaViewerWindowState* state) {
 
     for (int i = 0; i < state->area->numEntities; i++) {
         Position* position = g_hash_table_lookup(componentRegistry.positions, state->area->entities[i]);
-        if (position->coord.x != currentTile.x || position->coord.y != currentTile.y) continue;
+        if (!position || position->coord.x != currentTile.x || position->coord.y != currentTile.y) continue;
 
         Device* device = g_hash_table_lookup(componentRegistry.devices, state->area->entities[i]);
         if (device != NULL && is_entity_in_area(*state->area, device->entityId)) {

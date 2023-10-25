@@ -15,6 +15,7 @@ typedef struct {
     GHashTable* processManagers;
     GHashTable* procMsgQueues;
     GHashTable* wires;
+    GHashTable* polygons;
 } ComponentRegistry;
 
 extern ComponentRegistry componentRegistry;
