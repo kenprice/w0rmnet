@@ -39,8 +39,6 @@ add_executable(${PROJECT_NAME} app.c
         components/component_registry.h
         components/component_registry.c
         utils/uuid.h
-        systems/device_rendering_system.h
-        systems/device_rendering_system.c
         components/device.h
         components/device.c
         utils/uuid.c

@@ -12,7 +12,6 @@ static unsigned int *guiIconsPtr = guiIcons;
 #include "graphics/sprites.h"
 #include "graphics/tiles.h"
 #include "components/component_registry.h"
-#include "systems/device_rendering_system.h"
 #include "systems/main_gui_system.h"
 #include "systems/packet_routing_system.h"
 #include "systems/process_running_system.h"
