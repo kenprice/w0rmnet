@@ -8,6 +8,7 @@ static unsigned int *guiIconsPtr = guiIcons;
 #include "lib/raygui.h"
 #include "lib/style_cyber.h"       // raygui style: cyber
 #undef RAYGUI_IMPLEMENTATION            // Avoid including raygui implementation again
+#include "lib/log/log.h"
 
 #include "graphics/sprites.h"
 #include "graphics/tiles.h"
@@ -33,6 +34,7 @@ int main(void)
     const int screenHeight = 847;
     const int minScreenWidth = 1024;
     const int minScreenHeight = 768;
+    log_debug("Starting w0rmnet...");
 
     SetConfigFlags(FLAG_WINDOW_RESIZABLE | FLAG_VSYNC_HINT);
     InitWindow(screenWidth, screenHeight, "w0rmnet");
