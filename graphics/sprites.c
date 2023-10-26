@@ -5,6 +5,7 @@ Texture2D textureSpriteSheet;
 SpriteRect spriteSheet[] = {
     (SpriteRect){(Rectangle){0, 0, 64, 64},(Vector2){0, 32}},
     (SpriteRect){(Rectangle){64, 0, 64, 64},(Vector2){0, 32}},
+    (SpriteRect){(Rectangle){64, 64, 64, 64},(Vector2){0, 32}},
     (SpriteRect){(Rectangle){128, 0, 64, 64},(Vector2){0, 32}},
     (SpriteRect){(Rectangle){192, 0, 64, 64},(Vector2){0, 32}},
 };

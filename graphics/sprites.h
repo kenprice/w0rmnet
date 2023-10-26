@@ -8,8 +8,9 @@
 
 #define SPRITE_SELECTED 0
 #define SPRITE_ROUTER 1
-#define SPRITE_SERVER 2
-#define SPRITE_UNKNOWN 3
+#define SPRITE_ROUTER_BLINK 2
+#define SPRITE_SERVER 3
+#define SPRITE_UNKNOWN 4
 
 typedef struct {
     Rectangle rect; // Section of the spritesheet

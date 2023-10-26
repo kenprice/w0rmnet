@@ -7,6 +7,7 @@
 
 Timer timer;
 
+//#define TIME_PACKET_SEND 0.025
 #define TIME_PACKET_SEND 0.075
 //#define TIME_PACKET_SEND 1.0
 
@@ -14,21 +15,6 @@ Timer timer;
 
 int send_packet(char* fromEntity, Packet* packet) {
     Wire* wire = NULL;
-
-    // Search all wires to see if the destination is immediately adjacent
-//    Device* device = find_device_by_address(packet->toAddress);
-//    if (device) {
-//        wire = search_wire_by_entityIds(fromEntity, device->entityId);
-//
-//        if (strcmp(wire->entityA, fromEntity) == 0) {
-//            packet_queue_write(&wire->sendQtoB, packet);
-//            return 1;
-//        } else if (strcmp(wire->entityB, fromEntity) == 0) {
-//            packet_queue_write(&wire->sendQtoA, packet);
-//            return 1;
-//        }
-//        return 0;
-//    }
 
     // Look up in route table
     RouteTable* routeTable = g_hash_table_lookup(componentRegistry.routeTable, fromEntity);

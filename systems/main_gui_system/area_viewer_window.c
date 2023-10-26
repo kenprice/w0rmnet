@@ -16,7 +16,6 @@
 
 static void render_connections(AreaViewerWindowState* state);
 static void render_devices(AreaViewerWindowState* state);
-static void render_area_connection(AreaViewerWindowState* state, char* entityId, Connection* connection);
 static void render_area_window_selected_device(AreaViewerWindowState* state);
 static void render_area_packet_messages(AreaViewerWindowState* state);
 static void render_device_mouseover_hover(AreaViewerWindowState* state);
@@ -62,7 +61,7 @@ int render_area_viewer_window(AreaViewerWindowState* state) {
     isometric_map_render_tiles(state->window.windowBounds, state->area->width, state->area->height, state->camera.zoom);
     render_connections(state);
     render_devices(state);
-    render_area_packet_messages(state);
+//    render_area_packet_messages(state);
     render_area_window_selected_device(state);
     EndMode2D();
 
@@ -165,50 +164,6 @@ static void render_devices(AreaViewerWindowState* state) {
     }
 }
 
-/**
- * Renders connection to parent
- *
- * @param state
- * @param entityId Entity ID of connection
- * @param connection The connection
- */
-static void render_area_connection(AreaViewerWindowState* state, char* entityId, Connection* connection) {
-    char* fromEntity = entityId;
-
-    char* toEntity = connection->parentEntityId;
-    if (!toEntity || strlen(toEntity) == 0) return;
-
-    Vector2 fromCoord;
-    if (strcmp(fromEntity, state->area->zoneRouterEntityId) == 0) {
-       fromCoord = isometric_map_local_to_global(state->window.windowBounds, state->area->zoneRouterCoord.x,
-                                                 state->area->zoneRouterCoord.y, state->camera.zoom);
-    } else {
-        Position* fromPos = (Position*)g_hash_table_lookup(componentRegistry.positions, fromEntity);
-        fromCoord = isometric_map_local_to_global(state->window.windowBounds, fromPos->coord.x, fromPos->coord.y,
-                                                  state->camera.zoom);
-    }
-    Vector2 toCoord;
-    if (strcmp(toEntity, state->area->zoneRouterEntityId) == 0) {
-        toCoord = isometric_map_local_to_global(state->window.windowBounds, state->area->zoneRouterCoord.x,
-                                                state->area->zoneRouterCoord.y, state->camera.zoom);
-    } else {
-        Position* toPos = (Position*)g_hash_table_lookup(componentRegistry.positions, toEntity);
-        toCoord = isometric_map_local_to_global(state->window.windowBounds, toPos->coord.x, toPos->coord.y,
-                                                  state->camera.zoom);
-    }
-
-    fromCoord.y += SPRITE_Y_SCALE / 2;
-    toCoord.y += SPRITE_Y_SCALE / 2;
-
-    // Animate connection if either direction is "active" (receiving packet in either direction)
-    Connection* toConnection = g_hash_table_lookup(componentRegistry.connections, toEntity);
-    if (strcmp(connection->activeEntityId, toEntity) == 0 || (toConnection && strcmp(toConnection->activeEntityId, fromEntity) == 0)) {
-        DrawLineEx(fromCoord, toCoord, 3, GREEN);
-    } else {
-        DrawLineEx(fromCoord, toCoord, 3, WHITE);
-    }
-}
-
 static void render_area_window_selected_device(AreaViewerWindowState* state) {
     if (state->selectedDevice == NULL) return;
 
@@ -271,10 +226,6 @@ static void render_connections(AreaViewerWindowState* state) {
 
     for (int i = 0; i < currentArea->numEntities; i++) {
         char* entityId = currentArea->entities[i];
-//        Connection* conn = (Connection*)g_hash_table_lookup(componentRegistry.connections, entityId);
-//        if (conn != NULL) {
-//            render_area_connection(state, entityId, conn);
-//        }
 
         // Rendering wires
         Polygon* poly = g_hash_table_lookup(componentRegistry.polygons, entityId);
