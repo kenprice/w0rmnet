@@ -9,6 +9,7 @@
 #include "process.h"
 #include "wire.h"
 #include "polygon.h"
+#include "logger.h"
 
 // Components
 

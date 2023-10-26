@@ -7,9 +7,6 @@
  * Global game state
  */
 typedef struct {
-    char knownHosts[100][110]; // Known good registry of addresses, form perspective of player
-    int numKnownHosts;
-
     Area* currentArea;
 } WorldState;
 

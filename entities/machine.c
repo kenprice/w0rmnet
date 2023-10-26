@@ -63,8 +63,11 @@ char* entity_machine_register_components(Machine machine) {
         strcpy(processManager->processes[i].state, machine.processManager.processes[i].state);
     }
     g_hash_table_insert(componentRegistry.processManagers, entityId, processManager);
-
     register_proc_msg_queue(proc_msg_queue_alloc(10), entityId);
+
+    Logger* logger = calloc(1, sizeof(Logger));
+    logger->numEntries = 0;
+    g_hash_table_insert(componentRegistry.logger, entityId, logger);
 
     return entityId;
 }

@@ -6,36 +6,36 @@
 #include "process_runner/netscan_runner.h"
 #include "process_runner/login_runner.h"
 
-void send_packet_to_proc(char* entity_id, Process* process, Packet* packet) {
+void send_packet_to_proc(char* entityId, Process* process, Packet* packet) {
     switch (process->type) {
         case PROCESS_TYPE_PING:
-            proc_ping_handle_packet(entity_id, process, packet);
+            proc_ping_handle_packet(entityId, process, packet);
             break;
         case PROCESS_TYPE_LOGIN:
-            proc_login_handle_packet(entity_id, process, packet);;
+            proc_login_handle_packet(entityId, process, packet);;
         default:
             break;
     }
 }
 
-void send_message_to_proc(char* entity_id, Process* process, ProcMessage* message) {
+void send_message_to_proc(char* entityId, Process* process, ProcMessage* message) {
     switch (process->type) {
         case PROCESS_TYPE_PING:
-            proc_ping_handle_message(entity_id, process, message);
+            proc_ping_handle_message(entityId, process, message);
             break;
         case PROCESS_TYPE_SCAN:
-            proc_netscan_handle_message(entity_id, process, message);
+            proc_netscan_handle_message(entityId, process, message);
             break;
         case PROCESS_TYPE_LOGIN:
-            proc_login_handle_message(entity_id, process, message);
+            proc_login_handle_message(entityId, process, message);
             break;
         default:
             break;
     }
 }
 
-void update_process_manager(char* entity_id, ProcessManager* process_manager) {
-    PacketBuffer* packet_buffer = (PacketBuffer*)g_hash_table_lookup(componentRegistry.packetBuffers, entity_id);
+void update_process_manager(char* entityId, ProcessManager* process_manager) {
+    PacketBuffer* packet_buffer = (PacketBuffer*)g_hash_table_lookup(componentRegistry.packetBuffers, entityId);
     Packet* packet = NULL;
 
     // A packet, if exists, is broadcasted to all processes. Something that no sane systems engineer would do.
@@ -43,18 +43,18 @@ void update_process_manager(char* entity_id, ProcessManager* process_manager) {
         packet = packet_queue_read(&packet_buffer->recvQ);
     }
     for (int i = 0; i < process_manager->numProcs; i++) {
-        send_packet_to_proc(entity_id, &process_manager->processes[i], packet);
+        send_packet_to_proc(entityId, &process_manager->processes[i], packet);
     }
 
     // Then, go through IPC proc msg Q and send messages to procs
-    ProcMessageQueue* procMessageQueue = (ProcMessageQueue*)g_hash_table_lookup(componentRegistry.procMsgQueues, entity_id);
+    ProcMessageQueue* procMessageQueue = (ProcMessageQueue*)g_hash_table_lookup(componentRegistry.procMsgQueues, entityId);
     ProcMessage* message = NULL;
     if (procMessageQueue != NULL) {
         message = proc_msg_queue_read(procMessageQueue);
         if (message != NULL) {
             Process proc = process_manager->processes[message->pid];
             if (proc.invocable) {
-                send_message_to_proc(entity_id, &proc, message);
+                send_message_to_proc(entityId, &proc, message);
             }
         }
     }

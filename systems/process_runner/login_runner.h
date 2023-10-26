@@ -6,11 +6,11 @@
 /**
  * If player uses correct credentials, grants ownership
  *
- * @param entity_id entity on which the process is running
+ * @param entityId entity on which the process is running
  * @param process the process
  * @param packet received packet
  */
-void proc_login_handle_packet(char* entity_id, Process* process, Packet* packet);
+void proc_login_handle_packet(char* entityId, Process* process, Packet* packet);
 
 /**
  * Sends remote login, message is "<address>:<username>:<password>"

@@ -1,14 +1,17 @@
+#include <stdio.h>
 #include "glib.h"
 #include "login_runner.h"
 #include "../../components/component_registry.h"
-#include "../utils/routing.h"
 
 /**
  * Login State
  * N Bytes: "<username>:<password>"
  */
-void proc_login_handle_packet(char* entity_id, Process* process, Packet* packet) {
+void proc_login_handle_packet(char* entityId, Process* process, Packet* packet) {
     if (packet == NULL || packet->message == NULL) return;
+
+    Logger* logger = g_hash_table_lookup(componentRegistry.logger, entityId);
+    char buffer[200];
 
     char** packetParts = g_strsplit(packet->message, " ", 2);
     char* command = packetParts[0];
@@ -18,9 +21,17 @@ void proc_login_handle_packet(char* entity_id, Process* process, Packet* packet)
     char* creds = packetParts[1];
 
     if (strcmp(creds, process->state) == 0) {
-        Device* device = (Device*)g_hash_table_lookup(componentRegistry.devices, entity_id);
+        Device* device = (Device*)g_hash_table_lookup(componentRegistry.devices, entityId);
         device->owner = DEVICE_OWNER_PLAYER;
+
+        sprintf(buffer, "Received LOGIN from %s. Login successful.", packet->fromAddress);
+        comp_logger_add_entry(logger, buffer);
+    } else {
+        sprintf(buffer, "Received LOGIN from %s. Login failed.", packet->fromAddress);
+        comp_logger_add_entry(logger, buffer);
     }
+
+    g_strfreev(packetParts);
 }
 
 void proc_login_handle_message(char* entityId, Process* process, ProcMessage* message) {
