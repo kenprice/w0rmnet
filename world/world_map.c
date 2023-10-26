@@ -79,9 +79,6 @@ void initialize_world() {
     sprintf(zoneRouter->device.name, "metro");
     zoneRouter->device.owner = DEVICE_OWNER_PLAYER;
     zoneRouter->device.visible = 1;
-    zoneRouter->connection.numConns = 2;
-    strcpy(zoneRouter->connection.toEntityIds[0], areaRouter->entityId);
-    strcpy(zoneRouter->connection.toEntityIds[1], firstAreaRouter->entityId);
     zoneRouter->routeTable.numRecords = 2;
     strcpy(zoneRouter->routeTable.records[0].prefix, areaRouter->device.address);
     strcpy(zoneRouter->routeTable.records[0].wireEntityId, wireZoneRouterAreaRouter);
@@ -123,11 +120,6 @@ void initialize_world() {
     areaRouter->position.coord = (Vector2){4, 1};
     areaRouter->device.owner = DEVICE_OWNER_PLAYER;
     areaRouter->device.visible = 1;
-    areaRouter->connection.numConns = 3;
-    strcpy(areaRouter->connection.parentEntityId, zoneRouter->entityId);
-    strcpy(areaRouter->connection.toEntityIds[0], zoneRouter->entityId);
-    strcpy(areaRouter->connection.toEntityIds[1], machine1->entityId);
-    strcpy(areaRouter->connection.toEntityIds[2], router->entityId);
     areaRouter->routeTable.numRecords = 3;
     strcpy(areaRouter->routeTable.records[0].prefix, "*");
     strcpy(areaRouter->routeTable.records[0].wireEntityId, wireZoneRouterAreaRouter);
@@ -142,11 +134,6 @@ void initialize_world() {
     router->position.coord = (Vector2){7, 4};
     router->device.owner = DEVICE_OWNER_PLAYER;
     router->device.visible = 1;
-    router->connection.numConns = 3;
-    strcpy(router->connection.parentEntityId, areaRouter->entityId);
-    strcpy(router->connection.toEntityIds[0], areaRouter->entityId);
-    strcpy(router->connection.toEntityIds[1], machine2->entityId);
-    strcpy(router->connection.toEntityIds[2], machine3->entityId);
     router->routeTable.numRecords = 3;
     strcpy(router->routeTable.records[0].prefix, "*");
     strcpy(router->routeTable.records[0].wireEntityId, wireAreaRouterRouter);
@@ -161,10 +148,6 @@ void initialize_world() {
     machine1->position.coord = (Vector2){2, 3};
     machine1->device.owner = DEVICE_OWNER_PLAYER;
     machine1->device.visible = 1;
-    machine1->connection.numConns = 1;
-    machine1->connection.maxConns = 1;
-    strcpy(machine1->connection.parentEntityId, areaRouter->entityId);
-    strcpy(machine1->connection.toEntityIds[0], areaRouter->entityId);
     machine1->routeTable.numRecords = 1;
     strcpy(machine1->routeTable.records[0].prefix, "*");
     strcpy(machine1->routeTable.records[0].wireEntityId, wireAreaRouterMachine1);
@@ -186,10 +169,6 @@ void initialize_world() {
     // Machine 2
     // ============
     machine2->position.coord = (Vector2){7, 6};
-    machine2->connection.numConns = 1;
-    machine2->connection.maxConns = 1;
-    strcpy(machine2->connection.parentEntityId, router->entityId);
-    strcpy(machine2->connection.toEntityIds[0], router->entityId);
     machine2->routeTable.numRecords = 1;
     strcpy(machine2->routeTable.records[0].prefix, "*");
     strcpy(machine2->routeTable.records[0].wireEntityId, wireRouterMachine2);
@@ -206,10 +185,6 @@ void initialize_world() {
     // Machine 3
     // ============
     machine3->position.coord = (Vector2){9, 6};
-    machine3->connection.numConns = 1;
-    machine3->connection.maxConns = 1;
-    strcpy(machine3->connection.parentEntityId, router->entityId);
-    strcpy(machine3->connection.toEntityIds[0], router->entityId);
     machine3->routeTable.numRecords = 1;
     strcpy(machine3->routeTable.records[0].prefix, "*");
     strcpy(machine3->routeTable.records[0].wireEntityId, wireRouterMachine3);
@@ -250,10 +225,6 @@ void initialize_world() {
     firstAreaRouter->position.coord = (Vector2){4, 1};
     firstAreaRouter->device.owner = DEVICE_OWNER_NOBODY;
     firstAreaRouter->device.visible = 1;
-    firstAreaRouter->connection.numConns = 2;
-    strcpy(firstAreaRouter->connection.parentEntityId, zoneRouter->entityId);
-    strcpy(firstAreaRouter->connection.toEntityIds[0], zoneRouter->entityId);
-    strcpy(firstAreaRouter->connection.toEntityIds[1], firstAreaMachine->entityId);
     firstAreaRouter->routeTable.numRecords = 2;
     strcpy(firstAreaRouter->routeTable.records[0].prefix, "*");
     strcpy(firstAreaRouter->routeTable.records[0].wireEntityId, wireZoneRouterFirstArea);
@@ -266,10 +237,6 @@ void initialize_world() {
     firstAreaMachine->position.coord = (Vector2){2, 3};
     firstAreaMachine->device.owner = DEVICE_OWNER_NOBODY;
     firstAreaMachine->device.visible = 1;
-    firstAreaMachine->connection.numConns = 1;
-    firstAreaMachine->connection.maxConns = 1;
-    strcpy(firstAreaMachine->connection.parentEntityId, firstAreaRouter->entityId);
-    strcpy(firstAreaMachine->connection.toEntityIds[0], firstAreaRouter->entityId);
     // Processes
     firstAreaMachine->processManager.maxProcs = 10;
     firstAreaMachine->processManager.numProcs = 1;

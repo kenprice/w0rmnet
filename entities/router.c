@@ -19,9 +19,6 @@ Router* entity_router_create_blank() {
 
     router->sprite.spriteId = SPRITE_ROUTER;
 
-    router->connection.numConns = 0;
-    router->connection.maxConns = 100;
-
     strncpy(router->packetBuffer.entityId, entity_id, UUID_STR_LEN);
     router->packetBuffer.sendQ = packet_queue_alloc(50);
     router->packetBuffer.recvQ = packet_queue_alloc(50);
@@ -41,10 +38,6 @@ char* entity_router_register_components(Router router) {
     Sprite* sprite = calloc(1, sizeof(Sprite));
     memcpy(sprite, &router.sprite, sizeof(Sprite));
     g_hash_table_insert(componentRegistry.sprites, entityId, sprite);
-
-    Connection* connection = calloc(1, sizeof(Connection)); // calloc initializes to zeroes
-    memcpy(connection, &router.connection, sizeof(Connection));
-    g_hash_table_insert(componentRegistry.connections, entityId, connection);
 
     PacketBuffer* packetBuffer = calloc(1, sizeof(PacketBuffer));
     packetBuffer->sendQ = packet_queue_alloc(10);
@@ -72,11 +65,10 @@ char* entity_router_serialize(Router router) {
     char* strDevice = comp_device_serialize(&router.device);
     char* strPosition = comp_position_serialize(&router.position);
     char* strSprite = comp_sprite_serialize(&router.sprite);
-    char* strConnection = comp_connection_serialize(&router.connection);
     char* strRouteTable = comp_route_table_serialize(&router.routeTable);
     char* strPacketBuffer = comp_packet_buffer_serialize(&router.packetBuffer);
 
-    sprintf(buffer, "%s\t%s\t%s\t%s\t%s\t%s\t%s", router.entityId, strDevice, strPosition, strSprite, strConnection, strRouteTable, strPacketBuffer);
+    sprintf(buffer, "%s\t%s\t%s\t%s\t%s\t%s", router.entityId, strDevice, strPosition, strSprite, strRouteTable, strPacketBuffer);
 
     char* data = calloc(strlen(buffer)+1, sizeof(char));
     strcpy(data, buffer);
@@ -84,7 +76,6 @@ char* entity_router_serialize(Router router) {
     free(strDevice);
     free(strPosition);
     free(strSprite);
-    free(strConnection);
     free(strRouteTable);
     free(strPacketBuffer);
 
@@ -99,9 +90,8 @@ Router entity_router_deserialize(char* data) {
     router.device = *(comp_device_deserialize(routerData[1]));
     router.position = *(comp_position_deserialize(routerData[2]));
     router.sprite = *(comp_sprite_deserialize(routerData[3]));
-    router.connection = *(comp_connection_deserialize(routerData[4]));
-    router.routeTable = *(comp_route_table_deserialize(routerData[5]));
-    router.packetBuffer = *(comp_packet_buffer_deserialize(routerData[6]));
+    router.routeTable = *(comp_route_table_deserialize(routerData[4]));
+    router.packetBuffer = *(comp_packet_buffer_deserialize(routerData[5]));
 
     return router;
 }

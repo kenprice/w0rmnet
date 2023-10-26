@@ -51,8 +51,6 @@ add_executable(${PROJECT_NAME} app.c
         entities/machine.c
         entities/router.h
         entities/router.c
-        components/connection.c
-        components/connection.h
         systems/packet_routing_system.h
         systems/packet_routing_system.c
         components/packet.h
@@ -101,6 +99,8 @@ add_executable(${PROJECT_NAME} app.c
         components/wire.c
         components/polygon.h
         components/polygon.c
+        lib/log/log.h
+        lib/log/log.c
 )
 #set(raylib_VERBOSE 1)
 target_link_libraries(${PROJECT_NAME} raylib)

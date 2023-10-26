@@ -8,7 +8,6 @@ typedef struct {
     Device device;
     Position position;
     Sprite sprite;
-    Connection connection;
     PacketBuffer packetBuffer;
     RouteTable routeTable;
     ProcessManager processManager;

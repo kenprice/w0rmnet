@@ -24,9 +24,6 @@ Machine* entity_machine_create_blank() {
 
     machine->sprite.spriteId = SPRITE_SERVER;
 
-    machine->connection.numConns = 0;
-    machine->connection.maxConns = 1;
-
     strncpy(machine->packetBuffer.entityId, entity_id, UUID_STR_LEN);
     machine->packetBuffer.sendQ = packet_queue_alloc(10);
     machine->packetBuffer.recvQ = packet_queue_alloc(10);
@@ -46,10 +43,6 @@ char* entity_machine_register_components(Machine machine) {
     Sprite* sprite = calloc(1, sizeof(Sprite));
     memcpy(sprite, &machine.sprite, sizeof(Sprite));
     g_hash_table_insert(componentRegistry.sprites, entityId, sprite);
-
-    Connection* connection = calloc(1, sizeof(Connection)); // calloc initializes to zeroes
-    memcpy(connection, &machine.connection, sizeof(Connection));
-    g_hash_table_insert(componentRegistry.connections, entityId, connection);
 
     RouteTable* routeTable = calloc(1, sizeof(RouteTable));
     memcpy(routeTable, &machine.routeTable, sizeof(RouteTable));
@@ -89,13 +82,12 @@ char* entity_machine_serialize(Machine machine) {
     char* strDevice = comp_device_serialize(&machine.device);
     char* strPosition = comp_position_serialize(&machine.position);
     char* strSprite = comp_sprite_serialize(&machine.sprite);
-    char* strConnection = comp_connection_serialize(&machine.connection);
     char* strRouteTable = comp_route_table_serialize(&machine.routeTable);
     char* strPacketBuffer = comp_packet_buffer_serialize(&machine.packetBuffer);
     char* strProcessManager = comp_process_manager_serialize(&machine.processManager);
 
-    sprintf(buffer, "%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s", machine.entityId, strDevice, strPosition, strSprite, strConnection,
-            strRouteTable, strPacketBuffer, strProcessManager);
+    sprintf(buffer, "%s\t%s\t%s\t%s\t%s\t%s\t%s", machine.entityId, strDevice, strPosition, strSprite, strRouteTable,
+            strPacketBuffer, strProcessManager);
 
     char* data = calloc(strlen(buffer)+1, sizeof(char));
     strcpy(data, buffer);
@@ -103,7 +95,6 @@ char* entity_machine_serialize(Machine machine) {
     free(strDevice);
     free(strPosition);
     free(strSprite);
-    free(strConnection);
     free(strRouteTable);
     free(strPacketBuffer);
     free(strProcessManager);
@@ -119,10 +110,9 @@ Machine entity_machine_deserialize(char* data) {
     machine.device = *(comp_device_deserialize(machineData[1]));
     machine.position = *(comp_position_deserialize(machineData[2]));
     machine.sprite = *(comp_sprite_deserialize(machineData[3]));
-    machine.connection = *(comp_connection_deserialize(machineData[4]));
-    machine.routeTable = *(comp_route_table_deserialize(machineData[5]));
-    machine.packetBuffer = *(comp_packet_buffer_deserialize(machineData[6]));
-    machine.processManager = *(comp_process_manager_deserialize(machineData[7]));
+    machine.routeTable = *(comp_route_table_deserialize(machineData[4]));
+    machine.packetBuffer = *(comp_packet_buffer_deserialize(machineData[5]));
+    machine.processManager = *(comp_process_manager_deserialize(machineData[6]));
 
     return machine;
 }

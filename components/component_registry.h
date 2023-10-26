@@ -9,7 +9,6 @@ typedef struct {
     GHashTable* devices;
     GHashTable* positions;
     GHashTable* sprites;
-    GHashTable* connections;
     GHashTable* packetBuffers;
     GHashTable* routeTable;
     GHashTable* processManagers;

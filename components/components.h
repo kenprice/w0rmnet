@@ -2,7 +2,6 @@
 #define EXAMPLE_COMPONENTS_H
 
 #include "raylib.h"
-#include "connection.h"
 #include "device.h"
 #include "packet.h"
 #include "route_table.h"
