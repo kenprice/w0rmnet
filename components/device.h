@@ -22,6 +22,7 @@ typedef struct {
     char name[DEVICE_NAME_LEN];
     char address[100]; // FQ Adress is something like nightcity::metro:d0rkyd3vel.sn0rtt0k3r.b3efsdr34d
     DeviceType type;
+
     int owner; // 0 for nobody, 1 for player
     int pwned; // 0 for not pwned, 1 for pwned;
     int visible; // 0 for not visible, 1 for visible

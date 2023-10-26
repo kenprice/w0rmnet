@@ -38,10 +38,28 @@ void proc_ping_handle_packet(char* entityId, Process* process, Packet* packet) {
     bool isValid = false;
 
     if (strcmp(packet->message, "Ping?") == 0) {
-        bool respond = true;
+        bool respond = false;
         if ((int)process->state[REGION_RESTRICTED_MODE] == RESTRICTED_MODE_LOCAL) {
-            int address_depth = count_address_depth(packet->toAddress);
-            respond = address_depth <= 2;
+            // Must have entity in common in both route tables
+            RouteTable* fromRt = g_hash_table_lookup(componentRegistry.routeTable, packet->fromEntityId);
+            RouteTable* thisRt = g_hash_table_lookup(componentRegistry.routeTable, entityId);
+            if (!fromRt || !thisRt) return;
+            for (int i = 0; !respond && i < fromRt->numRecords; i++) {
+                Wire* fromWire = g_hash_table_lookup(componentRegistry.wires, fromRt->records[i].wireEntityId);
+                for (int j = 0; !respond && j < thisRt->numRecords; j++) {
+                    Wire* thisWire = g_hash_table_lookup(componentRegistry.wires, thisRt->records[j].wireEntityId);
+
+                    if (strcmp(fromWire->entityA, thisWire->entityA) == 0 ||
+                        strcmp(fromWire->entityA, thisWire->entityB) == 0 ||
+                        strcmp(fromWire->entityB, thisWire->entityA) == 0 ||
+                        strcmp(fromWire->entityB, thisWire->entityB) == 0)
+                    {
+                        respond = true;
+                    }
+                }
+            }
+        } else {
+            respond = true;
         }
         if (respond) {
             PacketBuffer* packet_buffer = (PacketBuffer*)g_hash_table_lookup(componentRegistry.packetBuffers, entityId);
