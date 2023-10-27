@@ -43,6 +43,8 @@ void proc_ping_handle_packet(char* entityId, Process* process, Packet* packet) {
     char buffer[200];
 
     if (strcmp(packet->message, "Ping?") == 0) {
+        sprintf(buffer, "Received PING from %s", packet->fromAddress);
+        comp_logger_add_entry(logger, buffer);
         bool isRestricted = (int)process->state[REGION_RESTRICTED_MODE] == RESTRICTED_MODE_LOCAL;
         bool respond = true;
         if (isRestricted) {
@@ -51,7 +53,6 @@ void proc_ping_handle_packet(char* entityId, Process* process, Packet* packet) {
         if (respond) {
             PacketBuffer* packet_buffer = (PacketBuffer*)g_hash_table_lookup(componentRegistry.packetBuffers, entityId);
             packet_queue_write(&packet_buffer->sendQ, packet_alloc(entityId, packet->toAddress, packet->fromAddress, "Pong!"));
-            sprintf(buffer, "Received PING from %s", packet->fromAddress);
             sprintf(buffer, "Sending PONG to %s", packet->fromAddress);
             comp_logger_add_entry(logger, buffer);
         } else {

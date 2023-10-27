@@ -99,6 +99,13 @@ static void update_area_viewer_camera_control(AreaViewerWindowState* state) {
     else if (IsKeyDown(KEY_A)) state->camera.offset.x += offset;
     if (IsKeyDown(KEY_W)) state->camera.offset.y += offset;
     else if (IsKeyDown(KEY_S)) state->camera.offset.y -= offset;
+
+    float wheel = GetMouseWheelMove();
+    if (wheel < 0) {
+        state->camera.zoom = 0.5f;
+    } else if (wheel > 0) {
+        state->camera.zoom = 1.0f;
+    }
 }
 
 static void update_area_viewer_selected_device(AreaViewerWindowState* state) {
