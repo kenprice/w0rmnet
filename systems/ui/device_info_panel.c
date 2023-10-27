@@ -28,6 +28,11 @@ typedef struct {
     bool progTargetAreaEditMode;
     int progTargetEntityScrollIndex;
     int progTargetEntityIndex;
+
+    // Log panel
+    Rectangle logPanelView;
+    Vector2 logPanelScroll;
+
 } DeviceInfoPanelState;
 
 static DeviceInfoPanelState state;
@@ -41,6 +46,9 @@ void init_device_info_panel() {
     state.progTargetZoneEditMode = false;
     state.progTargetAreaIndex = 0;
     state.progTargetAreaEditMode = false;
+
+    state.logPanelView = (Rectangle){ 0 };
+    state.logPanelScroll = (Vector2){ 0, 0 };
 }
 
 int render_device_target_dropdown(Rectangle rect) {
@@ -163,6 +171,26 @@ void render_progs_login_options(Rectangle rect, Device* device) {
     }
 }
 
+void render_device_info_stats(Rectangle rect, Device* device) {
+    char buffer[100];
+    int lineHeight = 16;
+
+    Rectangle infoTextRect = (Rectangle){
+            rect.x,
+            rect.y,
+            300,
+            lineHeight
+    };
+
+    sprintf(buffer, device->owner == DEVICE_OWNER_PLAYER ? "#138#Owner: You" : "#137#Owner: ???");
+    GuiLabel(infoTextRect, buffer);
+    infoTextRect.y += lineHeight;
+
+    sprintf(buffer, "%sType: %s", device->type == DEVICE_TYPE_ROUTER ? "#225#" : "#224#", DeviceTypeLabel[device->type]);
+    GuiLabel(infoTextRect, buffer);
+    infoTextRect.y += lineHeight;
+}
+
 void render_device_prog_controls(Rectangle rect, Device* device) {
     if (device->owner != DEVICE_OWNER_PLAYER) return;
 
@@ -201,24 +229,28 @@ void render_device_prog_controls(Rectangle rect, Device* device) {
     }
 }
 
-void render_device_info_stats(Rectangle rect, Device* device) {
-    char buffer[100];
+void render_device_logs(Rectangle rect, Device* device) {
     int lineHeight = 16;
 
-    Rectangle infoTextRect = (Rectangle){
-            rect.x,
-            rect.y,
-            300,
-            lineHeight
-    };
+    Logger* logger = g_hash_table_lookup(componentRegistry.logger, device->entityId);
+    if (!logger) return;
 
-    sprintf(buffer, device->owner == DEVICE_OWNER_PLAYER ? "#138#Owner: You" : "#137#Owner: ???");
-    GuiLabel(infoTextRect, buffer);
-    infoTextRect.y += lineHeight;
+    int logLinesHeight = logger->numEntries * 16;
 
-    sprintf(buffer, "%sType: %s", device->type == DEVICE_TYPE_ROUTER ? "#225#" : "#224#", DeviceTypeLabel[device->type]);
-    GuiLabel(infoTextRect, buffer);
-    infoTextRect.y += lineHeight;
+    Rectangle scrollPanelRect = (Rectangle){ rect.x, rect.y, rect.width - (UI_COMPONENT_PADDING*2), rect.height - (UI_COMPONENT_PADDING*2) };
+    Rectangle panelContentRect = (Rectangle){ rect.x, rect.y, scrollPanelRect.width - UI_COMPONENT_PADDING, logLinesHeight};
+
+    GuiScrollPanel(scrollPanelRect, NULL, panelContentRect, &state.logPanelScroll, &state.logPanelView);
+
+    Rectangle infoTextRect = (Rectangle){ rect.x + UI_COMPONENT_PADDING, rect.y + state.logPanelScroll.y, panelContentRect.width - UI_COMPONENT_PADDING, 16 };
+
+    BeginScissorMode(state.logPanelView.x, state.logPanelView.y, state.logPanelView.width, state.logPanelView.height);
+    for (int i = 0; i < logger->numEntries; i++) {
+//    for (int i = logger->numEntries-1; i >= 0; i--) {
+        GuiLabel(infoTextRect, logger->logEntries[i]);
+        infoTextRect.y += lineHeight;
+    }
+    EndScissorMode();
 }
 
 void GuiTooltipCustom(Rectangle controlRec, char* text)
@@ -261,6 +293,14 @@ void render_device_info_menu_buttons(Rectangle rect) {
     }
     if (CheckCollisionPointRec(mousePos, btnGroupRect))
         GuiTooltipCustom(btnGroupRect, "Programs");
+
+    btnGroupRect.y += 30;
+    if (GuiButton(btnGroupRect, "#177#")) {
+        state.activePanelIndex = 2;
+        state.logPanelScroll.y = -1000;
+    }
+    if (CheckCollisionPointRec(mousePos, btnGroupRect))
+        GuiTooltipCustom(btnGroupRect, "Logs");
 }
 
 int render_device_info_panel(Rectangle rect, Device* device) {
@@ -278,10 +318,16 @@ int render_device_info_panel(Rectangle rect, Device* device) {
         rect.height - TITLEBAR_HEIGHT
     };
 
-    if (state.activePanelIndex == 0) {
-        render_device_info_stats(activePanelRect, device);
-    } else if (state.activePanelIndex == 1 ){
-        render_device_prog_controls(activePanelRect, device);
+    switch (state.activePanelIndex) {
+        case 0:
+            render_device_info_stats(activePanelRect, device);
+            break;
+        case 1:
+            render_device_prog_controls(activePanelRect, device);
+            break;
+        case 2:
+            render_device_logs(activePanelRect, device);
+            break;
     }
 
     render_device_info_menu_buttons(rect);

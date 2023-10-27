@@ -39,8 +39,6 @@ static bool has_common_connected_wires(char* fromEntityId, char* toEntityId) {
 void proc_ping_handle_packet(char* entityId, Process* process, Packet* packet) {
     if (packet == NULL) return;
 
-    bool isValid = false;
-
     Logger* logger = g_hash_table_lookup(componentRegistry.logger, entityId);
     char buffer[200];
 
@@ -53,29 +51,34 @@ void proc_ping_handle_packet(char* entityId, Process* process, Packet* packet) {
         if (respond) {
             PacketBuffer* packet_buffer = (PacketBuffer*)g_hash_table_lookup(componentRegistry.packetBuffers, entityId);
             packet_queue_write(&packet_buffer->sendQ, packet_alloc(entityId, packet->toAddress, packet->fromAddress, "Pong!"));
-            sprintf(buffer, "Received PING from %s. Sending pong.", packet->fromAddress);
+            sprintf(buffer, "Received PING from %s", packet->fromAddress);
+            sprintf(buffer, "Sending PONG to %s", packet->fromAddress);
             comp_logger_add_entry(logger, buffer);
         } else {
-            sprintf(buffer, "Blocked PING from %s.", packet->fromAddress);
+            sprintf(buffer, "Blocked PING from %s", packet->fromAddress);
             comp_logger_add_entry(logger, buffer);
         }
-        isValid = true;
     }
 
     if (strcmp(packet->message, "Pong!") == 0) {
-        isValid = true;
-    }
-
-    // Received packet is valid ping-pong packet, make sender visible if recipient is owned by player
-    if (isValid) {
-        Device* recipient_device = (Device*)g_hash_table_lookup(componentRegistry.devices, entityId);
-        if (recipient_device->owner == DEVICE_OWNER_PLAYER) {
+        // Received packet is valid pong packet, make sender visible if recipient is owned by player
+        bool newHost = false;
+        Device* recipientDevice = (Device*)g_hash_table_lookup(componentRegistry.devices, entityId);
+        if (recipientDevice->owner == DEVICE_OWNER_PLAYER) {
             // Target entity is the one we want to determine the new visibility of
             char* target_entity = packet->fromEntityId;
-            Device* target_device = (Device*)g_hash_table_lookup(componentRegistry.devices, target_entity);
-            if (target_device && !target_device->visible) {
-                target_device->visible = true;
+            Device* targetDevice = (Device*)g_hash_table_lookup(componentRegistry.devices, target_entity);
+            if (targetDevice && !targetDevice->visible) {
+                targetDevice->visible = true;
+                newHost = true;
             }
+        }
+
+        sprintf(buffer, "Received PONG from %s", packet->fromAddress);
+        comp_logger_add_entry(logger, buffer);
+        if (newHost) {
+            sprintf(buffer, "Host %s is new and has been added to known hosts", packet->fromAddress);
+            comp_logger_add_entry(logger, buffer);
         }
     }
 }
@@ -84,17 +87,18 @@ void proc_ping_handle_message(char* entityId, Process* process, ProcMessage* mes
     if (message == NULL) return;
     if (strlen(message->args) == 0) return;
 
+    Logger* logger = g_hash_table_lookup(componentRegistry.logger, entityId);
+    char buffer[200];
+
     Device* fromDevice = g_hash_table_lookup(componentRegistry.devices, entityId);
     char* fromAddress = fromDevice->address;
 
     // Sends Ping to address specified by args
     char* targetAddress = message->args;
 
-//    char* relativeTargetAddress = convert_full_address_to_relative_address(entityId, targetAddress);
-
-
     PacketBuffer* packet_buffer = (PacketBuffer*)g_hash_table_lookup(componentRegistry.packetBuffers, entityId);
     packet_queue_write(&packet_buffer->sendQ, packet_alloc(entityId, fromAddress, targetAddress, "Ping?"));
 
-//    free(relativeTargetAddress);
+    sprintf(buffer, "PING %s", targetAddress);
+    comp_logger_add_entry(logger, buffer);
 }

@@ -1,7 +1,6 @@
+#include <stdio.h>
 #include "netscan_runner.h"
 #include "../../components/component_registry.h"
-#include "../utils/routing.h"
-#include "../../components/wire.h"
 
 /**
  * Netscan
@@ -11,11 +10,11 @@
  */
 
 /**
- * @param entity_id entity on which the process is running
+ * @param entityId entity on which the process is running
  * @param process the process
  * @param packet received packet
  */
-void proc_netscan_handle_packet(char* entity_id, Process* process, Packet* packet) {
+void proc_netscan_handle_packet(char* entityId, Process* process, Packet* packet) {
     /* no-op */
 }
 
@@ -28,6 +27,9 @@ void proc_netscan_handle_message(char* entityId, Process* process, ProcMessage* 
     PacketBuffer* packetBuffer = (PacketBuffer*)g_hash_table_lookup(componentRegistry.packetBuffers, entityId);
     if (!packetBuffer) return;
 
+    Logger* logger = g_hash_table_lookup(componentRegistry.logger, entityId);
+    char buffer[200];
+
     Device* fromDevice = g_hash_table_lookup(componentRegistry.devices, entityId);
     char* fromAddress = fromDevice->address;
 
@@ -35,6 +37,9 @@ void proc_netscan_handle_message(char* entityId, Process* process, ProcMessage* 
     char* targetAddress = message->args;
     Device* targetDevice = find_device_by_address(targetAddress);
     if (!targetDevice) return;
+
+    sprintf(buffer, "NETSCAN %s", targetAddress);
+    comp_logger_add_entry(logger, buffer);
 
     // Perform a ping scan against target router's connections
     RouteTable* routeTable = g_hash_table_lookup(componentRegistry.routeTable, targetDevice->entityId);
