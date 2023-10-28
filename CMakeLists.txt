@@ -103,6 +103,8 @@ add_executable(${PROJECT_NAME} app.c
         lib/log/log.c
         components/logger.h
         components/logger.c
+        systems/ui/custom_raygui.h
+        systems/ui/custom_raygui.c
 )
 #set(raylib_VERBOSE 1)
 target_link_libraries(${PROJECT_NAME} raylib)

@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include "../lib/raygui.h"
+#include "ui/custom_raygui.h"
 #include "glib.h"
 #include "main_gui_system.h"
 #include "main_gui_system/area_viewer_window.h"
@@ -14,9 +15,14 @@
 #define UI_TOP_NAVBAR_HEIGHT 34
 #define UI_BOTTOM_PANEL_HEIGHT 232
 
+#define LEFT_PANEL_MODE_PLAYER_AREA 0
+#define LEFT_PANEL_MODE_WORMS 1
+
 typedef struct {
     Rectangle leftPanelRect;
     Rectangle rightPanelRect;
+
+    int activeLeftPanelMode;
 
     bool dragMode;
     int dragOffsetX;
@@ -25,9 +31,10 @@ typedef struct {
 } MainGuiState;
 
 MainGuiState mainGuiState;
-
 AreaViewerWindowState areaViewerWindowState[MAX_AREA_VIEWER_WINDOWS];
-int numAreaViewerWindows = 0;
+
+static void update_panels_player_area_mode();
+static void render_top_navbar();
 
 void initialize_main_gui_system() {
     int screenWidth = GetScreenWidth();
@@ -50,45 +57,34 @@ void update_main_gui_system() {
     int screenWidth = GetScreenWidth();
     int screenHeight = GetScreenHeight();
 
+    // -------------------
+    // Refresh left and right panel dimensions
     mainGuiState.leftPanelRect = (Rectangle){0, UI_TOP_NAVBAR_HEIGHT, mainGuiState.leftPanelRect.width,
                                              screenHeight - UI_TOP_NAVBAR_HEIGHT - UI_BOTTOM_PANEL_HEIGHT};
-    areaViewerWindowState[0].window.windowBounds.x = mainGuiState.leftPanelRect.x;
-    areaViewerWindowState[0].window.windowBounds.y = mainGuiState.leftPanelRect.y;
-    areaViewerWindowState[0].window.windowBounds.width = mainGuiState.leftPanelRect.width;
-    areaViewerWindowState[0].window.windowBounds.height = mainGuiState.leftPanelRect.height;
-
-    mainGuiState.rightPanelRect = (Rectangle){mainGuiState.leftPanelRect.width-1, 34,
+    mainGuiState.rightPanelRect = (Rectangle){mainGuiState.leftPanelRect.width, 34,
                                               screenWidth-(mainGuiState.leftPanelRect.width),
                                               screenHeight - UI_TOP_NAVBAR_HEIGHT - UI_BOTTOM_PANEL_HEIGHT};
+
+    // -------------------
+    // Update right panel (currently fixed to some area)
     areaViewerWindowState[1].window.windowBounds.x = mainGuiState.rightPanelRect.x;
     areaViewerWindowState[1].window.windowBounds.y = mainGuiState.rightPanelRect.y;
     areaViewerWindowState[1].window.windowBounds.width = mainGuiState.rightPanelRect.width;
     areaViewerWindowState[1].window.windowBounds.height = mainGuiState.rightPanelRect.height;
-
-    update_area_viewer_window(&areaViewerWindowState[0]);
     update_area_viewer_window(&areaViewerWindowState[1]);
 
-    // Janky way of selecting exactly one selected device out of the two area windows
-    if (!mainGuiState.selectedDevice) {
-        if (areaViewerWindowState[0].selectedDevice) {
-            mainGuiState.selectedDevice = areaViewerWindowState[0].selectedDevice;
-            areaViewerWindowState[1].selectedDevice = NULL;
-        } else if (areaViewerWindowState[1].selectedDevice) {
-            mainGuiState.selectedDevice = areaViewerWindowState[1].selectedDevice;
-            areaViewerWindowState[0].selectedDevice = NULL;
-        }
-    } else {
-        if (areaViewerWindowState[0].selectedDevice && mainGuiState.selectedDevice != areaViewerWindowState[0].selectedDevice) {
-            mainGuiState.selectedDevice = areaViewerWindowState[0].selectedDevice;
-            areaViewerWindowState[1].selectedDevice = NULL;
-        } else if (areaViewerWindowState[1].selectedDevice && mainGuiState.selectedDevice != areaViewerWindowState[1].selectedDevice) {
-            mainGuiState.selectedDevice = areaViewerWindowState[1].selectedDevice;
-            areaViewerWindowState[0].selectedDevice = NULL;
-        } else if (!areaViewerWindowState[0].selectedDevice && !areaViewerWindowState[1].selectedDevice) {
-            mainGuiState.selectedDevice = NULL;
-        }
+    // -------------------
+    // Update left panel
+    switch (mainGuiState.activeLeftPanelMode) {
+        case LEFT_PANEL_MODE_PLAYER_AREA:
+            update_panels_player_area_mode();
+            break;
+        case LEFT_PANEL_MODE_WORMS:
+            break;
     }
 
+    // -------------------
+    // Drag to adjust side
     Vector2 mousePosition = GetMousePosition();
     if (IsMouseButtonPressed(MOUSE_LEFT_BUTTON)) {
         Rectangle boundaryRect = (Rectangle){mainGuiState.leftPanelRect.width-3, mainGuiState.leftPanelRect.y, 6, mainGuiState.leftPanelRect.height};
@@ -105,15 +101,8 @@ void update_main_gui_system() {
     }
 }
 
-
-
-static int active = 0;
-
 void render_main_gui_system() {
     int screenWidth = GetScreenWidth();
-    int screenHeight = GetScreenHeight();
-
-    Rectangle leftPanel = mainGuiState.leftPanelRect;
 
     // Left info panel
     Rectangle infoPanelRect = (Rectangle){
@@ -141,12 +130,58 @@ void render_main_gui_system() {
     char text[1000] = "";
     GuiLabel(logPanelText, text);
 
-    // left and right area views
-    render_area_viewer_window(&areaViewerWindowState[0]);
+    // Top navbar
+    render_top_navbar();
+
+    // -------------------
+    // Render right panel (currently fixed to some area)
     render_area_viewer_window(&areaViewerWindowState[1]);
 
-    // Top navbar
+    // -------------------
+    // Update left panel
+    switch (mainGuiState.activeLeftPanelMode) {
+        case LEFT_PANEL_MODE_PLAYER_AREA:
+            render_area_viewer_window(&areaViewerWindowState[0]);
+            break;
+        case LEFT_PANEL_MODE_WORMS:
+            break;
+    }
+}
+
+static void update_panels_player_area_mode() {
+    areaViewerWindowState[0].window.windowBounds.x = mainGuiState.leftPanelRect.x;
+    areaViewerWindowState[0].window.windowBounds.y = mainGuiState.leftPanelRect.y;
+    areaViewerWindowState[0].window.windowBounds.width = mainGuiState.leftPanelRect.width;
+    areaViewerWindowState[0].window.windowBounds.height = mainGuiState.leftPanelRect.height;
+
+    if (areaViewerWindowState[0].selectedDevice && mainGuiState.selectedDevice != areaViewerWindowState[0].selectedDevice) {
+        mainGuiState.selectedDevice = areaViewerWindowState[0].selectedDevice;
+        areaViewerWindowState[1].selectedDevice = NULL;
+    }
+    if (areaViewerWindowState[1].selectedDevice && mainGuiState.selectedDevice != areaViewerWindowState[1].selectedDevice) {
+        mainGuiState.selectedDevice = areaViewerWindowState[1].selectedDevice;
+        areaViewerWindowState[0].selectedDevice = NULL;
+    }
+
+    update_area_viewer_window(&areaViewerWindowState[0]);
+}
+
+static void render_top_navbar() {
+    int screenWidth = GetScreenWidth();
+    Vector2 mousePos = GetMousePosition();
+
     Rectangle rectangle = (Rectangle){0, 1, screenWidth, 34};
     GuiPanel(rectangle, NULL);
-    GuiToggleGroup((Rectangle){6, 6, 24, 24}, "#149#;#152#", &active);
+
+    Rectangle btnRect = (Rectangle){6, 6, 24, 24};
+    GuiToggleGroup(btnRect, "#149#;#152#", &mainGuiState.activeLeftPanelMode);
+
+    Rectangle btnGroupRect = (Rectangle){ rectangle.x+btnRect.x, rectangle.y+btnRect.y, btnRect.width, btnRect.height };
+    if (CheckCollisionPointRec(mousePos, btnGroupRect)) {
+        GuiTooltipCustom(btnGroupRect, "Player Area");
+    }
+    btnGroupRect.x += 24 + 4;
+    if (CheckCollisionPointRec(mousePos, btnGroupRect)) {
+        GuiTooltipCustom(btnGroupRect, "Worms");
+    }
 }
