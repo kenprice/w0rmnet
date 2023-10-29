@@ -41,7 +41,7 @@ AreaViewerWindowState init_area_viewer_window(Area* area, Rectangle rect) {
     state.camera.target = (Vector2){0, 0};
     state.camera.offset = (Vector2){state.window.windowBounds.width/2, state.window.windowBounds.height/3};
     state.camera.rotation = 0.0f;
-    state.camera.zoom = 0.5f;
+    state.camera.zoom = 1.0f;
 
     state.selectedDevice = NULL;
 

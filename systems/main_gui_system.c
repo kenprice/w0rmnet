@@ -43,6 +43,7 @@ static void update_panels_player_area_mode();
 static void render_left_navbar();
 static void render_top_navbar();
 static void render_worms_window();
+static void load_area_view_left_panel(Area* area);
 
 void initialize_main_gui_system() {
     int screenWidth = GetScreenWidth();
@@ -57,6 +58,8 @@ void initialize_main_gui_system() {
     areaViewerWindowState[1].camera.zoom = 0.5f;
 
     mainGuiState.selectedDevice = NULL;
+    mainGuiState.toolWindowState.activeToolWindow = TOOLWINDOW_INACTIVE;
+    mainGuiState.toolWindowState.switchAreaFn = load_area_view_left_panel;
 
     init_device_info_panel();
 }
@@ -68,9 +71,12 @@ void update_main_gui_system() {
     // -------------------
     // Refresh left and right panel dimensions
 
-    mainGuiState.leftPanelRect = (Rectangle){mainGuiState.leftPanelRect.x, UI_TOP_NAVBAR_HEIGHT, mainGuiState.leftPanelRect.width,
+    int toolWindowWidth = mainGuiState.toolWindowState.activeToolWindow == TOOLWINDOW_INACTIVE ? 0 : UI_LEFT_TOOLWINDOW_WIDTH;
+    mainGuiState.leftPanelRect = (Rectangle){toolWindowWidth + UI_LEFT_SIDEBAR_WIDTH - 1,
+                                             UI_TOP_NAVBAR_HEIGHT,
+                                             mainGuiState.leftPanelRect.width,
                                              screenHeight - UI_TOP_NAVBAR_HEIGHT - UI_BOTTOM_PANEL_HEIGHT};
-    mainGuiState.rightPanelRect = (Rectangle){mainGuiState.leftPanelRect.x+mainGuiState.leftPanelRect.width, UI_TOP_NAVBAR_HEIGHT,
+    mainGuiState.rightPanelRect = (Rectangle){mainGuiState.leftPanelRect.x + mainGuiState.leftPanelRect.width, UI_TOP_NAVBAR_HEIGHT,
                                               screenWidth-(mainGuiState.leftPanelRect.width),
                                               screenHeight - UI_TOP_NAVBAR_HEIGHT - UI_BOTTOM_PANEL_HEIGHT};
 
@@ -94,7 +100,8 @@ void update_main_gui_system() {
 
     // -------------------
     // Update tool window
-    Rectangle toolWindowRect = (Rectangle){mainGuiState.leftPanelRect.x, UI_TOP_NAVBAR_HEIGHT, UI_LEFT_TOOLWINDOW_WIDTH,
+    Rectangle toolWindowRect = (Rectangle){mainGuiState.leftPanelRect.x - UI_LEFT_TOOLWINDOW_WIDTH,
+                                           UI_TOP_NAVBAR_HEIGHT, UI_LEFT_TOOLWINDOW_WIDTH,
                                            screenHeight - UI_TOP_NAVBAR_HEIGHT - UI_BOTTOM_PANEL_HEIGHT};
     mainGuiState.toolWindowState.toolWindowRect = toolWindowRect;
     update_tool_window(&mainGuiState.toolWindowState);
@@ -169,13 +176,8 @@ void render_main_gui_system() {
 
     // -------------------
     // Left drawer icons
+    render_tool_window(&mainGuiState.toolWindowState);
     render_left_navbar();
-
-    switch(mainGuiState.toolWindowState.activeToolWindow) {
-        case TOOLWINDOW_NETWORK_MAP:
-            render_tool_window(&mainGuiState.toolWindowState);
-            break;
-    }
 }
 
 static void update_panels_player_area_mode() {
@@ -247,4 +249,8 @@ static void render_worms_window() {
     if (GuiButton(btnRect, "XX")) {
         botnet_system_test_launch_login_attack();
     }
+}
+
+static void load_area_view_left_panel(Area* area) {
+    areaViewerWindowState[0] = init_area_viewer_window(area, mainGuiState.leftPanelRect);
 }
