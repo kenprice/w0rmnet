@@ -4,6 +4,7 @@
 #include "glib.h"
 #include "main_gui_system.h"
 #include "main_gui_system/area_viewer_window.h"
+#include "main_gui_system/toolwindow.h"
 #include "botnet_system.h"
 #include "ui/device_info_panel.h"
 #include "utils/rendering.h"
@@ -15,11 +16,11 @@
 #define UI_COMPONENT_PADDING 8
 #define UI_TOP_NAVBAR_HEIGHT 34
 #define UI_BOTTOM_PANEL_HEIGHT 232
+
 #define UI_LEFT_SIDEBAR_WIDTH 36
 
 #define LEFT_PANEL_MODE_PLAYER_AREA 0
 #define LEFT_PANEL_MODE_WORMS 1
-#define LEFT_PANEL_MODE_NETMAP 2
 
 typedef struct {
     Rectangle leftPanelRect;
@@ -31,6 +32,8 @@ typedef struct {
     int dragOffsetX;
 
     Device* selectedDevice;
+
+    ToolWindowState toolWindowState;
 } MainGuiState;
 
 MainGuiState mainGuiState;
@@ -88,6 +91,13 @@ void update_main_gui_system() {
         case LEFT_PANEL_MODE_WORMS:
             break;
     }
+
+    // -------------------
+    // Update tool window
+    Rectangle toolWindowRect = (Rectangle){mainGuiState.leftPanelRect.x, UI_TOP_NAVBAR_HEIGHT, UI_LEFT_TOOLWINDOW_WIDTH,
+                                           screenHeight - UI_TOP_NAVBAR_HEIGHT - UI_BOTTOM_PANEL_HEIGHT};
+    mainGuiState.toolWindowState.toolWindowRect = toolWindowRect;
+    update_tool_window(&mainGuiState.toolWindowState);
 
     // -------------------
     // Drag to adjust side
@@ -160,6 +170,12 @@ void render_main_gui_system() {
     // -------------------
     // Left drawer icons
     render_left_navbar();
+
+    switch(mainGuiState.toolWindowState.activeToolWindow) {
+        case TOOLWINDOW_NETWORK_MAP:
+            render_tool_window(&mainGuiState.toolWindowState);
+            break;
+    }
 }
 
 static void update_panels_player_area_mode() {
@@ -190,7 +206,8 @@ static void render_left_navbar() {
     Rectangle btnRect = (Rectangle){6, 40, 24, 24};
 
     if (GuiButton(btnRect, "#241#")) {
-        mainGuiState.activeLeftPanelMode = LEFT_PANEL_MODE_NETMAP;
+        mainGuiState.toolWindowState.activeToolWindow = TOOLWINDOW_NETWORK_MAP;
+        init_tool_window(&mainGuiState.toolWindowState);
     }
     if (CheckCollisionPointRec(mousePos, btnRect)) {
         GuiTooltipCustom(btnRect, "Network Map");
