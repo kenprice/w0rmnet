@@ -231,30 +231,38 @@ static void render_area_packet_messages(AreaViewerWindowState* state) {
 static void render_connections(AreaViewerWindowState* state) {
     Area* currentArea = state->area;
 
+    // Render all wires
     for (int i = 0; i < currentArea->numEntities; i++) {
-        char* entityId = currentArea->entities[i];
+        Polygon* poly = g_hash_table_lookup(componentRegistry.polygons, currentArea->entities[i]);
+        if (!poly) continue;
 
-        // Rendering wires
-        Polygon* poly = g_hash_table_lookup(componentRegistry.polygons, entityId);
-        if (poly != NULL) {
-            for (int j=0; j<poly->numPoints-1; j++) {
-                Vector2 fromCoord = isometric_map_local_to_global(state->window.windowBounds, (float)poly->points[j].x,
-                                                                  (float)poly->points[j].y, state->camera.zoom);
-                Vector2 toCoord = isometric_map_local_to_global(state->window.windowBounds, (float)poly->points[j+1].x,
-                                                                (float)poly->points[j+1].y, state->camera.zoom);
-                fromCoord.y += SPRITE_Y_SCALE / 2;
-                toCoord.y += SPRITE_Y_SCALE / 2;
+        for (int j=0; j<poly->numPoints-1; j++) {
+            Vector2 fromCoord = isometric_map_local_to_global(state->window.windowBounds, (float)poly->points[j].x,
+                                                              (float)poly->points[j].y, state->camera.zoom);
+            Vector2 toCoord = isometric_map_local_to_global(state->window.windowBounds, (float)poly->points[j+1].x,
+                                                            (float)poly->points[j+1].y, state->camera.zoom);
+            fromCoord.y += SPRITE_Y_SCALE / 2;
+            toCoord.y += SPRITE_Y_SCALE / 2;
 
-                Wire* wire = g_hash_table_lookup(componentRegistry.wires, entityId);
-                if (!wire) {
-                    // ??? prolly not empty, or Wire could be in outer loop
-                    DrawLineEx(fromCoord, toCoord, 3, WHITE);
-                } else if (wire->sendQtoA.head != wire->sendQtoA.tail || wire->sendQtoB.head != wire->sendQtoB.tail) {
-                    DrawLineEx(fromCoord, toCoord, 3, GREEN);
-                } else {
-                    DrawLineEx(fromCoord, toCoord, 3, WHITE);
-                }
-            }
+            DrawLineEx(fromCoord, toCoord, 3, WHITE);
+        }
+    }
+    // Render active wires
+    for (int i = 0; i < currentArea->numEntities; i++) {
+        Polygon* poly = g_hash_table_lookup(componentRegistry.polygons, currentArea->entities[i]);
+        Wire* wire = g_hash_table_lookup(componentRegistry.wires, currentArea->entities[i]);
+        if (!poly || !wire) continue;
+        if (wire->sendQtoA.head == wire->sendQtoA.tail && wire->sendQtoB.head == wire->sendQtoB.tail) continue;
+
+        for (int j=0; j<poly->numPoints-1; j++) {
+            Vector2 fromCoord = isometric_map_local_to_global(state->window.windowBounds, (float)poly->points[j].x,
+                                                              (float)poly->points[j].y, state->camera.zoom);
+            Vector2 toCoord = isometric_map_local_to_global(state->window.windowBounds, (float)poly->points[j+1].x,
+                                                            (float)poly->points[j+1].y, state->camera.zoom);
+            fromCoord.y += SPRITE_Y_SCALE / 2;
+            toCoord.y += SPRITE_Y_SCALE / 2;
+
+            DrawLineEx(fromCoord, toCoord, 3, GREEN);
         }
     }
 }

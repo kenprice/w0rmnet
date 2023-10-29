@@ -272,7 +272,7 @@ typedef enum {
     ICON_PROGS                    = 243,
     ICON_REGION                   = 244,
     ICON_ZONE                     = 245,
-    ICON_246                      = 246,
+    ICON_CMDCTRL                  = 246,
     ICON_247                      = 247,
     ICON_248                      = 248,
     ICON_249                      = 249,
@@ -534,7 +534,7 @@ static unsigned int guiIcons[RAYGUI_ICON_MAX_ICONS*RAYGUI_ICON_DATA_ELEMENTS] = 
     0x00000000, 0x40027ffe, 0x7ffe4002, 0x40124002, 0x40424022, 0x4f124022, 0x7ffe4002, 0x00000000,      // ICON_PROGS
     0x01c00000, 0x0c1807f0, 0x31be180c, 0x787b38fa, 0x607b7831, 0x3c362872, 0x0c181c0c, 0x01c007f0,      // ICON_REGION
     0x00100000, 0x01bc003c, 0x09bc01bc, 0x3ffc1dbc, 0x3ba0383c, 0x6bae0bae, 0x7ffe638e, 0x00007ffe,      // ICON_ZONE
-    0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000,      // ICON_246
+    0x3ffe0000, 0x27f23006, 0x2c9a2c9a, 0x27f22ffa, 0x380e32a6, 0x20021ffc, 0x20022a7a, 0x00003ffe,      // ICON_CMDCTRL
     0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000,      // ICON_247
     0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000,      // ICON_248
     0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000,      // ICON_249

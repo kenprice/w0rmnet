@@ -109,6 +109,8 @@ add_executable(${PROJECT_NAME} app.c
         world/world_gen.c
         systems/botnet_system.h
         systems/botnet_system.c
+        systems/main_gui_system/network_map_view.h
+        systems/main_gui_system/network_map_view.c
 )
 #set(raylib_VERBOSE 1)
 target_link_libraries(${PROJECT_NAME} raylib)

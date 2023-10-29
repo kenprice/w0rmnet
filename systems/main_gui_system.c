@@ -15,9 +15,11 @@
 #define UI_COMPONENT_PADDING 8
 #define UI_TOP_NAVBAR_HEIGHT 34
 #define UI_BOTTOM_PANEL_HEIGHT 232
+#define UI_LEFT_SIDEBAR_WIDTH 36
 
 #define LEFT_PANEL_MODE_PLAYER_AREA 0
 #define LEFT_PANEL_MODE_WORMS 1
+#define LEFT_PANEL_MODE_NETMAP 2
 
 typedef struct {
     Rectangle leftPanelRect;
@@ -35,6 +37,7 @@ MainGuiState mainGuiState;
 AreaViewerWindowState areaViewerWindowState[MAX_AREA_VIEWER_WINDOWS];
 
 static void update_panels_player_area_mode();
+static void render_left_navbar();
 static void render_top_navbar();
 static void render_worms_window();
 
@@ -42,13 +45,13 @@ void initialize_main_gui_system() {
     int screenWidth = GetScreenWidth();
     int screenHeight = GetScreenHeight();
 
-    mainGuiState.leftPanelRect = (Rectangle){0, UI_TOP_NAVBAR_HEIGHT, screenWidth/2+1, screenHeight - UI_TOP_NAVBAR_HEIGHT - UI_BOTTOM_PANEL_HEIGHT};
+    mainGuiState.leftPanelRect = (Rectangle){UI_LEFT_SIDEBAR_WIDTH-1, UI_TOP_NAVBAR_HEIGHT, 2*screenWidth/3-UI_LEFT_SIDEBAR_WIDTH+1, screenHeight - UI_TOP_NAVBAR_HEIGHT - UI_BOTTOM_PANEL_HEIGHT};
     areaViewerWindowState[0] = init_area_viewer_window(worldState.currentArea, mainGuiState.leftPanelRect);
     areaViewerWindowState[0].camera.zoom = 1.0f;
 
-    mainGuiState.rightPanelRect = (Rectangle){screenWidth/2, 34, screenWidth/2+1, screenHeight - UI_TOP_NAVBAR_HEIGHT - UI_BOTTOM_PANEL_HEIGHT};
+    mainGuiState.rightPanelRect = (Rectangle){mainGuiState.leftPanelRect.x+mainGuiState.leftPanelRect.width, 34, screenWidth/3+1, screenHeight - UI_TOP_NAVBAR_HEIGHT - UI_BOTTOM_PANEL_HEIGHT};
     areaViewerWindowState[1] = init_area_viewer_window(&worldMap.regions[0].zones[0].areas[1], mainGuiState.rightPanelRect);
-    areaViewerWindowState[1].camera.zoom = 1.0f;
+    areaViewerWindowState[1].camera.zoom = 0.5f;
 
     mainGuiState.selectedDevice = NULL;
 
@@ -61,9 +64,10 @@ void update_main_gui_system() {
 
     // -------------------
     // Refresh left and right panel dimensions
-    mainGuiState.leftPanelRect = (Rectangle){0, UI_TOP_NAVBAR_HEIGHT, mainGuiState.leftPanelRect.width,
+
+    mainGuiState.leftPanelRect = (Rectangle){mainGuiState.leftPanelRect.x, UI_TOP_NAVBAR_HEIGHT, mainGuiState.leftPanelRect.width,
                                              screenHeight - UI_TOP_NAVBAR_HEIGHT - UI_BOTTOM_PANEL_HEIGHT};
-    mainGuiState.rightPanelRect = (Rectangle){mainGuiState.leftPanelRect.width, 34,
+    mainGuiState.rightPanelRect = (Rectangle){mainGuiState.leftPanelRect.x+mainGuiState.leftPanelRect.width, UI_TOP_NAVBAR_HEIGHT,
                                               screenWidth-(mainGuiState.leftPanelRect.width),
                                               screenHeight - UI_TOP_NAVBAR_HEIGHT - UI_BOTTOM_PANEL_HEIGHT};
 
@@ -89,7 +93,7 @@ void update_main_gui_system() {
     // Drag to adjust side
     Vector2 mousePosition = GetMousePosition();
     if (IsMouseButtonPressed(MOUSE_LEFT_BUTTON)) {
-        Rectangle boundaryRect = (Rectangle){mainGuiState.leftPanelRect.width-3, mainGuiState.leftPanelRect.y, 6, mainGuiState.leftPanelRect.height};
+        Rectangle boundaryRect = (Rectangle){mainGuiState.leftPanelRect.x+mainGuiState.leftPanelRect.width-3, mainGuiState.leftPanelRect.y, 6, mainGuiState.leftPanelRect.height};
         if (CheckCollisionPointRec(mousePosition, boundaryRect)) {
             mainGuiState.dragMode = true;
             mainGuiState.dragOffsetX = mousePosition.x - mainGuiState.leftPanelRect.width;
@@ -106,6 +110,7 @@ void update_main_gui_system() {
 void render_main_gui_system() {
     int screenWidth = GetScreenWidth();
 
+    // -------------------
     // Left info panel
     Rectangle infoPanelRect = (Rectangle){
         mainGuiState.leftPanelRect.x, mainGuiState.leftPanelRect.y+mainGuiState.leftPanelRect.height,
@@ -117,6 +122,7 @@ void render_main_gui_system() {
         mainGuiState.selectedDevice = NULL;
     }
 
+    // -------------------
     // Right log panel
     Rectangle logPanelRect = (Rectangle){
         mainGuiState.leftPanelRect.x+(screenWidth/2), mainGuiState.leftPanelRect.y+mainGuiState.leftPanelRect.height,
@@ -132,15 +138,12 @@ void render_main_gui_system() {
     char text[1000] = "";
     GuiLabel(logPanelText, text);
 
-    // Top navbar
-    render_top_navbar();
-
     // -------------------
     // Render right panel (currently fixed to some area)
     render_area_viewer_window(&areaViewerWindowState[1]);
 
     // -------------------
-    // Update left panel
+    // Render left panel
     switch (mainGuiState.activeLeftPanelMode) {
         case LEFT_PANEL_MODE_PLAYER_AREA:
             render_area_viewer_window(&areaViewerWindowState[0]);
@@ -149,6 +152,14 @@ void render_main_gui_system() {
             render_worms_window();
             break;
     }
+
+    // -------------------
+    // Top navbar
+    render_top_navbar();
+
+    // -------------------
+    // Left drawer icons
+    render_left_navbar();
 }
 
 static void update_panels_player_area_mode() {
@@ -169,6 +180,28 @@ static void update_panels_player_area_mode() {
     update_area_viewer_window(&areaViewerWindowState[0]);
 }
 
+static void render_left_navbar() {
+    int screenHeight = GetScreenHeight();
+    Vector2 mousePos = GetMousePosition();
+
+    Rectangle rectangle = (Rectangle){0, UI_TOP_NAVBAR_HEIGHT, UI_LEFT_SIDEBAR_WIDTH, screenHeight-UI_TOP_NAVBAR_HEIGHT-UI_BOTTOM_PANEL_HEIGHT};
+    GuiPanel(rectangle, NULL);
+
+    Rectangle btnRect = (Rectangle){6, 40, 24, 24};
+
+    if (GuiButton(btnRect, "#241#")) {
+        mainGuiState.activeLeftPanelMode = LEFT_PANEL_MODE_NETMAP;
+    }
+    if (CheckCollisionPointRec(mousePos, btnRect)) {
+        GuiTooltipCustom(btnRect, "Network Map");
+    }
+    btnRect.y += 30;
+    GuiToggle(btnRect, "#246#", NULL);
+    if (CheckCollisionPointRec(mousePos, btnRect)) {
+        GuiTooltipCustom(btnRect, "Command & Control");
+    }
+}
+
 static void render_top_navbar() {
     int screenWidth = GetScreenWidth();
     Vector2 mousePos = GetMousePosition();
@@ -176,7 +209,7 @@ static void render_top_navbar() {
     Rectangle rectangle = (Rectangle){0, 1, screenWidth, 34};
     GuiPanel(rectangle, NULL);
 
-    Rectangle btnRect = (Rectangle){6, 6, 24, 24};
+    Rectangle btnRect = (Rectangle){screenWidth-64, 6, 24, 24};
     GuiToggleGroup(btnRect, "#149#;#152#", &mainGuiState.activeLeftPanelMode);
 
     Rectangle btnGroupRect = (Rectangle){ rectangle.x+btnRect.x, rectangle.y+btnRect.y, btnRect.width, btnRect.height };
