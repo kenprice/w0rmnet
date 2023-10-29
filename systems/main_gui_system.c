@@ -4,6 +4,7 @@
 #include "glib.h"
 #include "main_gui_system.h"
 #include "main_gui_system/area_viewer_window.h"
+#include "botnet_system.h"
 #include "ui/device_info_panel.h"
 #include "utils/rendering.h"
 #include "../components/component_registry.h"
@@ -35,6 +36,7 @@ AreaViewerWindowState areaViewerWindowState[MAX_AREA_VIEWER_WINDOWS];
 
 static void update_panels_player_area_mode();
 static void render_top_navbar();
+static void render_worms_window();
 
 void initialize_main_gui_system() {
     int screenWidth = GetScreenWidth();
@@ -144,6 +146,7 @@ void render_main_gui_system() {
             render_area_viewer_window(&areaViewerWindowState[0]);
             break;
         case LEFT_PANEL_MODE_WORMS:
+            render_worms_window();
             break;
     }
 }
@@ -183,5 +186,15 @@ static void render_top_navbar() {
     btnGroupRect.x += 24 + 4;
     if (CheckCollisionPointRec(mousePos, btnGroupRect)) {
         GuiTooltipCustom(btnGroupRect, "Worms");
+    }
+}
+
+static void render_worms_window() {
+    GuiPanel(mainGuiState.leftPanelRect, "w0rms");
+
+    Rectangle btnRect = (Rectangle){mainGuiState.leftPanelRect.x+20, mainGuiState.leftPanelRect.y+20, 24, 24};
+
+    if (GuiButton(btnRect, "XX")) {
+        botnet_system_test_launch_login_attack();
     }
 }

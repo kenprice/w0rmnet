@@ -125,7 +125,11 @@ static void connect_machine_to_router(Area* area, Polygon wirePolygon, char* mac
 static void populate_processes(char* machineId) {
     ProcessManager* processManager = g_hash_table_lookup(componentRegistry.processManagers, machineId);
     processManager->maxProcs = 10;
-    processManager->numProcs = 1;
+    processManager->numProcs = 2;
     processManager->processes[0].type = PROCESS_TYPE_PING;
     processManager->processes[0].invocable = true;
+
+    processManager->processes[1].type = PROCESS_TYPE_LOGIN;
+    processManager->processes[1].invocable = true;
+    strcpy(processManager->processes[1].state, "root:root");
 }

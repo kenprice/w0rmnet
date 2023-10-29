@@ -25,8 +25,8 @@ Machine* entity_machine_create_blank() {
     machine->sprite.spriteId = SPRITE_SERVER;
 
     strncpy(machine->packetBuffer.entityId, entity_id, UUID_STR_LEN);
-    machine->packetBuffer.sendQ = packet_queue_alloc(10);
-    machine->packetBuffer.recvQ = packet_queue_alloc(10);
+    machine->packetBuffer.sendQ = packet_queue_alloc(50);
+    machine->packetBuffer.recvQ = packet_queue_alloc(50);
 
     return machine;
 }
@@ -49,8 +49,8 @@ char* entity_machine_register_components(Machine machine) {
     g_hash_table_insert(componentRegistry.routeTable, entityId, routeTable);
 
     PacketBuffer* packetBuffer = calloc(1, sizeof(PacketBuffer));
-    packetBuffer->sendQ = packet_queue_alloc(10);
-    packetBuffer->recvQ = packet_queue_alloc(10);
+    packetBuffer->sendQ = packet_queue_alloc(50);
+    packetBuffer->recvQ = packet_queue_alloc(50);
     strcpy(packetBuffer->entityId, entityId);
     g_hash_table_insert(componentRegistry.packetBuffers, entityId, packetBuffer);
 

@@ -102,9 +102,9 @@ static void update_area_viewer_camera_control(AreaViewerWindowState* state) {
 
     float wheel = GetMouseWheelMove();
     if (wheel < 0) {
-        state->camera.zoom = 0.5f;
+        state->camera.zoom = state->camera.zoom < 1.0f ? 0.25f : 0.5f;
     } else if (wheel > 0) {
-        state->camera.zoom = 1.0f;
+        state->camera.zoom = state->camera.zoom > 0.25f ? 1.0f : 0.5f;
     }
 }
 

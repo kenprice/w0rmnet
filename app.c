@@ -16,6 +16,7 @@ static unsigned int *guiIconsPtr = guiIcons;
 #include "systems/main_gui_system.h"
 #include "systems/packet_routing_system.h"
 #include "systems/process_running_system.h"
+#include "systems/botnet_system.h"
 #include "world/world_map.h"
 #include "world/world_state.h"
 
@@ -73,6 +74,7 @@ int main(void)
         update_main_gui_system();
         update_packet_routing_system();
         update_process_running_system();
+        update_botnet_system();
 
         // Draw
         //----------------------------------------------------------------------------------

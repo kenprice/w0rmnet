@@ -66,8 +66,7 @@ void register_device(Device device, char* entityId) {
 }
 
 void iterate_devices(void (*cb)(char*,Device*)) {
-    GHashTableIter iter;
-    char* entity_id;
+    GHashTableIter iter; char* entity_id;
     Device* device;
 
     g_hash_table_iter_init(&iter, componentRegistry.devices);
