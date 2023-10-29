@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include "world_map.h"
+#include "world_gen.h"
 #include "../components/component_registry.h"
 #include "../entities/machine.h"
 #include "../entities/router.h"
@@ -20,11 +21,6 @@ void initialize_world() {
     Area* firstArea = &worldMap.regions[0].zones[0].areas[1];
     Router* firstAreaRouter = entity_router_create_blank();
     Machine* firstAreaMachine = entity_machine_create_blank();
-
-    strcpy(playerArea->zoneRouterEntityId, zoneRouter->entityId);
-    playerArea->zoneRouterCoord = (Vector2){4, -5};
-    strcpy(firstArea->zoneRouterEntityId, zoneRouter->entityId);
-    firstArea->zoneRouterCoord = (Vector2){4, -5};
 
     strcpy(areaRouter->device.address, "nightcity.metro.");
     strcat(areaRouter->device.address, areaRouter->device.name);
@@ -72,7 +68,8 @@ void initialize_world() {
     strcpy(worldMap.regions[0].zones[0].zoneId, "metro");
     strcpy(worldMap.regions[0].zones[0].zoneLabel, "Night City Metro Zone");
     strcpy(worldMap.regions[0].zones[0].parentRegion, "nightcity");
-    worldMap.regions[0].zones[0].numAreas = 2;
+    strcpy(worldMap.regions[0].zones[0].gateway, zoneRouter->entityId);
+    worldMap.regions[0].zones[0].numAreas = 3;
 
     zoneRouter->position.coord = (Vector2){0, 0};
     sprintf(zoneRouter->device.address, "nightcity.metro");
@@ -203,52 +200,6 @@ void initialize_world() {
     strcpy(machine3->processManager.processes[2].state, "root:root");
     entity_machine_register_components(entity_machine_deserialize(entity_machine_serialize(*machine3)));
 
-
-    ///////////////////////////////
-    /// SOME OTHER AREA
-    ///////////////////////////////
-    strcpy(firstArea->areaId, generate_uuid());
-    strcpy(firstArea->areaName, "Somearea");
-    strcpy(firstArea->parentRegionId, "nightcity");
-    strcpy(firstArea->parentZoneId, "metro");
-    firstArea->height = 12;
-    firstArea->width = 12;
-
-    firstArea->numEntities = 4;
-    strncpy(firstArea->entities[0], firstAreaRouter->entityId, UUID_STR_LEN);
-    strncpy(firstArea->entities[1], firstAreaMachine->entityId, UUID_STR_LEN);
-    strncpy(firstArea->entities[2], wireZoneRouterFirstArea, UUID_STR_LEN);
-    strncpy(firstArea->entities[3], wireFirstAreaRouterMachine, UUID_STR_LEN);
-
-    // Area Router
-    // ============
-    firstAreaRouter->position.coord = (Vector2){4, 1};
-    firstAreaRouter->device.owner = DEVICE_OWNER_NOBODY;
-    firstAreaRouter->device.visible = 1;
-    firstAreaRouter->routeTable.numRecords = 2;
-    strcpy(firstAreaRouter->routeTable.records[0].prefix, "*");
-    strcpy(firstAreaRouter->routeTable.records[0].wireEntityId, wireZoneRouterFirstArea);
-    strcpy(firstAreaRouter->routeTable.records[1].prefix, firstAreaMachine->device.address);
-    strcpy(firstAreaRouter->routeTable.records[1].wireEntityId, wireFirstAreaRouterMachine);
-    entity_router_register_components(entity_router_deserialize(entity_router_serialize(*firstAreaRouter)));
-
-    // Machine
-    // ============
-    firstAreaMachine->position.coord = (Vector2){2, 3};
-    firstAreaMachine->device.owner = DEVICE_OWNER_NOBODY;
-    firstAreaMachine->device.visible = 1;
-    // Processes
-    firstAreaMachine->processManager.maxProcs = 10;
-    firstAreaMachine->processManager.numProcs = 1;
-    firstAreaMachine->processManager.processes[0].type = PROCESS_TYPE_PING;
-    firstAreaMachine->processManager.processes[0].invocable = true;
-    firstAreaMachine->routeTable.numRecords = 1;
-    strcpy(firstAreaMachine->routeTable.records[0].prefix, "*");
-    strcpy(firstAreaMachine->routeTable.records[0].wireEntityId, wireFirstAreaRouterMachine);
-    memset(firstAreaMachine->processManager.processes[0].state, '\0', PROCESS_STATE_LEN);
-    entity_machine_register_components(entity_machine_deserialize(entity_machine_serialize(*firstAreaMachine)));
-
-
     ///// Wire gfx
     Polygon polyZoneRouterAreaRouter;
     polyZoneRouterAreaRouter.points[0] = (PolyPoint){ areaRouter->position.coord.x, areaRouter->position.coord.y };
@@ -278,17 +229,13 @@ void initialize_world() {
     polyAreaRouterMachine3.points[2] = (PolyPoint){ machine3->position.coord.x, machine3->position.coord.y };
     polyAreaRouterMachine3.numPoints = 3;
     register_polygon(polyAreaRouterMachine3, wireRouterMachine3);
-    Polygon polyZoneRouterFirstArea;
-    polyZoneRouterFirstArea.points[0] = (PolyPoint){ firstAreaRouter->position.coord.x, firstAreaRouter->position.coord.y };
-    polyZoneRouterFirstArea.points[1] = (PolyPoint){ firstAreaRouter->position.coord.x, firstAreaRouter->position.coord.y - 4 };
-    polyZoneRouterFirstArea.numPoints = 2;
-    register_polygon(polyZoneRouterFirstArea, wireZoneRouterFirstArea);
-    Polygon polyFirstAreaRouterMachine;
-    polyFirstAreaRouterMachine.points[0] = (PolyPoint){ firstAreaRouter->position.coord.x, firstAreaRouter->position.coord.y };
-    polyFirstAreaRouterMachine.points[1] = (PolyPoint){ firstAreaRouter->position.coord.x, firstAreaMachine->position.coord.y };
-    polyFirstAreaRouterMachine.points[2] = (PolyPoint){ firstAreaMachine->position.coord.x, firstAreaMachine->position.coord.y };
-    polyFirstAreaRouterMachine.numPoints = 3;
-    register_polygon(polyFirstAreaRouterMachine, wireFirstAreaRouterMachine);
+
+
+    worldMap.regions[0].zones[0].numAreas = 3;
+    generate_area_19x19(&worldMap.regions[0], &worldMap.regions[0].zones[0], &worldMap.regions[0].zones[0].areas[1],
+                        "test1", "Worldgen Test 1");
+    generate_area_19x19(&worldMap.regions[0], &worldMap.regions[0].zones[0], &worldMap.regions[0].zones[0].areas[2],
+                        "test2", "Worldgen Test 2");
 
 //    wireZoneRouterFirstArea = create_and_register_wire(firstAreaRouter->entityId, zoneRouter->entityId);
 //    wireFirstAreaRouterMachine = create_and_register_wire(firstAreaRouter->entityId, firstAreaMachine->entityId);

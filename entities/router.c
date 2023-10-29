@@ -4,24 +4,27 @@
 
 Router* entity_router_create_blank() {
     Router* router = calloc(1, sizeof(Router));
-    char *entity_id = generate_uuid();
-    strcpy(router->entityId, entity_id);
+    char *entityId = generate_uuid();
+    strcpy(router->entityId, entityId);
 
-    char *device_id = generate_device_id();
+    char *deviceId = generate_device_id();
     router->device.type = DEVICE_TYPE_ROUTER;
     router->device.owner = DEVICE_OWNER_NOBODY;
     router->device.pwned = DEVICE_NOT_PWNED;
-    strncpy(router->device.entityId, entity_id, UUID_STR_LEN);
-    strncpy(router->device.name, device_id, DEVICE_NAME_LEN);
+    strncpy(router->device.entityId, entityId, UUID_STR_LEN);
+    strncpy(router->device.name, deviceId, DEVICE_NAME_LEN);
 
     router->position.coord.x = 0;
     router->position.coord.y = 0;
 
     router->sprite.spriteId = SPRITE_ROUTER;
 
-    strncpy(router->packetBuffer.entityId, entity_id, UUID_STR_LEN);
+    strncpy(router->packetBuffer.entityId, entityId, UUID_STR_LEN);
     router->packetBuffer.sendQ = packet_queue_alloc(50);
     router->packetBuffer.recvQ = packet_queue_alloc(50);
+
+    free(entityId);
+    free(deviceId);
 
     return router;
 }

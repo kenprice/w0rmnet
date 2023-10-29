@@ -31,9 +31,6 @@ typedef struct {
     // Map stuff
     int width;
     int height;
-
-    char zoneRouterEntityId[UUID_STR_LEN];
-    Vector2 zoneRouterCoord;
 } Area;
 
 typedef struct {

@@ -105,6 +105,8 @@ add_executable(${PROJECT_NAME} app.c
         components/logger.c
         systems/ui/custom_raygui.h
         systems/ui/custom_raygui.c
+        world/world_gen.h
+        world/world_gen.c
 )
 #set(raylib_VERBOSE 1)
 target_link_libraries(${PROJECT_NAME} raylib)
