@@ -25,7 +25,7 @@ void update_tool_window(ToolWindowState* toolWindowState) {
 void render_tool_window(ToolWindowState* toolWindowState) {
     switch(toolWindowState->activeToolWindow) {
         case TOOLWINDOW_NETWORK_MAP:
-            if (GuiWindowBox(toolWindowState->toolWindowRect, "#242# Network")) {
+            if (GuiWindowBox(toolWindowState->toolWindowRect, "Network")) {
                 toolWindowState->activeToolWindow = -1;
             }
             render_network_map_toolwindow(&toolWindowState->networkMapState, toolWindowState->toolWindowRect);

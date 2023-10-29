@@ -63,12 +63,17 @@ void render_network_map_toolwindow(NetworkMapWindowState* state, Rectangle toolW
             for (int a = 0; a < zone->numAreas; a++) {
                 Area* area = &zone->areas[a];
                 sprintf(buffer, "#241#%s", area->areaName);
+
+                if (state->selectedArea == area) GuiSetState(STATE_PRESSED);
                 if (GuiLabelButton(infoTextRect, buffer)) {
                     state->switchAreaFn(area);
+                    state->selectedArea = area;
                 }
+                GuiSetState(STATE_NORMAL);
                 infoTextRect.y += lineHeight;
-                infoTextRect.x += lineHeight/4;
 
+                if (state->selectedArea != area) continue;
+                infoTextRect.x += lineHeight/4;
                 for (int i = 0; i < area->numEntities; i++) {
                     Device* device = g_hash_table_lookup(componentRegistry.devices, area->entities[i]);
                     if (!device || !device->visible) continue;

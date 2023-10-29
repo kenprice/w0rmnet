@@ -9,6 +9,8 @@ typedef struct {
     Rectangle scrollPanelView;
     Vector2 scrollPanelScroll;
 
+    Area* selectedArea;
+
     void (*switchAreaFn)(Area*);
 } NetworkMapWindowState;
 
