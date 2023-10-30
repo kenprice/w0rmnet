@@ -57,7 +57,7 @@ int render_area_viewer_window(AreaViewerWindowState* state) {
     BeginScissorMode(state->viewport.x, state->viewport.y+TITLEBAR_HEIGHT, state->viewport.width, state->viewport.height-TITLEBAR_HEIGHT);
 
     BeginMode2D(state->camera);
-    isometric_map_draw_grid(state->window.windowBounds, state->area->width, state->area->height, state->camera.zoom);
+//    isometric_map_draw_grid(state->window.windowBounds, state->area->width, state->area->height, state->camera.zoom);
     isometric_map_render_tiles(state->window.windowBounds, state->area->width, state->area->height, state->camera.zoom);
     render_connections(state);
     render_devices(state);
@@ -91,7 +91,7 @@ int update_area_viewer_window(AreaViewerWindowState* state) {
 }
 
 static void update_area_viewer_camera_control(AreaViewerWindowState* state) {
-    if (!CheckCollisionPointRec(GetMousePosition(), state->window.windowBounds)) return;
+    if (GuiIsLocked() || !CheckCollisionPointRec(GetMousePosition(), state->window.windowBounds)) return;
 
     int offset = 10;
 
@@ -114,14 +114,17 @@ static void update_area_viewer_selected_device(AreaViewerWindowState* state) {
                                                         mousePos.x, mousePos.y, state->camera.zoom);
     clickedTile = (Vector2){(int)clickedTile.x, (int)clickedTile.y};
 
-    if (IsMouseButtonPressed(MOUSE_BUTTON_LEFT)) {
-        for (int i = 0; i < state->area->numEntities; i++) {
-            Position* position = g_hash_table_lookup(componentRegistry.positions, state->area->entities[i]);
-            if (!position || position->coord.x != clickedTile.x || position->coord.y != clickedTile.y) continue;
+    if (GuiIsLocked() || !IsMouseButtonPressed(MOUSE_BUTTON_LEFT)) return;
 
-            Device* device = g_hash_table_lookup(componentRegistry.devices, state->area->entities[i]);
-            if (device != NULL && device->visible) {
-                state->selectedDevice = device;
+    for (int i = 0; i < state->area->numEntities; i++) {
+        Position* position = g_hash_table_lookup(componentRegistry.positions, state->area->entities[i]);
+        if (!position || position->coord.x != clickedTile.x || position->coord.y != clickedTile.y) continue;
+
+        Device* device = g_hash_table_lookup(componentRegistry.devices, state->area->entities[i]);
+        if (device != NULL && device->visible) {
+            state->selectedDevice = device;
+            if (state->selectDeviceFn) {
+                state->selectDeviceFn(device);
             }
         }
     }
@@ -268,7 +271,7 @@ static void render_connections(AreaViewerWindowState* state) {
 }
 
 static void render_device_mouseover_hover(AreaViewerWindowState* state) {
-    if (!CheckCollisionPointRec(GetMousePosition(), state->window.windowBounds)) return;
+    if (GuiIsLocked() || !CheckCollisionPointRec(GetMousePosition(), state->window.windowBounds)) return;
 
     Vector2 mousePos = GetMousePosition();
     Vector2 currentTile = isometric_map_global_to_local(state->window.windowBounds, state->camera.offset,

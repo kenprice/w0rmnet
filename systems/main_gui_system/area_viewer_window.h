@@ -15,6 +15,7 @@ typedef struct {
 
     // Selected device
     Device* selectedDevice;
+    void (*selectDeviceFn)(Device*);
 
     // Area rendering
     Camera2D camera;

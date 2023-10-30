@@ -16,6 +16,7 @@
 #define UI_COMPONENT_PADDING 8
 #define UI_TOP_NAVBAR_HEIGHT 34
 #define UI_BOTTOM_PANEL_HEIGHT 232
+#define UI_STATUS_BAR_HEIGHT 24
 
 #define UI_LEFT_SIDEBAR_WIDTH 36
 
@@ -32,6 +33,7 @@ typedef struct {
     int dragOffsetX;
 
     Device* selectedDevice;
+    bool deviceDrawerActive;
 
     ToolWindowState toolWindowState;
 } MainGuiState;
@@ -40,26 +42,42 @@ MainGuiState mainGuiState;
 AreaViewerWindowState areaViewerWindowState[MAX_AREA_VIEWER_WINDOWS];
 
 static void update_panels_player_area_mode();
+static void render_status_bar();
+static void render_device_info_drawer();
 static void render_left_navbar();
 static void render_top_navbar();
 static void render_worms_window();
 static void load_area_view_left_panel(Area* area);
+static void load_device_info_panel(Device* device);
 
 void initialize_main_gui_system() {
     int screenWidth = GetScreenWidth();
     int screenHeight = GetScreenHeight();
 
-    mainGuiState.leftPanelRect = (Rectangle){UI_LEFT_SIDEBAR_WIDTH-1, UI_TOP_NAVBAR_HEIGHT, 2*screenWidth/3-UI_LEFT_SIDEBAR_WIDTH+1, screenHeight - UI_TOP_NAVBAR_HEIGHT - UI_BOTTOM_PANEL_HEIGHT};
+    mainGuiState.leftPanelRect = (Rectangle){
+        UI_LEFT_SIDEBAR_WIDTH-1,
+        UI_TOP_NAVBAR_HEIGHT,
+        2*screenWidth/3-UI_LEFT_SIDEBAR_WIDTH+1,
+        screenHeight - UI_TOP_NAVBAR_HEIGHT - UI_STATUS_BAR_HEIGHT
+    };
     areaViewerWindowState[0] = init_area_viewer_window(worldState.currentArea, mainGuiState.leftPanelRect);
     areaViewerWindowState[0].camera.zoom = 1.0f;
+    areaViewerWindowState[0].selectDeviceFn = load_device_info_panel;
 
-    mainGuiState.rightPanelRect = (Rectangle){mainGuiState.leftPanelRect.x+mainGuiState.leftPanelRect.width, 34, screenWidth/3+1, screenHeight - UI_TOP_NAVBAR_HEIGHT - UI_BOTTOM_PANEL_HEIGHT};
+    mainGuiState.rightPanelRect = (Rectangle){
+        mainGuiState.leftPanelRect.x + mainGuiState.leftPanelRect.width,
+        UI_TOP_NAVBAR_HEIGHT,
+        screenWidth/3+1,
+        screenHeight - UI_TOP_NAVBAR_HEIGHT - UI_STATUS_BAR_HEIGHT
+    };
     areaViewerWindowState[1] = init_area_viewer_window(&worldMap.regions[0].zones[0].areas[1], mainGuiState.rightPanelRect);
     areaViewerWindowState[1].camera.zoom = 0.5f;
+    areaViewerWindowState[1].selectDeviceFn = load_device_info_panel;
 
     mainGuiState.selectedDevice = NULL;
     mainGuiState.toolWindowState.activeToolWindow = TOOLWINDOW_INACTIVE;
     mainGuiState.toolWindowState.switchAreaFn = load_area_view_left_panel;
+    mainGuiState.toolWindowState.selectDeviceFn = load_device_info_panel;
 
     init_device_info_panel();
 }
@@ -72,13 +90,18 @@ void update_main_gui_system() {
     // Refresh left and right panel dimensions
 
     int toolWindowWidth = mainGuiState.toolWindowState.activeToolWindow == TOOLWINDOW_INACTIVE ? 0 : UI_LEFT_TOOLWINDOW_WIDTH;
-    mainGuiState.leftPanelRect = (Rectangle){toolWindowWidth + UI_LEFT_SIDEBAR_WIDTH - 1,
-                                             UI_TOP_NAVBAR_HEIGHT,
-                                             mainGuiState.leftPanelRect.width,
-                                             screenHeight - UI_TOP_NAVBAR_HEIGHT - UI_BOTTOM_PANEL_HEIGHT};
-    mainGuiState.rightPanelRect = (Rectangle){mainGuiState.leftPanelRect.x + mainGuiState.leftPanelRect.width, UI_TOP_NAVBAR_HEIGHT,
-                                              screenWidth-(mainGuiState.leftPanelRect.width),
-                                              screenHeight - UI_TOP_NAVBAR_HEIGHT - UI_BOTTOM_PANEL_HEIGHT};
+    mainGuiState.leftPanelRect = (Rectangle){
+        toolWindowWidth + UI_LEFT_SIDEBAR_WIDTH - 1,
+        UI_TOP_NAVBAR_HEIGHT,
+        mainGuiState.leftPanelRect.width,
+        screenHeight - UI_TOP_NAVBAR_HEIGHT - UI_STATUS_BAR_HEIGHT
+    };
+    mainGuiState.rightPanelRect = (Rectangle){
+        mainGuiState.leftPanelRect.x + mainGuiState.leftPanelRect.width,
+        UI_TOP_NAVBAR_HEIGHT,
+        screenWidth-(mainGuiState.leftPanelRect.width),
+        screenHeight - UI_TOP_NAVBAR_HEIGHT - UI_STATUS_BAR_HEIGHT
+    };
 
     // -------------------
     // Update right panel (currently fixed to some area)
@@ -100,9 +123,12 @@ void update_main_gui_system() {
 
     // -------------------
     // Update tool window
-    Rectangle toolWindowRect = (Rectangle){mainGuiState.leftPanelRect.x - UI_LEFT_TOOLWINDOW_WIDTH,
-                                           UI_TOP_NAVBAR_HEIGHT, UI_LEFT_TOOLWINDOW_WIDTH,
-                                           screenHeight - UI_TOP_NAVBAR_HEIGHT - UI_BOTTOM_PANEL_HEIGHT};
+    Rectangle toolWindowRect = (Rectangle){
+        mainGuiState.leftPanelRect.x - UI_LEFT_TOOLWINDOW_WIDTH,
+        UI_TOP_NAVBAR_HEIGHT,
+        UI_LEFT_TOOLWINDOW_WIDTH,
+        screenHeight - UI_TOP_NAVBAR_HEIGHT - UI_STATUS_BAR_HEIGHT
+    };
     mainGuiState.toolWindowState.toolWindowRect = toolWindowRect;
     update_tool_window(&mainGuiState.toolWindowState);
 
@@ -128,18 +154,6 @@ void render_main_gui_system() {
     int screenWidth = GetScreenWidth();
 
     // -------------------
-    // Left info panel
-    Rectangle infoPanelRect = (Rectangle){
-        mainGuiState.leftPanelRect.x, mainGuiState.leftPanelRect.y+mainGuiState.leftPanelRect.height,
-        screenWidth/2+1, UI_BOTTOM_PANEL_HEIGHT
-    };
-    if (render_device_info_panel(infoPanelRect, mainGuiState.selectedDevice)) {
-        areaViewerWindowState[0].selectedDevice = NULL;
-        areaViewerWindowState[1].selectedDevice = NULL;
-        mainGuiState.selectedDevice = NULL;
-    }
-
-    // -------------------
     // Right log panel
     Rectangle logPanelRect = (Rectangle){
         mainGuiState.leftPanelRect.x+(screenWidth/2), mainGuiState.leftPanelRect.y+mainGuiState.leftPanelRect.height,
@@ -155,7 +169,7 @@ void render_main_gui_system() {
     char text[1000] = "";
     GuiLabel(logPanelText, text);
 
-    // -------------------
+        // -------------------
     // Render right panel (currently fixed to some area)
     render_area_viewer_window(&areaViewerWindowState[1]);
 
@@ -178,6 +192,10 @@ void render_main_gui_system() {
     // Left drawer icons
     render_tool_window(&mainGuiState.toolWindowState);
     render_left_navbar();
+
+    // -------------------
+    // Status bar
+    render_status_bar();
 }
 
 static void update_panels_player_area_mode() {
@@ -198,11 +216,69 @@ static void update_panels_player_area_mode() {
     update_area_viewer_window(&areaViewerWindowState[0]);
 }
 
+static void render_status_bar() {
+    int screenWidth = GetScreenWidth();
+
+    Rectangle statusBarRect = (Rectangle){
+        0, mainGuiState.leftPanelRect.y+mainGuiState.leftPanelRect.height,
+        screenWidth, UI_STATUS_BAR_HEIGHT
+    };
+
+    GuiStatusBar(statusBarRect, NULL);
+
+    Rectangle logBtnRect = statusBarRect;
+    logBtnRect.x = UI_COMPONENT_PADDING;
+    logBtnRect.width = 100;
+    if (mainGuiState.selectedDevice) {
+        char buffer[100];
+        sprintf(buffer, "%s %s", (mainGuiState.selectedDevice->type == DEVICE_TYPE_ROUTER ? "#225#" : "#224#"), mainGuiState.selectedDevice->address);
+        if (mainGuiState.deviceDrawerActive) GuiSetState(STATE_PRESSED);
+        if (GuiLabelButton(logBtnRect, buffer)) {
+            mainGuiState.deviceDrawerActive = !mainGuiState.deviceDrawerActive;
+        }
+        GuiSetState(STATE_NORMAL);
+        render_device_info_drawer();
+    }
+
+    logBtnRect = statusBarRect;
+    logBtnRect.x = statusBarRect.width - 50 - UI_COMPONENT_PADDING;
+    logBtnRect.width = 50;
+    GuiLabelButton(logBtnRect, "#177#LOG");
+}
+
+static void render_device_info_drawer() {
+    const int deviceInfoDrawerHeight = 400;
+    const int deviceInfoDrawerWidth = 500;
+    int screenHeight = GetScreenHeight();
+
+    if (!mainGuiState.deviceDrawerActive) return;
+
+    Rectangle drawerRect = (Rectangle){
+        0, screenHeight - deviceInfoDrawerHeight - UI_STATUS_BAR_HEIGHT,
+        deviceInfoDrawerWidth, deviceInfoDrawerHeight
+    };
+
+    GuiUnlock();
+    if (render_device_info_panel(drawerRect, mainGuiState.selectedDevice)) {
+        mainGuiState.deviceDrawerActive = false;
+        return;
+    }
+
+    if (CheckCollisionPointRec(GetMousePosition(), drawerRect)) {
+        GuiLock();
+    } else {
+        GuiUnlock();
+    }
+}
+
 static void render_left_navbar() {
     int screenHeight = GetScreenHeight();
     Vector2 mousePos = GetMousePosition();
 
-    Rectangle rectangle = (Rectangle){0, UI_TOP_NAVBAR_HEIGHT, UI_LEFT_SIDEBAR_WIDTH, screenHeight-UI_TOP_NAVBAR_HEIGHT-UI_BOTTOM_PANEL_HEIGHT};
+    Rectangle rectangle = (Rectangle){
+        0, UI_TOP_NAVBAR_HEIGHT,
+        UI_LEFT_SIDEBAR_WIDTH, screenHeight-UI_TOP_NAVBAR_HEIGHT-UI_STATUS_BAR_HEIGHT
+    };
     GuiPanel(rectangle, NULL);
 
     Rectangle btnRect = (Rectangle){6, 40, 24, 24};
@@ -253,4 +329,12 @@ static void render_worms_window() {
 
 static void load_area_view_left_panel(Area* area) {
     areaViewerWindowState[0] = init_area_viewer_window(area, mainGuiState.leftPanelRect);
+    areaViewerWindowState[0].selectDeviceFn = load_device_info_panel;
+}
+
+static void load_device_info_panel(Device* device) {
+    if (mainGuiState.selectedDevice == device) {
+        mainGuiState.deviceDrawerActive = true;
+    }
+    mainGuiState.selectedDevice = device;
 }

@@ -16,6 +16,7 @@ typedef struct {
     NetworkMapWindowState networkMapState;
 
     void (*switchAreaFn)(Area*);
+    void (*selectDeviceFn)(Device*);
 } ToolWindowState;
 
 void init_tool_window(ToolWindowState* toolWindowState);

@@ -91,7 +91,7 @@ int render_device_target_dropdown(Rectangle rect) {
         strcat(optionsBuffer, selectedZone->areas[i].areaName);
         if (i < selectedZone->numAreas-1) strcat(optionsBuffer, ";");
     }
-    if (GuiDropdownBox(dropdownRect, optionsBuffer, &state.progTargetAreaIndex, state.progTargetAreaEditMode)) {
+    if (GuiComboBox(dropdownRect, optionsBuffer, &state.progTargetAreaIndex)) {
         state.progTargetAreaEditMode = !state.progTargetAreaEditMode;
     }
 
