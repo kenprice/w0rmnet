@@ -113,6 +113,9 @@ add_executable(${PROJECT_NAME} app.c
         systems/main_gui_system/toolwindows/network_map_toolwindow.c
         systems/main_gui_system/toolwindow.h
         systems/main_gui_system/toolwindow.c
+        systems/main_gui_system/minimap.h
+        systems/main_gui_system/minimap.c
+        lib/raymath.h
 )
 #set(raylib_VERBOSE 1)
 target_link_libraries(${PROJECT_NAME} raylib)

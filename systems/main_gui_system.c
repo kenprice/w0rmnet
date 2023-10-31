@@ -4,6 +4,7 @@
 #include "glib.h"
 #include "main_gui_system.h"
 #include "main_gui_system/area_viewer_window.h"
+#include "main_gui_system/minimap.h"
 #include "main_gui_system/toolwindow.h"
 #include "botnet_system.h"
 #include "ui/device_info_panel.h"
@@ -19,6 +20,7 @@
 #define UI_STATUS_BAR_HEIGHT 24
 
 #define UI_LEFT_SIDEBAR_WIDTH 36
+#define UI_RIGHT_SIDEBAR_WIDTH 280
 
 #define LEFT_PANEL_MODE_PLAYER_AREA 0
 #define LEFT_PANEL_MODE_WORMS 1
@@ -57,7 +59,7 @@ void initialize_main_gui_system() {
     mainGuiState.leftPanelRect = (Rectangle){
         UI_LEFT_SIDEBAR_WIDTH-1,
         UI_TOP_NAVBAR_HEIGHT,
-        2*screenWidth/3-UI_LEFT_SIDEBAR_WIDTH+1,
+        screenWidth - UI_LEFT_SIDEBAR_WIDTH - UI_RIGHT_SIDEBAR_WIDTH + 1,
         screenHeight - UI_TOP_NAVBAR_HEIGHT - UI_STATUS_BAR_HEIGHT
     };
     areaViewerWindowState[0] = init_area_viewer_window(worldState.currentArea, mainGuiState.leftPanelRect);
@@ -65,9 +67,9 @@ void initialize_main_gui_system() {
     areaViewerWindowState[0].selectDeviceFn = load_device_info_panel;
 
     mainGuiState.rightPanelRect = (Rectangle){
-        mainGuiState.leftPanelRect.x + mainGuiState.leftPanelRect.width,
+        mainGuiState.leftPanelRect.x + mainGuiState.leftPanelRect.width - 1,
         UI_TOP_NAVBAR_HEIGHT,
-        screenWidth/3+1,
+        UI_RIGHT_SIDEBAR_WIDTH,
         screenHeight - UI_TOP_NAVBAR_HEIGHT - UI_STATUS_BAR_HEIGHT
     };
     areaViewerWindowState[1] = init_area_viewer_window(&worldMap.regions[0].zones[0].areas[1], mainGuiState.rightPanelRect);
@@ -79,6 +81,7 @@ void initialize_main_gui_system() {
     mainGuiState.toolWindowState.switchAreaFn = load_area_view_left_panel;
     mainGuiState.toolWindowState.selectDeviceFn = load_device_info_panel;
 
+    init_minimap_view(mainGuiState.rightPanelRect);
     init_device_info_panel();
 }
 
@@ -93,13 +96,13 @@ void update_main_gui_system() {
     mainGuiState.leftPanelRect = (Rectangle){
         toolWindowWidth + UI_LEFT_SIDEBAR_WIDTH - 1,
         UI_TOP_NAVBAR_HEIGHT,
-        mainGuiState.leftPanelRect.width,
+        screenWidth - UI_LEFT_SIDEBAR_WIDTH - UI_RIGHT_SIDEBAR_WIDTH - toolWindowWidth,
         screenHeight - UI_TOP_NAVBAR_HEIGHT - UI_STATUS_BAR_HEIGHT
     };
     mainGuiState.rightPanelRect = (Rectangle){
-        mainGuiState.leftPanelRect.x + mainGuiState.leftPanelRect.width,
+        mainGuiState.leftPanelRect.x + mainGuiState.leftPanelRect.width - 1,
         UI_TOP_NAVBAR_HEIGHT,
-        screenWidth-(mainGuiState.leftPanelRect.width),
+        UI_RIGHT_SIDEBAR_WIDTH,
         screenHeight - UI_TOP_NAVBAR_HEIGHT - UI_STATUS_BAR_HEIGHT
     };
 
@@ -110,6 +113,8 @@ void update_main_gui_system() {
     areaViewerWindowState[1].window.windowBounds.width = mainGuiState.rightPanelRect.width;
     areaViewerWindowState[1].window.windowBounds.height = mainGuiState.rightPanelRect.height;
     update_area_viewer_window(&areaViewerWindowState[1]);
+
+    update_minimap_view(mainGuiState.rightPanelRect);
 
     // -------------------
     // Update left panel
@@ -154,22 +159,6 @@ void render_main_gui_system() {
     int screenWidth = GetScreenWidth();
 
     // -------------------
-    // Right log panel
-    Rectangle logPanelRect = (Rectangle){
-        mainGuiState.leftPanelRect.x+(screenWidth/2), mainGuiState.leftPanelRect.y+mainGuiState.leftPanelRect.height,
-        screenWidth/2, UI_BOTTOM_PANEL_HEIGHT
-    };
-    GuiPanel(logPanelRect, "Logs");
-
-    Rectangle logPanelText = (Rectangle){
-        logPanelRect.x + UI_COMPONENT_PADDING,
-        logPanelRect.y + TITLEBAR_HEIGHT - 1,
-        logPanelRect.width, 24
-    };
-    char text[1000] = "";
-    GuiLabel(logPanelText, text);
-
-        // -------------------
     // Render right panel (currently fixed to some area)
     render_area_viewer_window(&areaViewerWindowState[1]);
 
@@ -183,6 +172,9 @@ void render_main_gui_system() {
             render_worms_window();
             break;
     }
+
+    // render minimap
+    render_minimap_view(mainGuiState.rightPanelRect);
 
     // -------------------
     // Top navbar
