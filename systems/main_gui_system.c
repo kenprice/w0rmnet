@@ -114,8 +114,6 @@ void update_main_gui_system() {
     areaViewerWindowState[1].window.windowBounds.height = mainGuiState.rightPanelRect.height;
     update_area_viewer_window(&areaViewerWindowState[1]);
 
-    update_minimap_view(mainGuiState.rightPanelRect);
-
     // -------------------
     // Update left panel
     switch (mainGuiState.activeLeftPanelMode) {
