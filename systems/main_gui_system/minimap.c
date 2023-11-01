@@ -1,40 +1,23 @@
 #include <glib.h>
-#include <stdio.h>
 #include <math.h>
 #include "minimap.h"
 #include "../../lib/raygui.h"
-#include "../../lib/raymath.h"
 #include "../../utils/uuid.h"
 #include "../../world/world_map.h"
 #include "../../components/component_registry.h"
 
-#define MINIMAP_SPRING_MAX_ITER 100
-
-const float C1 = 2;
-const float C2 = 5;
-const float C3 = 1.5;
-const float C4 = 0.1;
-
-typedef struct MinimapNode {
-    Vector2 vector;
-    char entityId[UUID_STR_LEN];
-    struct MinimapNode** children;
-} MinimapNode;
+#define MINIMAP_VIEW_HEIGHT 280
+static const int CircleRadius = 15;
+static const int CircleRadiusDelta = 35;
 
 typedef struct {
     Rectangle rect;
 
-    MinimapNode* treeRoot;
     GList* radialNodes;
+    char* networkRoot;
 
     int iterations;
 } MinimapState;
-
-MinimapState minimapState;
-
-#define MINIMAP_VIEW_HEIGHT 280
-
-int count_leaves_in_network(char* routerEntityId);
 
 typedef struct RadialNode {
     char* entityId;
@@ -43,8 +26,9 @@ typedef struct RadialNode {
     struct RadialNode* parentNode;
 } RadialNode;
 
-static const int CircleRadius = 10;
-static const int CircleRadiusDelta = 30;
+int count_leaves_in_network(char* routerEntityId);
+
+MinimapState minimapState;
 
 /**
  * Interactive, tree-based graph visualization
@@ -86,7 +70,7 @@ void radial_positions(char* rootTreeId, char* vertexId, RadialNode* parentNode_,
         Wire* wire = g_hash_table_lookup(componentRegistry.wires, routeTable->records[i].wireEntityId);
         char* childDeviceId = strcmp(vertexId, wire->entityA) == 0 ? wire->entityB : wire->entityA;
         Device* childDevice = g_hash_table_lookup(componentRegistry.devices, childDeviceId);
-        if (!childDevice) continue;
+        if (!childDevice || !childDevice->visible) continue;
         if (!g_list_find(visited, childDevice->entityId)) {
             g_list_append(visited, childDevice->entityId);
         } else {
@@ -98,8 +82,10 @@ void radial_positions(char* rootTreeId, char* vertexId, RadialNode* parentNode_,
 
         RadialNode* node = calloc(1, sizeof(RadialNode));
         node->entityId = childDeviceId;
-        node->x = radius * cos((theta + mi) / 2.0);
-        node->y = radius * sin((theta + mi) / 2.0);
+
+        double jitter = depth == 2 ? (i%2)*4 : 0;
+        node->x = (jitter + radius) * cos((theta + mi) / 2.0);
+        node->y = (jitter + radius) * sin((theta + mi) / 2.0);
         node->parentNode = parentNode;
         g_list_append(outputGraph, node);
 
@@ -109,7 +95,11 @@ void radial_positions(char* rootTreeId, char* vertexId, RadialNode* parentNode_,
 
         theta = mi;
     }
-};
+
+    if (depth == 0) {
+        g_list_free(visited);
+    }
+}
 
 /**
  * Count leaves in the network tree.
@@ -139,11 +129,15 @@ int count_leaves_in_network(char* routerEntityId) {
             char* childDeviceId = strcmp(current->entityId, wire->entityA) == 0 ? wire->entityB : wire->entityA;
 
             Device* childDevice = g_hash_table_lookup(componentRegistry.devices, childDeviceId);
-            if (!childDevice) continue;
+            if (!childDevice || !childDevice->visible) continue;
             if (childDevice->type == DEVICE_TYPE_ROUTER) {
                 if (!g_list_find(visited, childDevice)) {
                     g_list_append(visited, childDevice);
                     g_queue_push_tail(q, childDevice);
+                }
+
+                if (count_leaves_in_network(childDevice->entityId) == 0) {
+                    leaves++;
                 }
             } else {
                 leaves++;
@@ -151,72 +145,29 @@ int count_leaves_in_network(char* routerEntityId) {
         }
     }
 
+    g_list_free(visited);
+    g_queue_free(q);
+
     return leaves;
-}
-
-
-
-MinimapNode* generate_tree() {
-    float x = 10, y = 10;
-
-    MinimapNode* root = calloc(1, sizeof(MinimapNode));
-    root->vector = (Vector2){MINIMAP_VIEW_HEIGHT / 2, 5};
-    root->children = calloc(worldMap.numRegions, sizeof(MinimapNode*));
-
-    for (int r = 0; r < worldMap.numRegions; r++) {
-        Region* region = &worldMap.regions[r];
-        MinimapNode* regionNode = calloc(1, sizeof(MinimapNode));
-        regionNode->vector = (Vector2){ x, y };
-        root->children[r] = regionNode;
-        y += 10;
-
-        regionNode->children = calloc(region->numZones, sizeof(MinimapNode*));
-        for (int z = 0; z < region->numZones; z++) {
-            Zone* zone = &region->zones[z];
-            MinimapNode* zoneNode = calloc(1, sizeof(MinimapNode));
-            zoneNode->vector = (Vector2){ x, y };
-            regionNode->children[z] = zoneNode;
-            y += 10;
-
-            zoneNode->children = calloc(zone->numAreas, sizeof(MinimapNode*));
-            for (int a = 0; a < zone->numAreas; a++) {
-                Area* area = &zone->areas[a];
-                MinimapNode *areaNode = calloc(1, sizeof(MinimapNode));
-                areaNode->vector = (Vector2) {x, y};
-                zoneNode->children[a] = areaNode;
-                y += 10;
-
-                int numAreaEntities = 0;
-                for (int i = 0; i < area->numEntities; i++) {
-                    Device* device = g_hash_table_lookup(componentRegistry.devices, area->entities[i]);
-                    if (device) numAreaEntities++;
-                }
-                areaNode->children = calloc(numAreaEntities, sizeof(MinimapNode*));
-                for (int i = 0; i < numAreaEntities; i++) {
-                    MinimapNode* node = calloc(1, sizeof(MinimapNode));
-                    node->vector = (Vector2) {x, y};
-                    areaNode->children[i] = node;
-                    x += 5;
-                }
-                y -= 10;
-                x += 5;
-            }
-
-            y -= 10;
-            x += 5;
-        }
-        y -= 10;
-        x += 10;
-    }
-
-    return root;
 }
 
 void init_minimap_view(Rectangle rect) {
     minimapState.rect = rect;
     minimapState.rect.height = MINIMAP_VIEW_HEIGHT;
 
-    minimapState.treeRoot = generate_tree();
+    GList* outputGraph = g_list_alloc();
+    char* networkRoot = worldMap.regions[0].zones[0].gateway;
+    minimapState.networkRoot = networkRoot;
+    radial_positions(networkRoot, networkRoot, NULL, 0, 2 * PI, 0, NULL, outputGraph);
+
+    minimapState.radialNodes = outputGraph->next;
+}
+
+void update_minimap_view(Rectangle rect) {
+    minimapState.rect = rect;
+    minimapState.rect.height = MINIMAP_VIEW_HEIGHT;
+
+    g_list_free_full(minimapState.radialNodes, free);
 
     GList* outputGraph = g_list_alloc();
     char* networkRoot = worldMap.regions[0].zones[0].gateway;
@@ -225,7 +176,7 @@ void init_minimap_view(Rectangle rect) {
     minimapState.radialNodes = outputGraph->next;
 }
 
-void render_minimap_view(Rectangle rect__) {
+void render_minimap_view() {
     GuiPanel(minimapState.rect, NULL);
 
     Rectangle rect = minimapState.rect;
@@ -235,9 +186,12 @@ void render_minimap_view(Rectangle rect__) {
     GList* curNodeEntry = minimapState.radialNodes;
     while (curNodeEntry && curNodeEntry->data) {
         RadialNode* node = (RadialNode*)curNodeEntry->data;
+
         if (node->parentNode) {
+            Wire* wire = search_wire_by_entity_ids(node->entityId, node->parentNode->entityId);
+            bool active = wire && (wire->sendQtoA.head != wire->sendQtoA.tail || wire->sendQtoB.head != wire->sendQtoB.tail);
             DrawLine(rect.x + node->x, rect.y + node->y,
-                     rect.x + node->parentNode->x, rect.y + node->parentNode->y, GRAY);
+                     rect.x + node->parentNode->x, rect.y + node->parentNode->y, active ? GREEN : GRAY);
         }
         curNodeEntry = curNodeEntry->next;
     }
@@ -245,7 +199,16 @@ void render_minimap_view(Rectangle rect__) {
     curNodeEntry = minimapState.radialNodes;
     while (curNodeEntry && curNodeEntry->data) {
         RadialNode* node = (RadialNode*)curNodeEntry->data;
-        DrawCircle(rect.x + node->x, rect.y + node->y, 2, WHITE);
+
+        if (node->parentNode) {
+            Device* device = g_hash_table_lookup(componentRegistry.devices, node->entityId);
+            bool isOwned = device && device->owner == DEVICE_OWNER_PLAYER;
+            DrawCircle(rect.x + node->x, rect.y + node->y, 2, isOwned ? RED : WHITE);
+        } else {
+
+            DrawCircle(rect.x + node->x, rect.y + node->y, 3, BLUE);
+        }
+
         curNodeEntry = curNodeEntry->next;
     }
 }

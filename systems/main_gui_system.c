@@ -134,6 +134,7 @@ void update_main_gui_system() {
     };
     mainGuiState.toolWindowState.toolWindowRect = toolWindowRect;
     update_tool_window(&mainGuiState.toolWindowState);
+    update_minimap_view(mainGuiState.rightPanelRect);
 
     // -------------------
     // Drag to adjust side
