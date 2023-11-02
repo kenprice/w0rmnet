@@ -68,7 +68,7 @@ void initialize_world() {
     zoneRouter->routeTable.numRecords = 1;
     strcpy(zoneRouter->routeTable.records[0].prefix, areaRouter->device.address);
     strcpy(zoneRouter->routeTable.records[0].wireEntityId, wireZoneRouterAreaRouter);
-    entity_router_register_components(entity_router_deserialize(entity_router_serialize(*zoneRouter)));
+    entity_router_register_components(zoneRouter);
 
 
 
@@ -111,7 +111,7 @@ void initialize_world() {
     strcpy(areaRouter->routeTable.records[1].wireEntityId, wireAreaRouterRouter);
     strcpy(areaRouter->routeTable.records[2].prefix, machine1->device.address);
     strcpy(areaRouter->routeTable.records[2].wireEntityId, wireAreaRouterMachine1);
-    entity_router_register_components(entity_router_deserialize(entity_router_serialize(*areaRouter)));
+    entity_router_register_components(areaRouter);
 
     // Router
     // ============
@@ -125,7 +125,7 @@ void initialize_world() {
     strcpy(router->routeTable.records[1].wireEntityId, wireRouterMachine2);
     strcpy(router->routeTable.records[2].prefix, machine3->device.address);
     strcpy(router->routeTable.records[2].wireEntityId, wireRouterMachine3);
-    entity_router_register_components(entity_router_deserialize(entity_router_serialize(*router)));
+    entity_router_register_components(router);
 
     // Machine 1
     // ============
@@ -148,7 +148,7 @@ void initialize_world() {
     machine1->processManager.processes[2].invocable = true;
     memset(machine1->processManager.processes[2].state, '\0', PROCESS_STATE_LEN);
     // Register
-    entity_machine_register_components(entity_machine_deserialize(entity_machine_serialize(*machine1)));
+    entity_machine_register_components(machine1);
 
     // Machine 2
     // ============
@@ -164,7 +164,7 @@ void initialize_world() {
     memset(machine2->processManager.processes[0].state, '\0', PROCESS_STATE_LEN);
     machine2->processManager.processes[0].state[0] = 1;
     // Register
-    entity_machine_register_components(entity_machine_deserialize(entity_machine_serialize(*machine2)));
+    entity_machine_register_components(machine2);
 
     // Machine 3
     // ============
@@ -185,7 +185,7 @@ void initialize_world() {
     machine3->processManager.processes[2].invocable = true;
     memset(machine3->processManager.processes[2].state, '\0', PROCESS_STATE_LEN);
     strcpy(machine3->processManager.processes[2].state, "root:root");
-    entity_machine_register_components(entity_machine_deserialize(entity_machine_serialize(*machine3)));
+    entity_machine_register_components(machine3);
 
     ///// Wire gfx
     Polygon polyZoneRouterAreaRouter;
@@ -237,10 +237,12 @@ void initialize_world() {
     Machine* machine4 = entity_machine_create_blank();
     sprintf(networkSwitch->device.address, "%s.%s", areaRouter->device.address, networkSwitch->device.name);
     networkSwitch->device.visible = true;
-    networkSwitch->device.visible = true;
-    networkSwitch->polygon.numPoints = 2;
+    networkSwitch->device.owner = DEVICE_OWNER_PLAYER;
+    networkSwitch->polygon.numPoints = 3;
     networkSwitch->polygon.points[0] = (PolyPoint){ 4, 1 };
-    networkSwitch->polygon.points[1] = (PolyPoint){ 4, 5 };
+    networkSwitch->polygon.points[1] = (PolyPoint){ 4, 3 };
+    networkSwitch->polygon.points[2] = (PolyPoint){ 4, 5 };
+    networkSwitch->polygon.bisectAt = 1;
     networkSwitch->position.coord = (Vector2){ 4, 3 };
     strcpy(networkSwitch->wire.entityA, areaRouter->entityId);
     strcpy(networkSwitch->wire.entityB, machine4->entityId);
@@ -264,7 +266,10 @@ void initialize_world() {
     machine4->processManager.processes[1].invocable = true;
     memset(machine4->processManager.processes[1].state, '\0', PROCESS_STATE_LEN);
 
-    entity_machine_register_components(*machine4);
+    strcpy(areaRouter->routeTable.records[areaRouter->routeTable.numRecords].prefix, machine4->device.address);
+    strcpy(areaRouter->routeTable.records[areaRouter->routeTable.numRecords++].wireEntityId, networkSwitch->entityId);
+
+    entity_machine_register_components(machine4);
     strcpy(worldMap.regions[0].zones[0].areas[0].entities[worldMap.regions[0].zones[0].areas[0].numEntities++], machine4->entityId);
 
 

@@ -9,6 +9,7 @@ typedef struct {
 typedef struct {
     PolyPoint points[10];
     int numPoints;
+    int bisectAt;
 } Polygon;
 
 char* register_polygon(Polygon polygon, char* entityId);

@@ -31,22 +31,13 @@ Machine* entity_machine_create_blank() {
     return machine;
 }
 
-char* entity_machine_register_components(Machine machine) {
-    char* entityId = strdup(machine.entityId);
+char* entity_machine_register_components(Machine* machine) {
+    char* entityId = machine->entityId;
 
-    register_device(machine.device, entityId);
-
-    Position* position = calloc(1, sizeof(Position));
-    memcpy(position, &machine.position, sizeof(Position));
-    g_hash_table_insert(componentRegistry.positions, entityId, position);
-
-    Sprite* sprite = calloc(1, sizeof(Sprite));
-    memcpy(sprite, &machine.sprite, sizeof(Sprite));
-    g_hash_table_insert(componentRegistry.sprites, entityId, sprite);
-
-    RouteTable* routeTable = calloc(1, sizeof(RouteTable));
-    memcpy(routeTable, &machine.routeTable, sizeof(RouteTable));
-    g_hash_table_insert(componentRegistry.routeTable, entityId, routeTable);
+    g_hash_table_insert(componentRegistry.devices, entityId, &machine->device);
+    g_hash_table_insert(componentRegistry.positions, entityId, &machine->position);
+    g_hash_table_insert(componentRegistry.sprites, entityId, &machine->sprite);
+    g_hash_table_insert(componentRegistry.routeTable, entityId, &machine->routeTable);
 
     PacketBuffer* packetBuffer = calloc(1, sizeof(PacketBuffer));
     packetBuffer->sendQ = packet_queue_alloc(50);
@@ -54,15 +45,7 @@ char* entity_machine_register_components(Machine machine) {
     strcpy(packetBuffer->entityId, entityId);
     g_hash_table_insert(componentRegistry.packetBuffers, entityId, packetBuffer);
 
-    ProcessManager* processManager = calloc(1, sizeof(ProcessManager));
-    processManager->numProcs = machine.processManager.numProcs;
-    processManager->maxProcs = machine.processManager.maxProcs;
-    for (int i = 0; i < machine.processManager.numProcs; i++) {
-        processManager->processes[i].type = machine.processManager.processes[i].type;
-        processManager->processes[i].invocable = machine.processManager.processes[i].invocable;
-        strcpy(processManager->processes[i].state, machine.processManager.processes[i].state);
-    }
-    g_hash_table_insert(componentRegistry.processManagers, entityId, processManager);
+    g_hash_table_insert(componentRegistry.processManagers, entityId, &machine->processManager);
     register_proc_msg_queue(proc_msg_queue_alloc(10), entityId);
 
     Logger* logger = calloc(1, sizeof(Logger));

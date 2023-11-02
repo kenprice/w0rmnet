@@ -29,28 +29,19 @@ Router* entity_router_create_blank() {
     return router;
 }
 
-char* entity_router_register_components(Router router) {
-    char* entityId = strdup(router.entityId);
+char* entity_router_register_components(Router* router) {
+    char* entityId = strdup(router->entityId);
 
-    register_device(router.device, entityId);
-
-    Position* position = calloc(1, sizeof(Position));
-    memcpy(position, &router.position, sizeof(Position));
-    g_hash_table_insert(componentRegistry.positions, entityId, position);
-
-    Sprite* sprite = calloc(1, sizeof(Sprite));
-    memcpy(sprite, &router.sprite, sizeof(Sprite));
-    g_hash_table_insert(componentRegistry.sprites, entityId, sprite);
+    g_hash_table_insert(componentRegistry.devices, entityId, &router->device);
+    g_hash_table_insert(componentRegistry.positions, entityId, &router->position);
+    g_hash_table_insert(componentRegistry.sprites, entityId, &router->sprite);
+    g_hash_table_insert(componentRegistry.routeTable, entityId, &router->routeTable);
 
     PacketBuffer* packetBuffer = calloc(1, sizeof(PacketBuffer));
     packetBuffer->sendQ = packet_queue_alloc(10);
     packetBuffer->recvQ = packet_queue_alloc(10);
     strcpy(packetBuffer->entityId, entityId);
     g_hash_table_insert(componentRegistry.packetBuffers, entityId, packetBuffer);
-
-    RouteTable* routeTable = calloc(1, sizeof(RouteTable));
-    memcpy(routeTable, &router.routeTable, sizeof(RouteTable));
-    g_hash_table_insert(componentRegistry.routeTable, entityId, routeTable);
 
     return entityId;
 }

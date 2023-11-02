@@ -16,7 +16,7 @@ typedef struct {
 
 Machine* entity_machine_create_blank();
 
-char* entity_machine_register_components(Machine machine);
+char* entity_machine_register_components(Machine* machine);
 
 char* entity_machine_serialize(Machine machine);
 

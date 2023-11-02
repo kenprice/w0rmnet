@@ -33,7 +33,7 @@ char* generate_subnet_7x7(char* addressPrefix, Area* area, int x, int y) {
     router->position.coord.x = x;
     router->position.coord.y = y;
     router->device.visible = true;
-    entity_router_register_components(*router);
+    entity_router_register_components(router);
     strcpy(area->entities[area->numEntities++], router->entityId);
 
     for (int i = 0; i < 7; i++) {
@@ -45,7 +45,7 @@ char* generate_subnet_7x7(char* addressPrefix, Area* area, int x, int y) {
         machine->position.coord.x = x + offsetX[i];
         machine->position.coord.y = y + offsetY[i];
 //        machine->device.visible = true;
-        entity_machine_register_components(*machine);
+        entity_machine_register_components(machine);
         strcpy(area->entities[area->numEntities++], machine->entityId);
         populate_processes(machine->entityId);
 
@@ -76,7 +76,7 @@ void generate_area_19x19(Region* region, Zone* zone, Area* area, const char* are
     router->device.visible = true;
     router->position.coord.x = 9;
     router->position.coord.y = 1;
-    entity_router_register_components(*router);
+    entity_router_register_components(router);
     strcpy(area->entities[area->numEntities++], router->entityId);
     wirePolygon = comp_polygon_points2(9, 1, 9, -2);
     connect_machine_to_router(area, wirePolygon, router->entityId, zone->gateway);

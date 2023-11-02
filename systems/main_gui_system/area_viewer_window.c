@@ -255,15 +255,26 @@ static void render_connections(AreaViewerWindowState* state) {
         Polygon* poly = g_hash_table_lookup(componentRegistry.polygons, currentArea->entities[i]);
         Wire* wire = g_hash_table_lookup(componentRegistry.wires, currentArea->entities[i]);
         if (!poly || !wire) continue;
-        if (wire->sendQtoA.head == wire->sendQtoA.tail && wire->sendQtoB.head == wire->sendQtoB.tail) continue;
+        bool activeA = wire->sendQtoA.head != wire->sendQtoA.tail;
+        bool activeB = wire->sendQtoB.head != wire->sendQtoB.tail;
+        if (!activeA && !activeB) continue;
 
-        for (int j=0; j<poly->numPoints-1; j++) {
+        for (int j = 0; j < poly->numPoints-1; j++) {
             Vector2 fromCoord = isometric_map_local_to_global(state->window.windowBounds, (float)poly->points[j].x,
                                                               (float)poly->points[j].y, state->camera.zoom);
             Vector2 toCoord = isometric_map_local_to_global(state->window.windowBounds, (float)poly->points[j+1].x,
                                                             (float)poly->points[j+1].y, state->camera.zoom);
             fromCoord.y += SPRITE_Y_SCALE / 2;
             toCoord.y += SPRITE_Y_SCALE / 2;
+
+            if (poly->bisectAt) {
+                if (activeA && (j+1 > poly->bisectAt)) {
+                    continue;
+                }
+                if (activeB && (j < poly->bisectAt)) {
+                    continue;
+                }
+            }
 
             DrawLineEx(fromCoord, toCoord, 3, GREEN);
         }
