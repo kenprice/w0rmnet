@@ -13,6 +13,7 @@
 typedef enum {
     DEVICE_TYPE_GENERIC = 0,
     DEVICE_TYPE_ROUTER = 1,
+    DEVICE_TYPE_SWITCH = 2,
 } DeviceType ;
 
 extern const char* DeviceTypeLabel[2];

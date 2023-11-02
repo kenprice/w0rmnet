@@ -45,6 +45,13 @@ void proc_netscan_handle_message(char* entityId, Process* process, ProcMessage* 
     RouteTable* routeTable = g_hash_table_lookup(componentRegistry.routeTable, targetDevice->entityId);
     for (int i = 0; i < routeTable->numRecords; i++) {
         if (strcmp(routeTable->records[i].prefix, "*") == 0) continue;
+        if (strcmp(routeTable->records[i].prefix, fromAddress) == 0) continue;
+
+        char* otherDeviceId = comp_wire_get_other_entity(routeTable->records[i].wireEntityId, targetDevice->entityId);
+        if (!otherDeviceId) continue;
+        Device* otherDevice = g_hash_table_lookup(componentRegistry.devices, otherDeviceId);
+        if (!otherDevice) continue;
+        if (otherDevice->type == DEVICE_TYPE_ROUTER || otherDevice->type == DEVICE_TYPE_SWITCH) continue;
 
         packet_queue_write(&packetBuffer->sendQ, packet_alloc(entityId, fromAddress, routeTable->records[i].prefix, "Ping?"));
     }

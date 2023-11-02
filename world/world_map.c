@@ -236,6 +236,7 @@ void initialize_world() {
     NetworkSwitch* networkSwitch = entity_network_switch_create_blank();
     Machine* machine4 = entity_machine_create_blank();
     sprintf(networkSwitch->device.address, "%s.%s", areaRouter->device.address, networkSwitch->device.name);
+    networkSwitch->device.type = DEVICE_TYPE_SWITCH;
     networkSwitch->device.visible = true;
     networkSwitch->device.owner = DEVICE_OWNER_PLAYER;
     networkSwitch->polygon.numPoints = 3;

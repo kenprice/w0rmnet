@@ -2,6 +2,7 @@
 #include <string.h>
 #include "wire.h"
 #include "component_registry.h"
+#include "device.h"
 
 void register_wire(Wire wire, char* entityId) {
     Wire* newWire = calloc(1, sizeof(Wire));
@@ -44,3 +45,15 @@ Wire* search_wire_by_entity_ids(char* entityId1, char* entityId2) {
     return NULL;
 }
 
+char* comp_wire_get_other_entity(char* wireEntityId, char* thisEntityId) {
+    Wire* wire = g_hash_table_lookup(componentRegistry.wires, wireEntityId);
+    if (!wire) return NULL;
+
+    if (strcmp(wire->entityA, thisEntityId) == 0) {
+        return wire->entityB;
+    } else if (strcmp(wire->entityB, thisEntityId) == 0) {
+        return wire->entityA;
+    } else {
+        return NULL;
+    }
+}

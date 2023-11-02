@@ -112,6 +112,8 @@ int render_device_target_dropdown(Rectangle rect) {
     int numVisibleDevices = 0;
     for (int i = 0; i < selectedArea->numEntities; i++) {
         Device* device = g_hash_table_lookup(componentRegistry.devices, selectedArea->entities[i]);
+
+        if (device && device->type == DEVICE_TYPE_SWITCH) continue;
         if (device && device->visible) {
             visibleDevices[numVisibleDevices++] = device;
         }
