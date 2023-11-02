@@ -25,6 +25,9 @@
 #define LEFT_PANEL_MODE_PLAYER_AREA 0
 #define LEFT_PANEL_MODE_WORMS 1
 
+static const int deviceInfoDrawerHeight = 400;
+static const int deviceInfoDrawerWidth = 500;
+
 typedef struct {
     Rectangle leftPanelRect;
     Rectangle rightPanelRect;
@@ -45,7 +48,7 @@ AreaViewerWindowState areaViewerWindowState[MAX_AREA_VIEWER_WINDOWS];
 
 static void update_panels_player_area_mode();
 static void render_status_bar();
-static void render_device_info_drawer();
+static void render_device_info_drawer(Rectangle statusBarRect);
 static void render_left_navbar();
 static void render_top_navbar();
 static void render_worms_window();
@@ -217,49 +220,46 @@ static void render_status_bar() {
 
     GuiStatusBar(statusBarRect, NULL);
 
-    Rectangle logBtnRect = statusBarRect;
-    logBtnRect.x = UI_COMPONENT_PADDING;
-    logBtnRect.width = 100;
-    if (mainGuiState.selectedDevice) {
-        char buffer[100];
-        sprintf(buffer, "%s %s", (mainGuiState.selectedDevice->type == DEVICE_TYPE_ROUTER ? "#225#" : "#224#"), mainGuiState.selectedDevice->address);
-        if (mainGuiState.deviceDrawerActive) GuiSetState(STATE_PRESSED);
-        if (GuiLabelButton(logBtnRect, buffer)) {
-            mainGuiState.deviceDrawerActive = !mainGuiState.deviceDrawerActive;
-        }
-        GuiSetState(STATE_NORMAL);
-        render_device_info_drawer();
-    }
+    // Selected Device info drawer
+    render_device_info_drawer(statusBarRect);
 
+    Rectangle logBtnRect = statusBarRect;
     logBtnRect = statusBarRect;
     logBtnRect.x = statusBarRect.width - 50 - UI_COMPONENT_PADDING;
     logBtnRect.width = 50;
     GuiLabelButton(logBtnRect, "#177#LOG");
 }
 
-static void render_device_info_drawer() {
-    const int deviceInfoDrawerHeight = 400;
-    const int deviceInfoDrawerWidth = 500;
+static void render_device_info_drawer(Rectangle statusBarRect) {
     int screenHeight = GetScreenHeight();
 
-    if (!mainGuiState.deviceDrawerActive) return;
+    if (mainGuiState.deviceDrawerActive) {
+        Rectangle drawerRect = (Rectangle){ 0, screenHeight - deviceInfoDrawerHeight - UI_STATUS_BAR_HEIGHT + 1,
+                                            deviceInfoDrawerWidth, deviceInfoDrawerHeight };
 
-    Rectangle drawerRect = (Rectangle){
-        0, screenHeight - deviceInfoDrawerHeight - UI_STATUS_BAR_HEIGHT,
-        deviceInfoDrawerWidth, deviceInfoDrawerHeight
-    };
-
-    GuiUnlock();
-    if (render_device_info_panel(drawerRect, mainGuiState.selectedDevice)) {
-        mainGuiState.deviceDrawerActive = false;
-        return;
-    }
-
-    if (CheckCollisionPointRec(GetMousePosition(), drawerRect)) {
-        GuiLock();
-    } else {
         GuiUnlock();
+        if (render_device_info_panel(drawerRect, mainGuiState.selectedDevice)) {
+            mainGuiState.deviceDrawerActive = false;
+        } else if (CheckCollisionPointRec(GetMousePosition(), drawerRect)) {
+            GuiLock();
+        } else {
+            GuiUnlock();
+        }
     }
+
+    Rectangle deviceInfoSection = statusBarRect;
+    deviceInfoSection.width = deviceInfoDrawerWidth;
+    GuiStatusBar(deviceInfoSection, NULL);
+    deviceInfoSection.x += UI_COMPONENT_PADDING;
+
+    char buffer[100];
+    const char* icon = mainGuiState.selectedDevice && mainGuiState.selectedDevice->type == DEVICE_TYPE_ROUTER ? "#225#" : "#224#";
+    sprintf(buffer, "%s %s", icon, mainGuiState.selectedDevice ? mainGuiState.selectedDevice->address : "No device selected");
+    if (mainGuiState.deviceDrawerActive) GuiSetState(STATE_PRESSED);
+    if (GuiLabelButton(deviceInfoSection, buffer) && mainGuiState.selectedDevice) {
+        mainGuiState.deviceDrawerActive = !mainGuiState.deviceDrawerActive;
+    }
+    GuiSetState(STATE_NORMAL);
 }
 
 static void render_left_navbar() {

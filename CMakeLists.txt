@@ -116,6 +116,8 @@ add_executable(${PROJECT_NAME} app.c
         systems/main_gui_system/minimap.h
         systems/main_gui_system/minimap.c
         lib/raymath.h
+        entities/network_switch.c
+        entities/network_switch.h
 )
 #set(raylib_VERBOSE 1)
 target_link_libraries(${PROJECT_NAME} raylib)

@@ -11,9 +11,9 @@ typedef struct {
     int state;
     Timer timer;
 
-    Device* ownedDevices[100];
+    Device* ownedDevices[1000];
     int numOwnedDevices;
-    Device* targetDevices[100];
+    Device* targetDevices[1000];
     int numTargetDevices;
 
     int targetsCompleted;

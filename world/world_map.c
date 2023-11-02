@@ -4,6 +4,7 @@
 #include "../components/component_registry.h"
 #include "../entities/machine.h"
 #include "../entities/router.h"
+#include "../entities/network_switch.h"
 #include "../components/wire.h"
 
 WorldMap worldMap;
@@ -18,9 +19,6 @@ void initialize_world() {
 
     // Some other area
     Area* playerArea = &worldMap.regions[0].zones[0].areas[0];
-    Area* firstArea = &worldMap.regions[0].zones[0].areas[1];
-    Router* firstAreaRouter = entity_router_create_blank();
-    Machine* firstAreaMachine = entity_machine_create_blank();
 
     strcpy(areaRouter->device.address, "nightcity.metro.");
     strcat(areaRouter->device.address, areaRouter->device.name);
@@ -36,23 +34,16 @@ void initialize_world() {
     strcpy(machine3->device.address, router->device.address);
     strcat(machine3->device.address, ".");
     strcat(machine3->device.address, machine3->device.name);
-    strcpy(firstAreaRouter->device.address, "nightcity.metro.");
-    strcat(firstAreaRouter->device.address, firstAreaRouter->device.name);
-    strcpy(firstAreaMachine->device.address, firstAreaRouter->device.address);
-    strcat(firstAreaMachine->device.address, ".");
-    strcat(firstAreaMachine->device.address, firstAreaMachine->device.name);
 
     ////
     // Wire experiment
     // TODO: Serialize Wire
     ////
     char* wireZoneRouterAreaRouter = create_and_register_wire(areaRouter->entityId, zoneRouter->entityId);
-    char* wireZoneRouterFirstArea = create_and_register_wire(firstAreaRouter->entityId, zoneRouter->entityId);
     char* wireAreaRouterRouter = create_and_register_wire(areaRouter->entityId, router->entityId);
     char* wireAreaRouterMachine1 = create_and_register_wire(areaRouter->entityId, machine1->entityId);
     char* wireRouterMachine2 = create_and_register_wire(router->entityId, machine2->entityId);
     char* wireRouterMachine3 = create_and_register_wire(router->entityId, machine3->entityId);
-    char* wireFirstAreaRouterMachine = create_and_register_wire(firstAreaRouter->entityId, firstAreaMachine->entityId);
 
 
     ///////////////////////////////
@@ -69,18 +60,14 @@ void initialize_world() {
     strcpy(worldMap.regions[0].zones[0].zoneLabel, "Night City Metro Zone");
     strcpy(worldMap.regions[0].zones[0].parentRegion, "nightcity");
     strcpy(worldMap.regions[0].zones[0].gateway, zoneRouter->entityId);
-    worldMap.regions[0].zones[0].numAreas = 3;
 
     zoneRouter->position.coord = (Vector2){0, 0};
     sprintf(zoneRouter->device.address, "nightcity.metro");
     sprintf(zoneRouter->device.name, "metro");
-    zoneRouter->device.owner = DEVICE_OWNER_PLAYER;
     zoneRouter->device.visible = 1;
-    zoneRouter->routeTable.numRecords = 2;
+    zoneRouter->routeTable.numRecords = 1;
     strcpy(zoneRouter->routeTable.records[0].prefix, areaRouter->device.address);
     strcpy(zoneRouter->routeTable.records[0].wireEntityId, wireZoneRouterAreaRouter);
-    strcpy(zoneRouter->routeTable.records[1].prefix, firstAreaRouter->device.address);
-    strcpy(zoneRouter->routeTable.records[1].wireEntityId, wireZoneRouterFirstArea);
     entity_router_register_components(entity_router_deserialize(entity_router_serialize(*zoneRouter)));
 
 
@@ -231,11 +218,56 @@ void initialize_world() {
     register_polygon(polyAreaRouterMachine3, wireRouterMachine3);
 
 
-    worldMap.regions[0].zones[0].numAreas = 3;
+    worldMap.regions[0].zones[0].numAreas = 6;
     generate_area_19x19(&worldMap.regions[0], &worldMap.regions[0].zones[0], &worldMap.regions[0].zones[0].areas[1],
                         "test1", "Worldgen Test 1");
     generate_area_19x19(&worldMap.regions[0], &worldMap.regions[0].zones[0], &worldMap.regions[0].zones[0].areas[2],
                         "test2", "Worldgen Test 2");
+    generate_area_19x19(&worldMap.regions[0], &worldMap.regions[0].zones[0], &worldMap.regions[0].zones[0].areas[3],
+                        "test2", "Worldgen Test 3");
+    generate_area_19x19(&worldMap.regions[0], &worldMap.regions[0].zones[0], &worldMap.regions[0].zones[0].areas[4],
+                        "test2", "Worldgen Test 3");
+    generate_area_19x19(&worldMap.regions[0], &worldMap.regions[0].zones[0], &worldMap.regions[0].zones[0].areas[5],
+                        "test2", "Worldgen Test 3");
+
+
+    // =================================
+    // Network Switch Test
+    NetworkSwitch* networkSwitch = entity_network_switch_create_blank();
+    Machine* machine4 = entity_machine_create_blank();
+    sprintf(networkSwitch->device.address, "%s.%s", areaRouter->device.address, networkSwitch->device.name);
+    networkSwitch->device.visible = true;
+    networkSwitch->device.visible = true;
+    networkSwitch->polygon.numPoints = 2;
+    networkSwitch->polygon.points[0] = (PolyPoint){ 4, 1 };
+    networkSwitch->polygon.points[1] = (PolyPoint){ 4, 5 };
+    networkSwitch->position.coord = (Vector2){ 4, 3 };
+    strcpy(networkSwitch->wire.entityA, areaRouter->entityId);
+    strcpy(networkSwitch->wire.entityB, machine4->entityId);
+    char* networkSwitchId = entity_network_switch_register_components(*networkSwitch);
+    strcpy(worldMap.regions[0].zones[0].areas[0].entities[worldMap.regions[0].zones[0].areas[0].numEntities++], networkSwitchId);
+
+    sprintf(machine4->device.address, "%s.%s", areaRouter->device.address, machine4->device.name);
+    machine4->position.coord = (Vector2){4, 5};
+    machine4->device.owner = DEVICE_OWNER_NOBODY;
+    machine4->device.visible = 1;
+    machine4->routeTable.numRecords = 1;
+    strcpy(machine4->routeTable.records[0].prefix, "*");
+    strcpy(machine4->routeTable.records[0].wireEntityId, networkSwitchId);
+    // Processes
+    machine4->processManager.maxProcs = 10;
+    machine4->processManager.numProcs = 2;
+    machine4->processManager.processes[0].type = PROCESS_TYPE_PING;
+    machine4->processManager.processes[0].invocable = true;
+    memset(machine4->processManager.processes[0].state, '\0', PROCESS_STATE_LEN);
+    machine4->processManager.processes[1].type = PROCESS_TYPE_LOGIN;
+    machine4->processManager.processes[1].invocable = true;
+    memset(machine4->processManager.processes[1].state, '\0', PROCESS_STATE_LEN);
+
+    entity_machine_register_components(*machine4);
+    strcpy(worldMap.regions[0].zones[0].areas[0].entities[worldMap.regions[0].zones[0].areas[0].numEntities++], machine4->entityId);
+
+
 
 //    wireZoneRouterFirstArea = create_and_register_wire(firstAreaRouter->entityId, zoneRouter->entityId);
 //    wireFirstAreaRouterMachine = create_and_register_wire(firstAreaRouter->entityId, firstAreaMachine->entityId);
