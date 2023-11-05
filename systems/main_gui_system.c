@@ -8,7 +8,6 @@
 #include "main_gui_system/toolwindow.h"
 #include "botnet_system.h"
 #include "ui/device_info_panel.h"
-#include "utils/rendering.h"
 #include "../components/component_registry.h"
 #include "../world/world_state.h"
 #include "../world/world_map.h"

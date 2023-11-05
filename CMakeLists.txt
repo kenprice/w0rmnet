@@ -55,8 +55,6 @@ add_executable(${PROJECT_NAME} app.c
         systems/packet_routing_system.c
         components/packet.h
         components/packet.c
-        systems/utils/rendering.h
-        systems/utils/rendering.c
         utils/timer.h
         utils/timer.c
         components/sprite.h
@@ -79,8 +77,6 @@ add_executable(${PROJECT_NAME} app.c
         systems/process_runner/proc_runner_table.c
         systems/process_runner/netscan_runner.h
         systems/process_runner/netscan_runner.c
-        systems/utils/routing.h
-        systems/utils/routing.c
         lib/style_cyber.h
         world/world_state.h
         world/world_state.c

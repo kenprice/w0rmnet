@@ -1,6 +1,5 @@
 #include <stdio.h>
 #include "ping_runner.h"
-#include "../utils/routing.h"
 #include "../../components/component_registry.h"
 
 /**
