@@ -78,7 +78,10 @@ void update_packet_buffer(char* entityId, PacketBuffer* packetBuffer) {
     Packet* packet = packet_queue_read(&packetBuffer->sendQ);
 
     if (packet) {
-        send_packet(entityId, packet);
+        if (!send_packet(entityId, packet)) {
+            // Dead end!
+            free(packet);
+        }
     }
 }
 

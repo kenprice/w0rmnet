@@ -207,6 +207,7 @@ void render_device_prog_controls(Rectangle rect, Device* device) {
     char buffer[100] = "";
     if (processManager->numProcs > 0) {
         for (int i=0; i<processManager->numProcs; i++) {
+            if (!processManager->processes[i].invocable) continue;
             strcat(buffer, ProcessTypeLabel[processManager->processes[i].type]);
             strcat(buffer, ";");
         }
