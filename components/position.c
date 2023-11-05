@@ -1,7 +1,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <glib.h>
-#include "components.h"
+#include "position.h"
 
 char* comp_position_serialize(Position* position) {
     char buffer[100];

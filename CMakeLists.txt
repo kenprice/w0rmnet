@@ -82,7 +82,6 @@ add_executable(${PROJECT_NAME} app.c
         world/world_state.c
         systems/process_runner/login_runner.h
         systems/process_runner/login_runner.c
-        components/components.c
         systems/main_gui_system/area_viewer_window.h
         systems/main_gui_system/area_viewer_window.c
         systems/ui/ui_window.h
@@ -116,6 +115,8 @@ add_executable(${PROJECT_NAME} app.c
         entities/network_switch.h
         systems/process_runner/check_origin_runner.c
         systems/process_runner/check_origin_runner.h
+        components/position.c
+        components/position.h
 )
 #set(raylib_VERBOSE 1)
 target_link_libraries(${PROJECT_NAME} raylib)

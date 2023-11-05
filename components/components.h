@@ -10,15 +10,6 @@
 #include "wire.h"
 #include "polygon.h"
 #include "logger.h"
-
-// Components
-
-typedef struct {
-    Vector2 coord;
-} Position;
-
-char* comp_position_serialize(Position* position);
-
-Position* comp_position_deserialize(char* data);
+#include "position.h"
 
 #endif //EXAMPLE_COMPONENTS_H
