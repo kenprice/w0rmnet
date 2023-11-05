@@ -276,7 +276,9 @@ static void render_connections(AreaViewerWindowState* state) {
                 }
             }
 
-            DrawLineEx(fromCoord, toCoord, 3, GREEN);
+            if ((int)(GetTime() * 500) % 2) {
+                DrawLineEx(fromCoord, toCoord, 3, GREEN);
+            }
         }
     }
 }

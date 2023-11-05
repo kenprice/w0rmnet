@@ -236,6 +236,8 @@ void initialize_world() {
     NetworkSwitch* networkSwitch = entity_network_switch_create_blank();
     Machine* machine4 = entity_machine_create_blank();
     sprintf(networkSwitch->device.address, "%s.%s", areaRouter->device.address, networkSwitch->device.name);
+    sprintf(machine4->device.address, "%s.%s", areaRouter->device.address, machine4->device.name);
+
     networkSwitch->device.type = DEVICE_TYPE_SWITCH;
     networkSwitch->device.visible = true;
     networkSwitch->device.owner = DEVICE_OWNER_PLAYER;
@@ -247,10 +249,15 @@ void initialize_world() {
     networkSwitch->position.coord = (Vector2){ 4, 3 };
     strcpy(networkSwitch->wire.entityA, areaRouter->entityId);
     strcpy(networkSwitch->wire.entityB, machine4->entityId);
+    networkSwitch->processManager.numProcs = 1;
+    networkSwitch->processManager.processes[0].type = PROCESS_TYPE_CHECK_ORIGIN;
+    networkSwitch->processManager.processes[0].isService = true;
+    memset(networkSwitch->processManager.processes[0].state, '\0', PROCESS_STATE_LEN);
+    sprintf(networkSwitch->processManager.processes[0].state, "%s;%s", machine4->device.address, machine3->device.address);
     char* networkSwitchId = entity_network_switch_register_components(*networkSwitch);
+
     strcpy(worldMap.regions[0].zones[0].areas[0].entities[worldMap.regions[0].zones[0].areas[0].numEntities++], networkSwitchId);
 
-    sprintf(machine4->device.address, "%s.%s", areaRouter->device.address, machine4->device.name);
     machine4->position.coord = (Vector2){4, 5};
     machine4->device.owner = DEVICE_OWNER_NOBODY;
     machine4->device.visible = 1;
@@ -266,6 +273,7 @@ void initialize_world() {
     machine4->processManager.processes[1].type = PROCESS_TYPE_LOGIN;
     machine4->processManager.processes[1].invocable = true;
     memset(machine4->processManager.processes[1].state, '\0', PROCESS_STATE_LEN);
+    strcpy(machine4->processManager.processes[1].state, "root:root");
 
     strcpy(areaRouter->routeTable.records[areaRouter->routeTable.numRecords].prefix, machine4->device.address);
     strcpy(areaRouter->routeTable.records[areaRouter->routeTable.numRecords++].wireEntityId, networkSwitch->entityId);

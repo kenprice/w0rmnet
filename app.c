@@ -72,8 +72,8 @@ int main(void)
 
         // Update
         update_main_gui_system();
-        update_packet_routing_system();
         update_process_running_system();
+        update_packet_routing_system();
         update_botnet_system();
 
         // Draw

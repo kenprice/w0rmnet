@@ -11,6 +11,9 @@ typedef enum {
     PROCESS_TYPE_ECHO,
     PROCESS_TYPE_SCAN,
     PROCESS_TYPE_LOGIN,
+
+    PROCESS_TYPE_CHECK_ORIGIN,
+    PROCESS_TYPE_FORWARD_PACKET,
 } ProcessType ;
 
 extern const char* ProcessTypeLabel[];
@@ -19,6 +22,7 @@ typedef struct {
     ProcessType type;
 
     bool invocable; // Can be invoked by owner of device, invocation is done via message Q ipc
+    bool isService; // If it's a service, run on every update loop
     char state[PROCESS_STATE_LEN];   // Proces state containing arbitrary bytes.
 } Process; // Models a running program
 

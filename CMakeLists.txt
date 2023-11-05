@@ -118,6 +118,8 @@ add_executable(${PROJECT_NAME} app.c
         lib/raymath.h
         entities/network_switch.c
         entities/network_switch.h
+        systems/process_runner/check_origin_runner.c
+        systems/process_runner/check_origin_runner.h
 )
 #set(raylib_VERBOSE 1)
 target_link_libraries(${PROJECT_NAME} raylib)

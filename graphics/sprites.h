@@ -11,7 +11,7 @@
 #define SPRITE_ROUTER_BLINK 2
 #define SPRITE_SERVER 3
 #define SPRITE_UNKNOWN 4
-#define SPRITE_SWITCH_GENERIC 3
+#define SPRITE_SWITCH_GENERIC 5
 
 typedef struct {
     Rectangle rect; // Section of the spritesheet

@@ -60,7 +60,7 @@ void initialize_main_gui_system() {
     int screenHeight = GetScreenHeight();
 
     mainGuiState.leftPanelRect = (Rectangle){
-        UI_LEFT_SIDEBAR_WIDTH-1,
+        UI_LEFT_SIDEBAR_WIDTH - 1,
         UI_TOP_NAVBAR_HEIGHT,
         screenWidth - UI_LEFT_SIDEBAR_WIDTH - UI_RIGHT_SIDEBAR_WIDTH + 1,
         screenHeight - UI_TOP_NAVBAR_HEIGHT - UI_STATUS_BAR_HEIGHT
@@ -70,9 +70,9 @@ void initialize_main_gui_system() {
     areaViewerWindowState[0].selectDeviceFn = load_device_info_panel;
 
     mainGuiState.rightPanelRect = (Rectangle){
-        mainGuiState.leftPanelRect.x + mainGuiState.leftPanelRect.width - 1,
+        mainGuiState.leftPanelRect.x + mainGuiState.leftPanelRect.width + 1,
         UI_TOP_NAVBAR_HEIGHT,
-        UI_RIGHT_SIDEBAR_WIDTH,
+        UI_RIGHT_SIDEBAR_WIDTH - 1,
         screenHeight - UI_TOP_NAVBAR_HEIGHT - UI_STATUS_BAR_HEIGHT
     };
     areaViewerWindowState[1] = init_area_viewer_window(&worldMap.regions[0].zones[0].areas[1], mainGuiState.rightPanelRect);
@@ -99,13 +99,13 @@ void update_main_gui_system() {
     mainGuiState.leftPanelRect = (Rectangle){
         toolWindowWidth + UI_LEFT_SIDEBAR_WIDTH - 1,
         UI_TOP_NAVBAR_HEIGHT,
-        screenWidth - UI_LEFT_SIDEBAR_WIDTH - UI_RIGHT_SIDEBAR_WIDTH - toolWindowWidth,
+        screenWidth - UI_LEFT_SIDEBAR_WIDTH - UI_RIGHT_SIDEBAR_WIDTH - toolWindowWidth + 1,
         screenHeight - UI_TOP_NAVBAR_HEIGHT - UI_STATUS_BAR_HEIGHT
     };
     mainGuiState.rightPanelRect = (Rectangle){
         mainGuiState.leftPanelRect.x + mainGuiState.leftPanelRect.width - 1,
         UI_TOP_NAVBAR_HEIGHT,
-        UI_RIGHT_SIDEBAR_WIDTH,
+        UI_RIGHT_SIDEBAR_WIDTH + 1,
         screenHeight - UI_TOP_NAVBAR_HEIGHT - UI_STATUS_BAR_HEIGHT
     };
 
