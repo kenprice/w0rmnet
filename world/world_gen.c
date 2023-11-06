@@ -5,6 +5,7 @@
 #include "world_map.h"
 #include "world_gen.h"
 #include "../utils/uuid.h"
+#include "../utils/random.h"
 
 static void connect_machine_to_router(Area* area, Polygon wirePolygon, char* machineId, char* routerId);
 
@@ -125,11 +126,23 @@ static void connect_machine_to_router(Area* area, Polygon wirePolygon, char* mac
 static void populate_processes(char* machineId) {
     ProcessManager* processManager = g_hash_table_lookup(componentRegistry.processManagers, machineId);
     processManager->maxProcs = 10;
-    processManager->numProcs = 2;
-    processManager->processes[0].type = PROCESS_TYPE_PING;
-    processManager->processes[0].invocable = true;
 
-    processManager->processes[1].type = PROCESS_TYPE_LOGIN;
-    processManager->processes[1].invocable = true;
-    strcpy(processManager->processes[1].state, "root:root");
+    int i = 0;
+
+    processManager->processes[i].type = PROCESS_TYPE_PING;
+    if (!randint(2)) {
+        processManager->processes[i].invocable = true;
+    }
+    if (!randint(2)) {
+        processManager->processes[i].state[0] = 1;
+    }
+
+    if (randint(5)) {
+        i++;
+        processManager->processes[i].type = PROCESS_TYPE_LOGIN;
+        processManager->processes[i].invocable = true;
+        strcpy(processManager->processes[i].state, "root:root");
+    }
+
+    processManager->numProcs = ++i;
 }

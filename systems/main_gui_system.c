@@ -14,7 +14,7 @@
 
 #define MAX_AREA_VIEWER_WINDOWS 3
 #define UI_COMPONENT_PADDING 8
-#define UI_TOP_NAVBAR_HEIGHT 34
+#define UI_TOP_NAVBAR_HEIGHT 42
 #define UI_BOTTOM_PANEL_HEIGHT 232
 #define UI_STATUS_BAR_HEIGHT 24
 
@@ -271,7 +271,7 @@ static void render_left_navbar() {
     };
     GuiPanel(rectangle, NULL);
 
-    Rectangle btnRect = (Rectangle){6, 40, 24, 24};
+    Rectangle btnRect = (Rectangle){6, UI_TOP_NAVBAR_HEIGHT + UI_COMPONENT_PADDING, 24, 24};
 
     if (GuiButton(btnRect, "#241#")) {
         mainGuiState.toolWindowState.activeToolWindow = TOOLWINDOW_NETWORK_MAP;
@@ -291,20 +291,57 @@ static void render_top_navbar() {
     int screenWidth = GetScreenWidth();
     Vector2 mousePos = GetMousePosition();
 
-    Rectangle rectangle = (Rectangle){0, 1, screenWidth, 34};
+    Rectangle rectangle = (Rectangle){0, 1, screenWidth, UI_TOP_NAVBAR_HEIGHT};
     GuiPanel(rectangle, NULL);
 
-    Rectangle btnRect = (Rectangle){screenWidth-64, 6, 24, 24};
-    GuiToggleGroup(btnRect, "#149#;#152#", &mainGuiState.activeLeftPanelMode);
+    Rectangle topbarRect = (Rectangle){4, 5, 150, UI_TOP_NAVBAR_HEIGHT - 9};
+    Rectangle textRect = (Rectangle){40, 8, 140, 14};
+    GuiSetState(STATE_DISABLED); GuiPanel(topbarRect, NULL); GuiSetState(STATE_NORMAL);
+    GuiDrawIcon(244, topbarRect.x+UI_COMPONENT_PADDING, topbarRect.y+UI_COMPONENT_PADDING, 1, WHITE);
+    GuiLabel(textRect, "nightcity.metro");
+    textRect.y += 12;
+    GuiLabel(textRect, "23:00 - Day 1");
+    textRect.y -= 12;
 
-    Rectangle btnGroupRect = (Rectangle){ rectangle.x+btnRect.x, rectangle.y+btnRect.y, btnRect.width, btnRect.height };
-    if (CheckCollisionPointRec(mousePos, btnGroupRect)) {
-        GuiTooltipCustom(btnGroupRect, "Player Area");
-    }
-    btnGroupRect.x += 24 + 4;
-    if (CheckCollisionPointRec(mousePos, btnGroupRect)) {
-        GuiTooltipCustom(btnGroupRect, "Worms");
-    }
+    topbarRect.x += 154;
+    textRect.x += 154;
+    topbarRect.width = 300;
+    GuiSetState(STATE_DISABLED); GuiPanel(topbarRect, NULL); GuiSetState(STATE_NORMAL);
+    GuiDrawIcon(247, topbarRect.x+UI_COMPONENT_PADDING, topbarRect.y+UI_COMPONENT_PADDING, 1, WHITE);
+    GuiLabel(textRect, "25 hosts seen");
+    textRect.y += 12;
+    GuiLabel(textRect, "5 hosts pwned");
+    textRect.y -= 12;
+    textRect.x += 120;
+    GuiLabel(textRect, "Botnet inactive");
+    textRect.y += 14;
+    float progress = 0;
+    GuiProgressBar((Rectangle){textRect.x, textRect.y, 130, 12}, NULL, NULL, &progress, 0, 100);
+    textRect.y -= 14;
+
+    topbarRect.x += 304;
+    textRect.x += 304 - 120;
+    topbarRect.width = 120;
+    GuiSetState(STATE_DISABLED); GuiPanel(topbarRect, NULL); GuiSetState(STATE_NORMAL);
+    GuiDrawIcon(220, topbarRect.x+UI_COMPONENT_PADDING, topbarRect.y+UI_COMPONENT_PADDING, 1, WHITE);
+    GuiLabel(textRect, "Bitcredits");
+    textRect.y += 12;
+    GuiLabel(textRect, "300");
+
+    topbarRect.x = GetScreenWidth() - 154;
+    topbarRect.width = 150;
+    GuiSetState(STATE_DISABLED); GuiPanel(topbarRect, NULL); GuiSetState(STATE_NORMAL);
+
+    Rectangle btnRect = (Rectangle){screenWidth-32, 10, 24, 24};
+    textRect = btnRect;
+    textRect.width = 50;
+    GuiButton(btnRect, "#159#");
+    btnRect.x -= 28;
+    GuiButton(btnRect, "#141#");
+    btnRect.x -= 28;
+    GuiButton(btnRect, "#002#");
+    textRect.x -= 110;
+    GuiLabel(textRect, "Saved");
 }
 
 static void render_worms_window() {
