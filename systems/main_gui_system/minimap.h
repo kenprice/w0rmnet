@@ -3,6 +3,8 @@
 
 #include "raylib.h"
 
+#define UI_MINIMAP_VIEW_HEIGHT 280
+
 void init_minimap_view(Rectangle rect);
 
 void update_minimap_view(Rectangle rect);

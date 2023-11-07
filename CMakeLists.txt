@@ -117,6 +117,10 @@ add_executable(${PROJECT_NAME} app.c
         systems/process_runner/check_origin_runner.h
         components/position.c
         components/position.h
+        events/events.c
+        events/events.h
+        systems/main_gui_system/recent_events.h
+        systems/main_gui_system/recent_events.c
 )
 #set(raylib_VERBOSE 1)
 target_link_libraries(${PROJECT_NAME} raylib)

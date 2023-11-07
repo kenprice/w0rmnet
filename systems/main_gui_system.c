@@ -5,6 +5,7 @@
 #include "main_gui_system.h"
 #include "main_gui_system/area_viewer_window.h"
 #include "main_gui_system/minimap.h"
+#include "main_gui_system/recent_events.h"
 #include "main_gui_system/toolwindow.h"
 #include "botnet_system.h"
 #include "ui/device_info_panel.h"
@@ -43,7 +44,8 @@ typedef struct {
 } MainGuiState;
 
 MainGuiState mainGuiState;
-AreaViewerWindowState areaViewerWindowState[MAX_AREA_VIEWER_WINDOWS];
+AreaViewerWindowState mainAreaViewerWindowState;
+AreaViewerWindowState secondaryAreaViewerWindowState;
 
 static void update_panels_player_area_mode();
 static void render_status_bar();
@@ -64,19 +66,19 @@ void initialize_main_gui_system() {
         screenWidth - UI_LEFT_SIDEBAR_WIDTH - UI_RIGHT_SIDEBAR_WIDTH + 1,
         screenHeight - UI_TOP_NAVBAR_HEIGHT - UI_STATUS_BAR_HEIGHT
     };
-    areaViewerWindowState[0] = init_area_viewer_window(worldState.currentArea, mainGuiState.leftPanelRect);
-    areaViewerWindowState[0].camera.zoom = 1.0f;
-    areaViewerWindowState[0].selectDeviceFn = load_device_info_panel;
+    mainAreaViewerWindowState = init_area_viewer_window(worldState.currentArea, mainGuiState.leftPanelRect);
+    mainAreaViewerWindowState.camera.zoom = 1.0f;
+    mainAreaViewerWindowState.selectDeviceFn = load_device_info_panel;
 
     mainGuiState.rightPanelRect = (Rectangle){
         mainGuiState.leftPanelRect.x + mainGuiState.leftPanelRect.width + 1,
         UI_TOP_NAVBAR_HEIGHT,
         UI_RIGHT_SIDEBAR_WIDTH - 1,
-        screenHeight - UI_TOP_NAVBAR_HEIGHT - UI_STATUS_BAR_HEIGHT
+        UI_RIGHT_SIDEBAR_WIDTH
     };
-    areaViewerWindowState[1] = init_area_viewer_window(&worldMap.regions[0].zones[0].areas[1], mainGuiState.rightPanelRect);
-    areaViewerWindowState[1].camera.zoom = 0.5f;
-    areaViewerWindowState[1].selectDeviceFn = load_device_info_panel;
+    secondaryAreaViewerWindowState = init_area_viewer_window(&worldMap.regions[0].zones[0].areas[1], mainGuiState.rightPanelRect);
+    secondaryAreaViewerWindowState.camera.zoom = 0.5f;
+    secondaryAreaViewerWindowState.selectDeviceFn = load_device_info_panel;
 
     mainGuiState.selectedDevice = NULL;
     mainGuiState.toolWindowState.activeToolWindow = TOOLWINDOW_INACTIVE;
@@ -85,6 +87,7 @@ void initialize_main_gui_system() {
 
     init_minimap_view(mainGuiState.rightPanelRect);
     init_device_info_panel();
+    init_recent_events_view();
 }
 
 void update_main_gui_system() {
@@ -101,20 +104,6 @@ void update_main_gui_system() {
         screenWidth - UI_LEFT_SIDEBAR_WIDTH - UI_RIGHT_SIDEBAR_WIDTH - toolWindowWidth + 1,
         screenHeight - UI_TOP_NAVBAR_HEIGHT - UI_STATUS_BAR_HEIGHT
     };
-    mainGuiState.rightPanelRect = (Rectangle){
-        mainGuiState.leftPanelRect.x + mainGuiState.leftPanelRect.width - 1,
-        UI_TOP_NAVBAR_HEIGHT,
-        UI_RIGHT_SIDEBAR_WIDTH + 1,
-        screenHeight - UI_TOP_NAVBAR_HEIGHT - UI_STATUS_BAR_HEIGHT
-    };
-
-    // -------------------
-    // Update right panel (currently fixed to some area)
-    areaViewerWindowState[1].window.windowBounds.x = mainGuiState.rightPanelRect.x;
-    areaViewerWindowState[1].window.windowBounds.y = mainGuiState.rightPanelRect.y;
-    areaViewerWindowState[1].window.windowBounds.width = mainGuiState.rightPanelRect.width;
-    areaViewerWindowState[1].window.windowBounds.height = mainGuiState.rightPanelRect.height;
-    update_area_viewer_window(&areaViewerWindowState[1]);
 
     // -------------------
     // Update left panel
@@ -136,24 +125,28 @@ void update_main_gui_system() {
     };
     mainGuiState.toolWindowState.toolWindowRect = toolWindowRect;
     update_tool_window(&mainGuiState.toolWindowState);
-    update_minimap_view(mainGuiState.rightPanelRect);
 
     // -------------------
-    // Drag to adjust side
-    Vector2 mousePosition = GetMousePosition();
-    if (IsMouseButtonPressed(MOUSE_LEFT_BUTTON)) {
-        Rectangle boundaryRect = (Rectangle){mainGuiState.leftPanelRect.x+mainGuiState.leftPanelRect.width-3, mainGuiState.leftPanelRect.y, 6, mainGuiState.leftPanelRect.height};
-        if (CheckCollisionPointRec(mousePosition, boundaryRect)) {
-            mainGuiState.dragMode = true;
-            mainGuiState.dragOffsetX = mousePosition.x - mainGuiState.leftPanelRect.width;
-        }
-    }
-    if (mainGuiState.dragMode) {
-        mainGuiState.leftPanelRect.width = mousePosition.x - mainGuiState.dragOffsetX;
-    }
-    if (IsMouseButtonReleased(MOUSE_LEFT_BUTTON)) {
-        mainGuiState.dragMode = false;
-    }
+    // Right side minimap, log
+    mainGuiState.rightPanelRect = (Rectangle){
+            mainGuiState.leftPanelRect.x + mainGuiState.leftPanelRect.width - 1,
+            UI_TOP_NAVBAR_HEIGHT,
+            UI_RIGHT_SIDEBAR_WIDTH + 1,
+            screenHeight - UI_TOP_NAVBAR_HEIGHT - UI_STATUS_BAR_HEIGHT
+    };
+
+    update_minimap_view(mainGuiState.rightPanelRect);
+
+    secondaryAreaViewerWindowState.window.windowBounds.x = mainGuiState.rightPanelRect.x;
+    secondaryAreaViewerWindowState.window.windowBounds.y = mainGuiState.rightPanelRect.y + UI_MINIMAP_VIEW_HEIGHT;
+    secondaryAreaViewerWindowState.window.windowBounds.width = mainGuiState.rightPanelRect.width;
+    secondaryAreaViewerWindowState.window.windowBounds.height = UI_MINIMAP_VIEW_HEIGHT;
+    update_area_viewer_window(&secondaryAreaViewerWindowState);
+
+    Rectangle eventsRect = mainGuiState.rightPanelRect;
+    eventsRect.y += (UI_MINIMAP_VIEW_HEIGHT*2) - 1;
+    eventsRect.height = screenHeight - (UI_MINIMAP_VIEW_HEIGHT*2) - UI_TOP_NAVBAR_HEIGHT - UI_STATUS_BAR_HEIGHT + 1;
+    update_recent_events_view(eventsRect);
 }
 
 void render_main_gui_system() {
@@ -161,21 +154,22 @@ void render_main_gui_system() {
 
     // -------------------
     // Render right panel (currently fixed to some area)
-    render_area_viewer_window(&areaViewerWindowState[1]);
+    render_area_viewer_window(&secondaryAreaViewerWindowState);
 
     // -------------------
     // Render left panel
     switch (mainGuiState.activeLeftPanelMode) {
         case LEFT_PANEL_MODE_PLAYER_AREA:
-            render_area_viewer_window(&areaViewerWindowState[0]);
+            render_area_viewer_window(&mainAreaViewerWindowState);
             break;
         case LEFT_PANEL_MODE_WORMS:
             render_worms_window();
             break;
     }
 
-    // render minimap
-    render_minimap_view(mainGuiState.rightPanelRect);
+    // render right panel
+    render_minimap_view();
+    render_recent_events_view();
 
     // -------------------
     // Top navbar
@@ -192,21 +186,16 @@ void render_main_gui_system() {
 }
 
 static void update_panels_player_area_mode() {
-    areaViewerWindowState[0].window.windowBounds.x = mainGuiState.leftPanelRect.x;
-    areaViewerWindowState[0].window.windowBounds.y = mainGuiState.leftPanelRect.y;
-    areaViewerWindowState[0].window.windowBounds.width = mainGuiState.leftPanelRect.width;
-    areaViewerWindowState[0].window.windowBounds.height = mainGuiState.leftPanelRect.height;
+    mainAreaViewerWindowState.window.windowBounds.x = mainGuiState.leftPanelRect.x;
+    mainAreaViewerWindowState.window.windowBounds.y = mainGuiState.leftPanelRect.y;
+    mainAreaViewerWindowState.window.windowBounds.width = mainGuiState.leftPanelRect.width;
+    mainAreaViewerWindowState.window.windowBounds.height = mainGuiState.leftPanelRect.height;
 
-    if (areaViewerWindowState[0].selectedDevice && mainGuiState.selectedDevice != areaViewerWindowState[0].selectedDevice) {
-        mainGuiState.selectedDevice = areaViewerWindowState[0].selectedDevice;
-        areaViewerWindowState[1].selectedDevice = NULL;
-    }
-    if (areaViewerWindowState[1].selectedDevice && mainGuiState.selectedDevice != areaViewerWindowState[1].selectedDevice) {
-        mainGuiState.selectedDevice = areaViewerWindowState[1].selectedDevice;
-        areaViewerWindowState[0].selectedDevice = NULL;
+    if (mainAreaViewerWindowState.selectedDevice && mainGuiState.selectedDevice != mainAreaViewerWindowState.selectedDevice) {
+        mainGuiState.selectedDevice = mainAreaViewerWindowState.selectedDevice;
     }
 
-    update_area_viewer_window(&areaViewerWindowState[0]);
+    update_area_viewer_window(&mainAreaViewerWindowState);
 }
 
 static void render_status_bar() {
@@ -281,7 +270,9 @@ static void render_left_navbar() {
         GuiTooltipCustom(btnRect, "Network Map");
     }
     btnRect.y += 30;
-    GuiToggle(btnRect, "#246#", NULL);
+    if (GuiButton(btnRect, "#246#")) {
+        botnet_system_test_launch_login_attack();
+    }
     if (CheckCollisionPointRec(mousePos, btnRect)) {
         GuiTooltipCustom(btnRect, "Command & Control");
     }
@@ -303,20 +294,24 @@ static void render_top_navbar() {
     GuiLabel(textRect, "23:00 - Day 1");
     textRect.y -= 12;
 
+    char buffer[100];
     topbarRect.x += 154;
     textRect.x += 154;
     topbarRect.width = 300;
     GuiSetState(STATE_DISABLED); GuiPanel(topbarRect, NULL); GuiSetState(STATE_NORMAL);
     GuiDrawIcon(247, topbarRect.x+UI_COMPONENT_PADDING, topbarRect.y+UI_COMPONENT_PADDING, 1, WHITE);
-    GuiLabel(textRect, "25 hosts seen");
+    sprintf(buffer, "%d targets", botnetState.numTargetDevices);
+    GuiLabel(textRect, buffer);
     textRect.y += 12;
-    GuiLabel(textRect, "5 hosts pwned");
+    sprintf(buffer, "%d hosts pwned", botnetState.targetsPwned);
+    GuiLabel(textRect, buffer);
     textRect.y -= 12;
     textRect.x += 120;
-    GuiLabel(textRect, "Botnet inactive");
+    GuiLabel(textRect, botnetState.state == BOTNET_STATE_ACTIVE ? "Attack in progress" : "Botnet inactive");
     textRect.y += 14;
-    float progress = 0;
-    GuiProgressBar((Rectangle){textRect.x, textRect.y, 130, 12}, NULL, NULL, &progress, 0, 100);
+    float progress = botnetState.state == BOTNET_STATE_ACTIVE ? botnetState.targetsCompleted : 0;
+    float total =  botnetState.state == BOTNET_STATE_ACTIVE ? botnetState.numTargetDevices : 100;
+    GuiProgressBar((Rectangle){textRect.x, textRect.y, 130, 12}, NULL, NULL, &progress, 0, total);
     textRect.y -= 14;
 
     topbarRect.x += 304;
@@ -355,8 +350,8 @@ static void render_worms_window() {
 }
 
 static void load_area_view_left_panel(Area* area) {
-    areaViewerWindowState[0] = init_area_viewer_window(area, mainGuiState.leftPanelRect);
-    areaViewerWindowState[0].selectDeviceFn = load_device_info_panel;
+    mainAreaViewerWindowState = init_area_viewer_window(area, mainGuiState.leftPanelRect);
+    mainAreaViewerWindowState.selectDeviceFn = load_device_info_panel;
 }
 
 static void load_device_info_panel(Device* device) {

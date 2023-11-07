@@ -2,6 +2,7 @@
 #include "glib.h"
 #include "login_runner.h"
 #include "../../components/component_registry.h"
+#include "../../events/events.h"
 
 /**
  * Login State
@@ -42,6 +43,7 @@ void proc_login_handle_packet(char* entityId, Process* process, Packet* packet) 
 
         sprintf(buffer, "Received LOGIN from %s (success)", packet->fromAddress);
         comp_logger_add_entry(logger, buffer);
+        events_publish_device_event(entityId, device, DevicePwnedEvent);
 
         sprintf(buffer, "LOGIN SUCCESS");
     } else {

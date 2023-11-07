@@ -17,7 +17,10 @@ typedef struct {
     int numTargetDevices;
 
     int targetsCompleted;
+    int targetsPwned;
 } BotnetState;
+
+extern BotnetState botnetState;
 
 void update_botnet_system();
 

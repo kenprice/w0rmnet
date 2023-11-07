@@ -1,8 +1,11 @@
 #include <stdio.h>
 #include "botnet_system.h"
+#include "../events/events.h"
 #include "../components/component_registry.h"
 
 BotnetState botnetState;
+
+void botnet_system_on_device_pwned(DeviceEvent event);
 
 void update_botnet_system() {
     if (!botnetState.state || !TimerDone(botnetState.timer)) return;
@@ -31,6 +34,7 @@ void update_botnet_system() {
         if (botnetState.targetsCompleted >= botnetState.numTargetDevices) {
             // Finished
             botnetState.state = BOTNET_STATE_STANDBY;
+            events_unregister_device_event_listener(botnet_system_on_device_pwned);
             return;
         }
     }
@@ -49,6 +53,7 @@ void botnet_system_test_launch_login_attack() {
     botnetState.numOwnedDevices = 0;
     botnetState.numTargetDevices = 0;
     botnetState.targetsCompleted = 0;
+    botnetState.targetsPwned = 0;
 
     g_hash_table_iter_init(&iter, componentRegistry.devices);
     while (g_hash_table_iter_next(&iter, (gpointer) &entityId, (gpointer) &device)) {
@@ -62,4 +67,11 @@ void botnet_system_test_launch_login_attack() {
 
     botnetState.state = BOTNET_STATE_ACTIVE;
     StartTimer(&botnetState.timer, 0.5);
+
+    events_register_device_event_listener(botnet_system_on_device_pwned);
+}
+
+void botnet_system_on_device_pwned(DeviceEvent event) {
+    if (event.type != DevicePwnedEvent) return;
+    botnetState.targetsPwned++;
 }

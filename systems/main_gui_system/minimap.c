@@ -6,7 +6,6 @@
 #include "../../world/world_map.h"
 #include "../../components/component_registry.h"
 
-#define MINIMAP_VIEW_HEIGHT 280
 static const int CircleRadius = 15;
 static const int CircleRadiusDelta = 35;
 
@@ -153,7 +152,7 @@ int count_leaves_in_network(char* routerEntityId) {
 
 void init_minimap_view(Rectangle rect) {
     minimapState.rect = rect;
-    minimapState.rect.height = MINIMAP_VIEW_HEIGHT;
+    minimapState.rect.height = UI_MINIMAP_VIEW_HEIGHT;
 
     GList* outputGraph = g_list_alloc();
     char* networkRoot = worldMap.regions[0].zones[0].gateway;
@@ -165,7 +164,7 @@ void init_minimap_view(Rectangle rect) {
 
 void update_minimap_view(Rectangle rect) {
     minimapState.rect = rect;
-    minimapState.rect.height = MINIMAP_VIEW_HEIGHT;
+    minimapState.rect.height = UI_MINIMAP_VIEW_HEIGHT;
 
     g_list_free_full(minimapState.radialNodes, free);
 
