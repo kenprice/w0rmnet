@@ -90,6 +90,20 @@ int update_area_viewer_window(AreaViewerWindowState* state) {
     return update_window(&state->window);
 }
 
+void area_viewer_center_at_position(AreaViewerWindowState* state, Position* position) {
+    state->camera.zoom = 1.0f;
+
+    float x = position->coord.x;
+    float y = position->coord.y;
+
+    Vector2 globalCoord = isometric_map_local_to_global((Rectangle){ 0 }, x, y, state->camera.zoom);
+    float globalX = -globalCoord.x + state->window.windowBounds.width/2;
+    float globalY = -globalCoord.y + state->window.windowBounds.height/2;
+
+    state->camera.offset.x = globalX;
+    state->camera.offset.y = globalY;
+}
+
 static void update_area_viewer_camera_control(AreaViewerWindowState* state) {
     if (GuiIsLocked() || !CheckCollisionPointRec(GetMousePosition(), state->window.windowBounds)) return;
 
@@ -296,7 +310,7 @@ static void render_device_mouseover_hover(AreaViewerWindowState* state) {
         if (!position || position->coord.x != currentTile.x || position->coord.y != currentTile.y) continue;
 
         Device* device = g_hash_table_lookup(componentRegistry.devices, state->area->entities[i]);
-        if (device != NULL && is_entity_in_area(*state->area, device->entityId)) {
+        if (device != NULL && is_entity_in_area(state->area, device->entityId)) {
             char* label = device->visible ? device->name : "???";
             int width = MeasureText(label, 10);
             DrawRectangle(mousePos.x-1, mousePos.y-11, width+2, 10, BLACK);

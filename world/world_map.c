@@ -289,11 +289,27 @@ void initialize_world() {
 //    SaveFileText("world.sav", buffer);
 }
 
-bool is_entity_in_area(Area area, char* entityId) {
-    for (int i = 0; i < area.numEntities; i++) {
-        if (strcmp(area.entities[i], entityId)) {
+bool is_entity_in_area(Area* area, char* entityId) {
+    for (int i = 0; i < area->numEntities; i++) {
+        if (strcmp(area->entities[i], entityId) == 0) {
             return true;
         }
     }
     return false;
+}
+
+Area* find_area_by_device(Device* device) {
+    for (int i = 0; i < worldMap.numRegions; i++) {
+        Region* region = &worldMap.regions[i];
+        for (int j = 0; j < region->numZones; j++) {
+            Zone* zone = &region->zones[j];
+            for (int k = 0; k < zone->numAreas; k++) {
+                Area* area = &zone->areas[k];
+                if (is_entity_in_area(area, device->entityId)) {
+                    return area;
+                }
+            }
+        }
+    }
+    return NULL;
 }

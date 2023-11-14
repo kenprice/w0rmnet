@@ -76,7 +76,7 @@ void initialize_main_gui_system() {
         UI_RIGHT_SIDEBAR_WIDTH - 1,
         UI_RIGHT_SIDEBAR_WIDTH
     };
-    secondaryAreaViewerWindowState = init_area_viewer_window(&worldMap.regions[0].zones[0].areas[1], mainGuiState.rightPanelRect);
+    secondaryAreaViewerWindowState = init_area_viewer_window(&worldMap.regions[0].zones[0].areas[0], mainGuiState.rightPanelRect);
     secondaryAreaViewerWindowState.camera.zoom = 0.5f;
     secondaryAreaViewerWindowState.selectDeviceFn = load_device_info_panel;
 
@@ -87,7 +87,7 @@ void initialize_main_gui_system() {
 
     init_minimap_view(mainGuiState.rightPanelRect);
     init_device_info_panel();
-    init_recent_events_view();
+    init_recent_events_view(&secondaryAreaViewerWindowState);
 }
 
 void update_main_gui_system() {

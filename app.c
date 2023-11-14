@@ -29,16 +29,15 @@ int main(void)
 {
     // Initialization
     //--------------------------------------------------------------------------------------
-//    const int screenWidth = 1920;
-//    const int screenHeight = 1080;
-    const int screenWidth = 1440;
-    const int screenHeight = 847;
+    const int initScreenWidth = 1440;
+    const int initScreenHeight = 847;
     const int minScreenWidth = 1024;
     const int minScreenHeight = 768;
     log_debug("Starting w0rmnet...");
 
     SetConfigFlags(FLAG_WINDOW_RESIZABLE | FLAG_VSYNC_HINT);
-    InitWindow(screenWidth, screenHeight, "w0rmnet");
+    InitWindow(minScreenWidth, minScreenHeight, "w0rmnet");
+    SetWindowSize(initScreenWidth, initScreenHeight);
 
     // NOTE: Textures MUST be loaded after Window initialization (OpenGL context is required)
     load_sprite_sheet();

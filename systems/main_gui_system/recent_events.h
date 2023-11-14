@@ -2,8 +2,9 @@
 #define W0RMNET_RECENT_EVENTS_H
 
 #include "raylib.h"
+#include "area_viewer_window.h"
 
-void init_recent_events_view();
+void init_recent_events_view(AreaViewerWindowState* areaViewer);
 
 void update_recent_events_view(Rectangle rect);
 

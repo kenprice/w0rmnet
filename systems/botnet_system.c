@@ -2,6 +2,7 @@
 #include "botnet_system.h"
 #include "../events/events.h"
 #include "../components/component_registry.h"
+#include "../world/world_map.h"
 
 BotnetState botnetState;
 
@@ -39,7 +40,7 @@ void update_botnet_system() {
         }
     }
 
-    StartTimer(&botnetState.timer, 0.5);
+    StartTimer(&botnetState.timer, 1.5);
 }
 
 /**
@@ -66,7 +67,7 @@ void botnet_system_test_launch_login_attack() {
     }
 
     botnetState.state = BOTNET_STATE_ACTIVE;
-    StartTimer(&botnetState.timer, 0.5);
+    StartTimer(&botnetState.timer, 1.5);
 
     events_register_device_event_listener(botnet_system_on_device_pwned);
 }

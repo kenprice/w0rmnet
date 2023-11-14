@@ -64,6 +64,8 @@ extern WorldMap worldMap;
 
 void initialize_world();
 
-bool is_entity_in_area(Area area, char* entityId);
+bool is_entity_in_area(Area* area, char* entityId);
+
+Area* find_area_by_device(Device* device);
 
 #endif //W0RMNET_WORLD_MAP_H

@@ -30,4 +30,6 @@ int update_area_viewer_window(AreaViewerWindowState* state);
  */
 int render_area_viewer_window(AreaViewerWindowState* state);
 
+void area_viewer_center_at_position(AreaViewerWindowState* state, Position* position);
+
 #endif //W0RMNET_AREA_VIEWER_WINDOW_H
