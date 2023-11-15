@@ -88,11 +88,6 @@ void render_network_map_toolwindow(NetworkMapWindowState* state, Rectangle toolW
         }
         infoTextRect.x -= lineHeight/4;
     }
-//
-//    for (int i = 0; i < testNumLines; i++) {
-//        sprintf(buffer, "Placeholder %d", i);
-//        GuiLabelButton(infoTextRect, buffer);
-//        infoTextRect.y += lineHeight;
-//    }
+
     EndScissorMode();
 }

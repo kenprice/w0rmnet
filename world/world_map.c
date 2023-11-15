@@ -138,13 +138,13 @@ void initialize_world() {
     // Processes
     machine1->processManager.maxProcs = 10;
     machine1->processManager.numProcs = 3;
-    machine1->processManager.processes[0].type = PROCESS_TYPE_PING;
+    machine1->processManager.processes[0].program = PingPrograms[0];
     machine1->processManager.processes[0].invocable = true;
     memset(machine1->processManager.processes[0].state, '\0', PROCESS_STATE_LEN);
-    machine1->processManager.processes[1].type = PROCESS_TYPE_SCAN;
+    machine1->processManager.processes[1].program = ScanPrograms[0];
     machine1->processManager.processes[1].invocable = true;
     memset(machine1->processManager.processes[1].state, '\0', PROCESS_STATE_LEN);
-    machine1->processManager.processes[2].type = PROCESS_TYPE_LOGIN;
+    machine1->processManager.processes[2].program = LoginPrograms[0];
     machine1->processManager.processes[2].invocable = true;
     memset(machine1->processManager.processes[2].state, '\0', PROCESS_STATE_LEN);
     // Register
@@ -159,7 +159,7 @@ void initialize_world() {
     // Processes
     machine2->processManager.maxProcs = 10;
     machine2->processManager.numProcs = 1;
-    machine2->processManager.processes[0].type = PROCESS_TYPE_PING;
+    machine2->processManager.processes[0].program = PingPrograms[0];
     machine2->processManager.processes[0].invocable = true;
     memset(machine2->processManager.processes[0].state, '\0', PROCESS_STATE_LEN);
     machine2->processManager.processes[0].state[0] = 1;
@@ -175,13 +175,13 @@ void initialize_world() {
     // Processes
     machine3->processManager.maxProcs = 10;
     machine3->processManager.numProcs = 3;
-    machine3->processManager.processes[0].type = PROCESS_TYPE_PING;
+    machine3->processManager.processes[0].program = PingPrograms[0];
     machine3->processManager.processes[0].invocable = true;
     memset(machine3->processManager.processes[0].state, '\0', PROCESS_STATE_LEN);
-    machine3->processManager.processes[1].type = PROCESS_TYPE_SCAN;
+    machine3->processManager.processes[1].program = ScanPrograms[0];
     machine3->processManager.processes[1].invocable = true;
     memset(machine3->processManager.processes[1].state, '\0', PROCESS_STATE_LEN);
-    machine3->processManager.processes[2].type = PROCESS_TYPE_LOGIN;
+    machine3->processManager.processes[2].program = LoginPrograms[0];
     machine3->processManager.processes[2].invocable = true;
     memset(machine3->processManager.processes[2].state, '\0', PROCESS_STATE_LEN);
     strcpy(machine3->processManager.processes[2].state, "root:root");
@@ -250,7 +250,7 @@ void initialize_world() {
     strcpy(networkSwitch->wire.entityA, areaRouter->entityId);
     strcpy(networkSwitch->wire.entityB, machine4->entityId);
     networkSwitch->processManager.numProcs = 1;
-    networkSwitch->processManager.processes[0].type = PROCESS_TYPE_CHECK_ORIGIN;
+    networkSwitch->processManager.processes[0].program = CheckOriginPrograms[0];
     networkSwitch->processManager.processes[0].isService = true;
     memset(networkSwitch->processManager.processes[0].state, '\0', PROCESS_STATE_LEN);
     sprintf(networkSwitch->processManager.processes[0].state, "%s;%s", machine4->device.address, machine3->device.address);
@@ -267,10 +267,10 @@ void initialize_world() {
     // Processes
     machine4->processManager.maxProcs = 10;
     machine4->processManager.numProcs = 2;
-    machine4->processManager.processes[0].type = PROCESS_TYPE_PING;
+    machine4->processManager.processes[0].program = PingPrograms[0];
     machine4->processManager.processes[0].invocable = true;
     memset(machine4->processManager.processes[0].state, '\0', PROCESS_STATE_LEN);
-    machine4->processManager.processes[1].type = PROCESS_TYPE_LOGIN;
+    machine4->processManager.processes[0].program = LoginPrograms[0];
     machine4->processManager.processes[1].invocable = true;
     memset(machine4->processManager.processes[1].state, '\0', PROCESS_STATE_LEN);
     strcpy(machine4->processManager.processes[1].state, "root:root");

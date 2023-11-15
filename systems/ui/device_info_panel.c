@@ -207,8 +207,8 @@ void render_device_prog_controls(Rectangle rect, Device* device) {
     char buffer[100] = "";
     if (processManager->numProcs > 0) {
         for (int i=0; i<processManager->numProcs; i++) {
-            if (!processManager->processes[i].invocable) continue;
-            strcat(buffer, ProcessTypeLabel[processManager->processes[i].type]);
+            Process proc = processManager->processes[i];
+            strcat(buffer, proc.program.name);
             strcat(buffer, ";");
         }
         buffer[strlen(buffer)-1] = 0;
@@ -220,7 +220,7 @@ void render_device_prog_controls(Rectangle rect, Device* device) {
         return;
     }
 
-    switch(processManager->processes[state.progActiveIndex].type) {
+    switch(processManager->processes[state.progActiveIndex].program.type) {
         case PROCESS_TYPE_PING:
             render_prog_options_single_target_only(rect, device);
             break;

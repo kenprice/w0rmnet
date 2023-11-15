@@ -20,7 +20,7 @@ void update_botnet_system() {
 
         int procIdx = -1;
         for (int j = 0; j < processManager->numProcs; j++) {
-            if (processManager->processes[j].type == PROCESS_TYPE_LOGIN) {
+            if (processManager->processes[j].program.type == PROCESS_TYPE_LOGIN) {
                 procIdx = j;
                 break;
             }

@@ -2,24 +2,13 @@
 #define W0RMNET_PROCESS_H
 
 #include "../utils/uuid.h"
+#include "../store/programs.h"
 
 #define PROCESS_ARGS_LEN 100
 #define PROCESS_STATE_LEN 100
 
-typedef enum {
-    PROCESS_TYPE_PING,
-    PROCESS_TYPE_ECHO,
-    PROCESS_TYPE_SCAN,
-    PROCESS_TYPE_LOGIN,
-
-    PROCESS_TYPE_CHECK_ORIGIN,
-    PROCESS_TYPE_FORWARD_PACKET,
-} ProcessType ;
-
-extern const char* ProcessTypeLabel[];
-
 typedef struct {
-    ProcessType type;
+    Program program;
 
     bool invocable; // Can be invoked by owner of device, invocation is done via message Q ipc
     bool isService; // If it's a service, run on every update loop

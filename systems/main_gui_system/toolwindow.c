@@ -1,4 +1,3 @@
-#include <string.h>
 #include "toolwindow.h"
 #include "../../lib/raygui.h"
 
@@ -11,6 +10,9 @@ void init_tool_window(ToolWindowState* toolWindowState) {
             init_network_map_toolwindow(&toolWindowState->networkMapState, toolWindowState->toolWindowRect);
             toolWindowState->networkMapState.switchAreaFn = toolWindowState->switchAreaFn;
             break;
+        case TOOLWINDOW_WORMS:
+            init_worms_toolwindow(&toolWindowState->wormsWindowState, toolWindowState->toolWindowRect);
+            break;
     }
 }
 
@@ -18,6 +20,9 @@ void update_tool_window(ToolWindowState* toolWindowState) {
     switch(toolWindowState->activeToolWindow) {
         case TOOLWINDOW_NETWORK_MAP:
             update_network_map_toolwindow(&toolWindowState->networkMapState, toolWindowState->toolWindowRect);
+            break;
+        case TOOLWINDOW_WORMS:
+            update_worms_toolwindow(&toolWindowState->wormsWindowState, toolWindowState->toolWindowRect);
             break;
     }
 }
@@ -29,6 +34,12 @@ void render_tool_window(ToolWindowState* toolWindowState) {
                 toolWindowState->activeToolWindow = -1;
             }
             render_network_map_toolwindow(&toolWindowState->networkMapState, toolWindowState->toolWindowRect);
+            break;
+        case TOOLWINDOW_WORMS:
+            if (GuiWindowBox(toolWindowState->toolWindowRect, "Worms")) {
+                toolWindowState->activeToolWindow = -1;
+            }
+            render_worms_toolwindow(&toolWindowState->wormsWindowState, toolWindowState->toolWindowRect);
             break;
     }
 }

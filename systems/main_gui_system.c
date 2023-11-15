@@ -22,7 +22,7 @@
 #define UI_LEFT_SIDEBAR_WIDTH 36
 #define UI_RIGHT_SIDEBAR_WIDTH 280
 
-#define LEFT_PANEL_MODE_PLAYER_AREA 0
+#define LEFT_PANEL_MODE_AREA_VIEWER 0
 #define LEFT_PANEL_MODE_WORMS 1
 
 static const int deviceInfoDrawerHeight = 400;
@@ -108,7 +108,7 @@ void update_main_gui_system() {
     // -------------------
     // Update left panel
     switch (mainGuiState.activeLeftPanelMode) {
-        case LEFT_PANEL_MODE_PLAYER_AREA:
+        case LEFT_PANEL_MODE_AREA_VIEWER:
             update_panels_player_area_mode();
             break;
         case LEFT_PANEL_MODE_WORMS:
@@ -159,7 +159,7 @@ void render_main_gui_system() {
     // -------------------
     // Render left panel
     switch (mainGuiState.activeLeftPanelMode) {
-        case LEFT_PANEL_MODE_PLAYER_AREA:
+        case LEFT_PANEL_MODE_AREA_VIEWER:
             render_area_viewer_window(&mainAreaViewerWindowState);
             break;
         case LEFT_PANEL_MODE_WORMS:
@@ -263,6 +263,7 @@ static void render_left_navbar() {
     Rectangle btnRect = (Rectangle){6, UI_TOP_NAVBAR_HEIGHT + UI_COMPONENT_PADDING, 24, 24};
 
     if (GuiButton(btnRect, "#241#")) {
+        mainGuiState.activeLeftPanelMode = LEFT_PANEL_MODE_AREA_VIEWER;
         mainGuiState.toolWindowState.activeToolWindow = TOOLWINDOW_NETWORK_MAP;
         init_tool_window(&mainGuiState.toolWindowState);
     }
@@ -271,7 +272,8 @@ static void render_left_navbar() {
     }
     btnRect.y += 30;
     if (GuiButton(btnRect, "#246#")) {
-        botnet_system_test_launch_login_attack();
+        mainGuiState.toolWindowState.activeToolWindow = TOOLWINDOW_WORMS;
+        init_tool_window(&mainGuiState.toolWindowState);
     }
     if (CheckCollisionPointRec(mousePos, btnRect)) {
         GuiTooltipCustom(btnRect, "Command & Control");
@@ -352,6 +354,7 @@ static void render_worms_window() {
 static void load_area_view_left_panel(Area* area) {
     mainAreaViewerWindowState = init_area_viewer_window(area, mainGuiState.leftPanelRect);
     mainAreaViewerWindowState.selectDeviceFn = load_device_info_panel;
+    mainGuiState.activeLeftPanelMode = LEFT_PANEL_MODE_AREA_VIEWER;
 }
 
 static void load_device_info_panel(Device* device) {

@@ -52,7 +52,7 @@ char* entity_network_switch_register_components(NetworkSwitch networkSwitch) {
     processManager->numProcs = networkSwitch.processManager.numProcs;
     processManager->maxProcs = networkSwitch.processManager.maxProcs;
     for (int i = 0; i < networkSwitch.processManager.numProcs; i++) {
-        processManager->processes[i].type = networkSwitch.processManager.processes[i].type;
+        processManager->processes[i].program = networkSwitch.processManager.processes[i].program;
         processManager->processes[i].invocable = networkSwitch.processManager.processes[i].invocable;
         processManager->processes[i].isService = networkSwitch.processManager.processes[i].isService;
         strcpy(processManager->processes[i].state, networkSwitch.processManager.processes[i].state);

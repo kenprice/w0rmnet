@@ -129,7 +129,7 @@ static void populate_processes(char* machineId) {
 
     int i = 0;
 
-    processManager->processes[i].type = PROCESS_TYPE_PING;
+    processManager->processes[i].program = PingPrograms[randint(6)];
     if (!randint(2)) {
         processManager->processes[i].invocable = true;
     }
@@ -139,7 +139,7 @@ static void populate_processes(char* machineId) {
 
     if (randint(5)) {
         i++;
-        processManager->processes[i].type = PROCESS_TYPE_LOGIN;
+        processManager->processes[i].program = LoginPrograms[randint(6)];
         processManager->processes[i].invocable = true;
         strcpy(processManager->processes[i].state, "root:root");
     }

@@ -57,7 +57,7 @@ static void update_process_manager(char* entityId, ProcessManager* process_manag
 }
 
 static void send_packet_to_proc(char* entityId, Process* process, Packet* packet) {
-    switch (process->type) {
+    switch (process->program.type) {
         case PROCESS_TYPE_PING:
             proc_ping_handle_packet(entityId, process, packet);
             break;
@@ -69,7 +69,7 @@ static void send_packet_to_proc(char* entityId, Process* process, Packet* packet
 }
 
 static void send_message_to_proc(char* entityId, Process* process, ProcMessage* message) {
-    switch (process->type) {
+    switch (process->program.type) {
         case PROCESS_TYPE_PING:
             proc_ping_handle_message(entityId, process, message);
             break;
@@ -85,7 +85,7 @@ static void send_message_to_proc(char* entityId, Process* process, ProcMessage* 
 }
 
 static void run_service_procs(char* entityId, Process* process) {
-    switch (process->type) {
+    switch (process->program.type) {
         case PROCESS_TYPE_CHECK_ORIGIN:
             proc_check_origin_handle_service(entityId, process);
             break;

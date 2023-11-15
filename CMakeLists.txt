@@ -121,6 +121,13 @@ add_executable(${PROJECT_NAME} app.c
         events/events.h
         systems/main_gui_system/recent_events.h
         systems/main_gui_system/recent_events.c
+        systems/main_gui_system/toolwindows/worms_toolwindow.c
+        systems/main_gui_system/toolwindows/worms_toolwindow.h
+        components/file_system.h
+        store/files.h
+        store/exploits.h
+        store/programs.h
+        store/programs.c
 )
 #set(raylib_VERBOSE 1)
 target_link_libraries(${PROJECT_NAME} raylib)

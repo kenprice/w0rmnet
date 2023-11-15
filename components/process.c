@@ -5,13 +5,6 @@
 #include "component_registry.h"
 #include "process.h"
 
-const char* ProcessTypeLabel[] = {
-    "PING",
-    "ECHO",
-    "SCAN",
-    "LOGIN"
-};
-
 void register_process_manager(ProcessManager process_manager, char* entity_id) {
     ProcessManager* new_process_manager = calloc(1, sizeof(ProcessManager));
     memcpy(new_process_manager, &(process_manager), sizeof(ProcessManager));
@@ -68,7 +61,7 @@ char* comp_process_manager_serialize(ProcessManager* processManager) {
     for (int i = 0; i < processManager->numProcs; i++) {
         char processBuffer[1000] = "";
         Process proc = processManager->processes[i];
-        sprintf(processBuffer, "%d$%d$%s", proc.type, proc.invocable, proc.state);
+        sprintf(processBuffer, "%d$%d$%s", proc.program.type, proc.invocable, proc.state);
         strcat(procsBuffer, processBuffer);
         strcat(procsBuffer, "|");
     }
@@ -93,7 +86,7 @@ ProcessManager* comp_process_manager_deserialize(char* data) {
     char** procs = g_strsplit(splitData[0], "|", processManager->numProcs);
     for (int i = 0; i < processManager->numProcs; i++) {
         char** proc = g_strsplit(procs[i], "$", 3);
-        processManager->processes[i].type = atoi(proc[0]);
+        processManager->processes[i].program.type = atoi(proc[0]);
         processManager->processes[i].invocable = atoi(proc[1]);
         strcpy(processManager->processes[i].state, proc[2]);
         g_strfreev(proc);
