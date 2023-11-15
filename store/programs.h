@@ -2,10 +2,11 @@
 #define W0RMNET_PROGRAMS_H
 
 typedef enum {
-    PROCESS_TYPE_PING,
-    PROCESS_TYPE_ECHO,
-    PROCESS_TYPE_SCAN,
-    PROCESS_TYPE_LOGIN,
+    ProgramTypeNull = -1,
+    ProgramTypePing,
+    ProgramTypeEcho,
+    ProgramTypeScan,
+    ProgramTypeLogin,
     PROCESS_TYPE_CHECK_ORIGIN,
 } ProgramType;
 

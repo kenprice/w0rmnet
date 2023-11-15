@@ -23,39 +23,39 @@ const char* ProgramNames[][5] = {
 };
 
 Program PingPrograms[] = {
-    { PROCESS_TYPE_PING, "NetRipple Ping", 1,  0 },
-    { PROCESS_TYPE_PING, "NetRipple Ping", 1,  2 },
-    { PROCESS_TYPE_PING, "QuantumPing", 1,  0 },
-    { PROCESS_TYPE_PING, "QuantumPing", 1,  2 },
-    { PROCESS_TYPE_PING, "Bingo Ping", 1,  1 },
-    { PROCESS_TYPE_PING, "Bingo Ping", 1,  2 },
+    {ProgramTypePing, "NetRipple Ping", 1, 0 },
+    {ProgramTypePing, "NetRipple Ping", 1, 2 },
+    {ProgramTypePing, "QuantumPing",    1, 0 },
+    {ProgramTypePing, "QuantumPing",    1, 2 },
+    {ProgramTypePing, "Bingo Ping",     1, 1 },
+    {ProgramTypePing, "Bingo Ping",     1, 2 },
 };
 
 Program EchoPrograms[] = {
-    { PROCESS_TYPE_ECHO, "NetRipple Echo", 1,  0 },
-    { PROCESS_TYPE_ECHO, "NetRipple Echo", 1,  2 },
-    { PROCESS_TYPE_ECHO, "QuantumEcho", 1,  0 },
-    { PROCESS_TYPE_ECHO, "QuantumEcho", 1,  2 },
-    { PROCESS_TYPE_ECHO, "Bingo Echo", 1,  1 },
-    { PROCESS_TYPE_ECHO, "Bingo Echo", 1,  2 },
+    {ProgramTypeEcho, "NetRipple Echo", 1, 0 },
+    {ProgramTypeEcho, "NetRipple Echo", 1, 2 },
+    {ProgramTypeEcho, "QuantumEcho",    1, 0 },
+    {ProgramTypeEcho, "QuantumEcho",    1, 2 },
+    {ProgramTypeEcho, "Bingo Echo",     1, 1 },
+    {ProgramTypeEcho, "Bingo Echo",     1, 2 },
 };
 
 Program ScanPrograms[] = {
-    { PROCESS_TYPE_SCAN, "NetRipple Scan", 1,  0 },
-    { PROCESS_TYPE_SCAN, "NetRipple Scan", 1,  3 },
-    { PROCESS_TYPE_SCAN, "Quantum NetScanner", 1,  3 },
-    { PROCESS_TYPE_SCAN, "Quantum NetScanner", 2,  1 },
-    { PROCESS_TYPE_SCAN, "Bingo Network Scan", 2,  1 },
-    { PROCESS_TYPE_SCAN, "Bingo Network Scan", 2,  3 },
+    {ProgramTypeScan, "NetRipple Scan",     1, 0 },
+    {ProgramTypeScan, "NetRipple Scan",     1, 3 },
+    {ProgramTypeScan, "Quantum NetScanner", 1, 3 },
+    {ProgramTypeScan, "Quantum NetScanner", 2, 1 },
+    {ProgramTypeScan, "Bingo Network Scan", 2, 1 },
+    {ProgramTypeScan, "Bingo Network Scan", 2, 3 },
 };
 
 Program LoginPrograms[] = {
-    { PROCESS_TYPE_LOGIN, "NetRipple Login", 1,  0 },
-    { PROCESS_TYPE_LOGIN, "NetRipple Login", 2,  2 },
-    { PROCESS_TYPE_LOGIN, "Quantum RemoteShell", 1,  1 },
-    { PROCESS_TYPE_LOGIN, "Quantum RemoteShell", 2,  1 },
-    { PROCESS_TYPE_LOGIN, "Bingo Remote Login", 1,  0 },
-    { PROCESS_TYPE_LOGIN, "Bingo Remote Login", 1,  2 },
+    {ProgramTypeLogin, "NetRipple Login",     1, 0 },
+    {ProgramTypeLogin, "NetRipple Login",     2, 2 },
+    {ProgramTypeLogin, "Quantum RemoteShell", 1, 1 },
+    {ProgramTypeLogin, "Quantum RemoteShell", 2, 1 },
+    {ProgramTypeLogin, "Bingo Remote Login",  1, 0 },
+    {ProgramTypeLogin, "Bingo Remote Login",  1, 2 },
 };
 
 Program CheckOriginPrograms[] = {

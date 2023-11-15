@@ -221,13 +221,13 @@ void render_device_prog_controls(Rectangle rect, Device* device) {
     }
 
     switch(processManager->processes[state.progActiveIndex].program.type) {
-        case PROCESS_TYPE_PING:
+        case ProgramTypePing:
             render_prog_options_single_target_only(rect, device);
             break;
-        case PROCESS_TYPE_SCAN:
+        case ProgramTypeScan:
             render_prog_options_single_target_only(rect, device);
             break;
-        case PROCESS_TYPE_LOGIN:
+        case ProgramTypeLogin:
             render_progs_login_options(rect, device);
             break;
     }

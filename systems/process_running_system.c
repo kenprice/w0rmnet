@@ -58,10 +58,10 @@ static void update_process_manager(char* entityId, ProcessManager* process_manag
 
 static void send_packet_to_proc(char* entityId, Process* process, Packet* packet) {
     switch (process->program.type) {
-        case PROCESS_TYPE_PING:
+        case ProgramTypePing:
             proc_ping_handle_packet(entityId, process, packet);
             break;
-        case PROCESS_TYPE_LOGIN:
+        case ProgramTypeLogin:
             proc_login_handle_packet(entityId, process, packet);;
         default:
             break;
@@ -70,13 +70,13 @@ static void send_packet_to_proc(char* entityId, Process* process, Packet* packet
 
 static void send_message_to_proc(char* entityId, Process* process, ProcMessage* message) {
     switch (process->program.type) {
-        case PROCESS_TYPE_PING:
+        case ProgramTypePing:
             proc_ping_handle_message(entityId, process, message);
             break;
-        case PROCESS_TYPE_SCAN:
+        case ProgramTypeScan:
             proc_netscan_handle_message(entityId, process, message);
             break;
-        case PROCESS_TYPE_LOGIN:
+        case ProgramTypeLogin:
             proc_login_handle_message(entityId, process, message);
             break;
         default:
