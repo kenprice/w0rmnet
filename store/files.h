@@ -21,9 +21,9 @@ typedef struct {
 
 typedef struct Directory {
     char name[FILE_NAME_MAX_LEN];
-    struct Directory* directories;
+    struct Directory** directories;
     int numDirectories;
-    struct File* files;
+    struct File** files;
     int numFiles;
 } Directory;
 

@@ -1,10 +1,10 @@
-#ifndef W0RMNET_FILE_SYSTEM_H
-#define W0RMNET_FILE_SYSTEM_H
+#ifndef W0RMNET_FILE_STORAGE_H
+#define W0RMNET_FILE_STORAGE_H
 
 #include "../store/files.h"
 
 typedef struct {
+    Directory* root;
+} FileStorage;
 
-} Directory;
-
-#endif //W0RMNET_FILE_SYSTEM_H
+#endif //W0RMNET_FILE_STORAGE_H

@@ -323,7 +323,8 @@ static void render_top_navbar() {
     GuiDrawIcon(220, topbarRect.x+UI_COMPONENT_PADDING, topbarRect.y+UI_COMPONENT_PADDING, 1, WHITE);
     GuiLabel(textRect, "Bitcredits");
     textRect.y += 12;
-    GuiLabel(textRect, "300");
+    sprintf(buffer, "%d", worldState.bitCredits);
+    GuiLabel(textRect, buffer);
 
     topbarRect.x = GetScreenWidth() - 154;
     topbarRect.width = 150;

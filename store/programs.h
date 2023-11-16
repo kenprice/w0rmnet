@@ -13,8 +13,7 @@ typedef enum {
 typedef struct {
     ProgramType type;
     const char* name;
-    int version;
-    int versionMinor;
+    int version; // 1201 -> version 12.1
 } Program;
 
 extern const char* ProgramTypeLabel[];

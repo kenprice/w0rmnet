@@ -2,6 +2,7 @@
 #include "world_map.h"
 #include "world_gen.h"
 #include "../components/component_registry.h"
+#include "../components/loot.h"
 #include "../entities/machine.h"
 #include "../entities/router.h"
 #include "../entities/network_switch.h"
@@ -185,7 +186,14 @@ void initialize_world() {
     machine3->processManager.processes[2].invocable = true;
     memset(machine3->processManager.processes[2].state, '\0', PROCESS_STATE_LEN);
     strcpy(machine3->processManager.processes[2].state, "root:root");
-    entity_machine_register_components(machine3);
+    Loot* loot = calloc(1, sizeof(Loot));
+    char* machine3id = entity_machine_register_components(machine3);
+    loot->exploits[0] = &ExploitsList[0];
+    loot->numExploits = 1;
+    loot->credDumps[0] = &CredDumpsList[0];
+    loot->numCredDumps = 1;
+    loot->bitCredits = 100;
+    g_hash_table_insert(componentRegistry.loots, machine3id, loot);
 
     ///// Wire gfx
     Polygon polyZoneRouterAreaRouter;
