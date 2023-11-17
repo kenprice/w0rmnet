@@ -1,9 +1,11 @@
 #include <glib.h>
 #include <stdio.h>
 #include "recent_events.h"
-#include "../../events/events.h"
-#include "../../lib/raygui.h"
 #include "../../components/component_registry.h"
+#include "../../events/device_events.h"
+#include "../../lib/raygui.h"
+#include "../../utils/math_macros.h"
+#include "../../lib/text_rectangle_bounds.h"
 
 #define MAX_NUM_EVENTS 30
 
@@ -13,6 +15,10 @@ typedef struct {
     int numEvents;
 
     AreaViewerWindowState* areaViewer;
+
+    // Scroll
+    Rectangle scrollPanelView;
+    Vector2 scrollPanelScroll;
 } RecentEventsState;
 
 RecentEventsState recentEventsState;
@@ -32,38 +38,22 @@ void update_recent_events_view(Rectangle rect) {
 
 void render_recent_events_view() {
     GuiPanel(recentEventsState.rect, NULL);
-    Vector2 mousePosition = GetMousePosition();
 
-    Vector2 textVec = (Vector2){recentEventsState.rect.x + 8, recentEventsState.rect.y + 4};
-    int numEvents = recentEventsState.numEvents;
-    int break1 = numEvents / 3;
-    int break2 = 2 * numEvents / 3;
+    Rectangle textRect = recentEventsState.rect;
+    textRect = (Rectangle){ textRect.x + 8, textRect.y + 4, textRect.width - 16, textRect.height - 8 };
 
+    int numEvents = min(EventLogMessagesSize, 40); // limit to last 40
+
+    char log[10000] = "";
     for (int i = 0; i < numEvents; i++) {
-        float fade = 0;
-        if (i == 0) fade = 0;
-        if (i > 0) fade = 0.5f;
-        if (i > break1) fade = 0.7f;
-        if (i > break2) fade = 0.9f;
-
         char buffer[100];
-        switch (recentEventsState.events[i].type) {
-            case DevicePwnedEvent:
-                sprintf(buffer, "%s pwned.", recentEventsState.events[i].device->name);
-                DrawTextEx(GuiGetFont(), buffer, textVec, 14, 0, Fade(WHITE, 1.0f - fade));
-
-                if (CheckCollisionPointRec(mousePosition, (Rectangle){textVec.x, textVec.y, 100, 14})) {
-                    focus_area_viewer_on_device(recentEventsState.events[i].device);
-                }
-
-                textVec.y += 14;
-                break;
-            default:
-                break;
-        }
-
-        if (textVec.y > GetScreenHeight()) break;
+        event_log_message_copy_to(buffer, EventLogMessages[EventLogMessagesSize-1-i]);
+        buffer[strlen(buffer)] = '\0';
+        buffer[strlen(buffer)-1] = '\n';
+        strcat(log, buffer);
     }
+
+    DrawTextBoxed(GuiGetFont(), log, textRect, 14, 0, true, WHITE);
 }
 
 void focus_area_viewer_on_device(Device* device) {

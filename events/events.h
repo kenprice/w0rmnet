@@ -1,23 +1,38 @@
 #ifndef W0RMNET_EVENTS_H
 #define W0RMNET_EVENTS_H
 
-#include "../components/device.h"
+#include "../utils/uuid.h"
 
-enum DeviceEventType {
-    DeviceDiscoveredEvent,
+enum EventType {
+    DeviceDiscoveredEvent = 10,
     DevicePwnedEvent,
+
+    PlayerReceivesBitCreditsEvent = 20,
+    PlayerReceivesExploitEvent,
+    PlayerReceivesCredDumpEvent
 };
 
+typedef union {
+    int number;
+    char string[50];
+} EventLogMessageArg;
+
 typedef struct {
-    enum DeviceEventType type;
-    char* deviceId;
-    Device* device;
-} DeviceEvent;
+    enum EventType eventType;
+    const char* logMessageFormat;
+    char entityId[UUID_STR_LEN];
+    EventLogMessageArg arg1;
+    EventLogMessageArg arg2;
+    EventLogMessageArg arg3;
+} EventLogMessage;
 
-void events_register_device_event_listener(void (*eventHandler)(DeviceEvent));
+extern const char* EventLogMessageTable[100];
 
-void events_unregister_device_event_listener(void (*eventHandler)(DeviceEvent));
+extern EventLogMessage EventLogMessages[1000];
+extern int EventLogMessagesSize;
 
-void events_publish_device_event(char* entityId, Device* device, enum DeviceEventType type);
+void events_add_event_log_message_char(enum EventType eventType, char* entityId, char* arg1);
+
+void event_log_message_copy_to(char* dest, EventLogMessage eventLogMessage);
 
 #endif //W0RMNET_EVENTS_H

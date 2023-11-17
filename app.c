@@ -17,9 +17,8 @@ static unsigned int *guiIconsPtr = guiIcons;
 #include "systems/packet_routing_system.h"
 #include "systems/process_running_system.h"
 #include "systems/botnet_system.h"
-#include "systems/loot_system.h"
+#include "systems/world_state_system.h"
 #include "world/world_map.h"
-#include "world/world_state.h"
 
 #define GLSL_VERSION 330
 
@@ -51,11 +50,10 @@ int main(void)
     //////////////
     init_component_registry();
     initialize_world();
-    init_world_state();
+    init_world_state_system();
 
     initialize_main_gui_system();
     initialize_packet_routing_system();
-    init_loot_system();
     //////////////
 
     srand(time(NULL));   // Initialization, should only be called once.

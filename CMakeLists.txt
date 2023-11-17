@@ -117,8 +117,8 @@ add_executable(${PROJECT_NAME} app.c
         systems/process_runner/check_origin_runner.h
         components/position.c
         components/position.h
-        events/events.c
-        events/events.h
+        events/device_events.c
+        events/device_events.h
         systems/main_gui_system/recent_events.h
         systems/main_gui_system/recent_events.c
         systems/main_gui_system/toolwindows/worms_toolwindow.c
@@ -132,10 +132,15 @@ add_executable(${PROJECT_NAME} app.c
         components/loot.h
         store/cred_dumps.c
         store/cred_dumps.h
-        systems/loot_system.c
-        systems/loot_system.h
         events/player_events.c
         events/player_events.h
+        systems/world_state_system.c
+        systems/world_state_system.h
+        events/events.h
+        events/events.c
+        utils/math_macros.h
+        lib/text_rectangle_bounds.c
+        lib/text_rectangle_bounds.h
 )
 #set(raylib_VERBOSE 1)
 target_link_libraries(${PROJECT_NAME} raylib)

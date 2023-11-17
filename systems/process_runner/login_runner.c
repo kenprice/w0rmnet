@@ -2,7 +2,7 @@
 #include "glib.h"
 #include "login_runner.h"
 #include "../../components/component_registry.h"
-#include "../../events/events.h"
+#include "../../events/device_events.h"
 
 /**
  * Login State

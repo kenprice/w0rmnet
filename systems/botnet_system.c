@@ -1,6 +1,6 @@
 #include <stdio.h>
 #include "botnet_system.h"
-#include "../events/events.h"
+#include "../events/device_events.h"
 #include "../components/component_registry.h"
 #include "../world/world_map.h"
 

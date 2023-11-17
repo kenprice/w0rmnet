@@ -1,11 +1,7 @@
 #ifndef W0RMNET_PLAYER_EVENTS_H
 #define W0RMNET_PLAYER_EVENTS_H
 
-enum PlayerEventType {
-    PlayerReceivesBitCreditsEvent,
-    PlayerReceivesExploitEvent,
-    PlayerReceivesCredDumpEvent,
-};
+#include "events.h"
 
 typedef union {
     int bitCredits;
@@ -14,10 +10,9 @@ typedef union {
 } PlayerEventMessage;
 
 typedef struct {
-    enum PlayerEventType type;
+    enum EventType type;
     PlayerEventMessage message;
 } PlayerEvent;
-
 
 void events_register_player_event_listener(void (*eventHandler)(PlayerEvent));
 
