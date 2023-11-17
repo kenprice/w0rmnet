@@ -7,18 +7,15 @@
 #include "../../utils/math_macros.h"
 #include "../../lib/text_rectangle_bounds.h"
 
-#define MAX_NUM_EVENTS 30
+#define MAX_NUM_EVENTS 40
 
 typedef struct {
     Rectangle rect;
-    DeviceEvent events[MAX_NUM_EVENTS];
-    int numEvents;
-
-    AreaViewerWindowState* areaViewer;
-
     // Scroll
     Rectangle scrollPanelView;
     Vector2 scrollPanelScroll;
+
+    AreaViewerWindowState* areaViewer;
 } RecentEventsState;
 
 RecentEventsState recentEventsState;
@@ -28,7 +25,6 @@ void focus_area_viewer_on_device(Device* device);
 
 void init_recent_events_view(AreaViewerWindowState* areaViewer) {
     events_register_device_event_listener(recent_events_on_device_pwned);
-    recentEventsState.numEvents = 0;
     recentEventsState.areaViewer = areaViewer;
 }
 
@@ -42,7 +38,7 @@ void render_recent_events_view() {
     Rectangle textRect = recentEventsState.rect;
     textRect = (Rectangle){ textRect.x + 8, textRect.y + 4, textRect.width - 16, textRect.height - 8 };
 
-    int numEvents = min(EventLogMessagesSize, 40); // limit to last 40
+    int numEvents = min(EventLogMessagesSize, MAX_NUM_EVENTS); // limit to last N events
 
     char log[10000] = "";
     for (int i = 0; i < numEvents; i++) {
@@ -68,21 +64,8 @@ void focus_area_viewer_on_device(Device* device) {
     area_viewer_center_at_position(recentEventsState.areaViewer, position);
 }
 
-void add_event(DeviceEvent event) {
-    for (int i = recentEventsState.numEvents; i > 0; i--) {
-        recentEventsState.events[i] = recentEventsState.events[i - 1];
-    }
-
-    recentEventsState.events[0] = event;
-
-    if (recentEventsState.numEvents++ >= MAX_NUM_EVENTS) {
-        recentEventsState.numEvents = MAX_NUM_EVENTS-1;
-    }
-}
-
 void recent_events_on_device_pwned(DeviceEvent event) {
     if (event.type == DevicePwnedEvent) {
-        add_event(event);
         focus_area_viewer_on_device(event.device);
     }
 }
