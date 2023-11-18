@@ -39,12 +39,13 @@ void proc_login_handle_packet(char* entityId, Process* process, Packet* packet) 
     PacketBuffer* packet_buffer = (PacketBuffer*)g_hash_table_lookup(componentRegistry.packetBuffers, entityId);
     if (strcmp(creds, process->state) == 0) {
         Device* device = (Device*)g_hash_table_lookup(componentRegistry.devices, entityId);
-        device->owner = DEVICE_OWNER_PLAYER;
+        if (device->owner != DEVICE_OWNER_PLAYER) {
+            device->owner = DEVICE_OWNER_PLAYER;
+            events_publish_device_event(entityId, device, DevicePwnedEvent);
+        }
 
         sprintf(buffer, "Received LOGIN from %s (success)", packet->fromAddress);
         comp_logger_add_entry(logger, buffer);
-        events_publish_device_event(entityId, device, DevicePwnedEvent);
-
         sprintf(buffer, "LOGIN SUCCESS");
     } else {
         sprintf(buffer, "Received LOGIN from %s (failure)", packet->fromAddress);

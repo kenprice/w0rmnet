@@ -36,7 +36,7 @@ void render_recent_events_view() {
     GuiPanel(recentEventsState.rect, NULL);
 
     Rectangle textRect = recentEventsState.rect;
-    textRect = (Rectangle){ textRect.x + 8, textRect.y + 4, textRect.width - 16, textRect.height - 8 };
+    textRect = (Rectangle){ textRect.x + 8, textRect.y + 4, textRect.width - 16, 2000 };
 
     int numEvents = min(EventLogMessagesSize, MAX_NUM_EVENTS); // limit to last N events
 

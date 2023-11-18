@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include "ping_runner.h"
 #include "../../components/component_registry.h"
+#include "../../events/device_events.h"
 
 /**
  * Ping State
@@ -71,6 +72,7 @@ void proc_ping_handle_packet(char* entityId, Process* process, Packet* packet) {
             if (targetDevice && !targetDevice->visible) {
                 targetDevice->visible = true;
                 newHost = true;
+                events_publish_device_event(target_entity, targetDevice, DeviceDiscoveredEvent);
             }
         }
 

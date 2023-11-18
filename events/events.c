@@ -41,11 +41,26 @@ void events_add_event_log_message_char(enum EventType eventType, char* entityId,
     EventLogMessagesSize++;
 }
 
+void events_add_event_log_message_int(enum EventType eventType, char* entityId, int arg1) {
+    EventLogMessages[EventLogMessagesSize].eventType = eventType;
+    EventLogMessages[EventLogMessagesSize].logMessageFormat = EventLogMessageTable[eventType];
+    EventLogMessages[EventLogMessagesSize].arg1.number = arg1;
+    if (entityId) {
+        strcpy(EventLogMessages[EventLogMessagesSize].entityId, entityId);
+    }
+    EventLogMessagesSize++;
+}
+
 void event_log_message_copy_to(char* dest, EventLogMessage eventLogMessage) {
     switch (eventLogMessage.eventType) {
         case DevicePwnedEvent:
         case DeviceDiscoveredEvent:
             sprintf(dest, eventLogMessage.logMessageFormat, eventLogMessage.arg1.string);
+            break;
+        case PlayerReceivesBitCreditsEvent:
+            sprintf(dest, eventLogMessage.logMessageFormat, eventLogMessage.arg1.number);
+            break;
+        default:
             break;
     }
 }

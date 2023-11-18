@@ -9,6 +9,8 @@ void init_world_state() {
 
     worldState.numExploits = 1;
     worldState.exploits[0] = ExploitsList[0];
+
+    worldState.numCredDumps = 0;
 }
 
 void update_world_state() {

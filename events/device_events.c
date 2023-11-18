@@ -23,6 +23,4 @@ void events_publish_device_event(char* entityId, Device* device, enum EventType 
         eventHandler(event);
         list = list->next;
     }
-
-    events_add_event_log_message_char(type, entityId, device->address);
 }

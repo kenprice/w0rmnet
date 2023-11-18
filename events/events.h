@@ -33,6 +33,8 @@ extern int EventLogMessagesSize;
 
 void events_add_event_log_message_char(enum EventType eventType, char* entityId, char* arg1);
 
+void events_add_event_log_message_int(enum EventType eventType, char* entityId, int arg1);
+
 void event_log_message_copy_to(char* dest, EventLogMessage eventLogMessage);
 
 #endif //W0RMNET_EVENTS_H
