@@ -10,12 +10,10 @@
 #include "main_gui_system/worms_window.h"
 #include "botnet_system.h"
 #include "ui/device_info_panel.h"
-#include "../components/component_registry.h"
 #include "../world/world_state.h"
-#include "../world/world_map.h"
 
 #define MAX_AREA_VIEWER_WINDOWS 3
-#define UI_COMPONENT_PADDING 8
+#define PAD_8 8
 #define UI_TOP_NAVBAR_HEIGHT 42
 #define UI_BOTTOM_PANEL_HEIGHT 232
 #define UI_STATUS_BAR_HEIGHT 24
@@ -24,7 +22,6 @@
 #define UI_RIGHT_SIDEBAR_WIDTH 280
 
 #define LEFT_PANEL_MODE_AREA_VIEWER 0
-#define LEFT_PANEL_MODE_WORMS 1
 
 static const int deviceInfoDrawerHeight = 400;
 static const int deviceInfoDrawerWidth = 500;
@@ -53,7 +50,6 @@ static void render_status_bar();
 static void render_device_info_drawer(Rectangle statusBarRect);
 static void render_left_navbar();
 static void render_top_navbar();
-//static void render_worms_window();
 static void load_area_view_left_panel(Area* area);
 static void load_device_info_panel(Device* device);
 
@@ -89,8 +85,6 @@ void initialize_main_gui_system() {
     init_minimap_view(mainGuiState.rightPanelRect);
     init_device_info_panel();
     init_recent_events_view(&secondaryAreaViewerWindowState);
-
-    init_worms_window();
 }
 
 void update_main_gui_system() {
@@ -99,7 +93,6 @@ void update_main_gui_system() {
 
     // -------------------
     // Refresh left and right panel dimensions
-
     int toolWindowWidth = mainGuiState.toolWindowState.activeToolWindow == TOOLWINDOW_INACTIVE ? 0 : UI_LEFT_TOOLWINDOW_WIDTH;
     mainGuiState.leftPanelRect = (Rectangle){
         toolWindowWidth + UI_LEFT_SIDEBAR_WIDTH - 1,
@@ -113,8 +106,6 @@ void update_main_gui_system() {
     switch (mainGuiState.activeLeftPanelMode) {
         case LEFT_PANEL_MODE_AREA_VIEWER:
             update_panels_player_area_mode();
-            break;
-        case LEFT_PANEL_MODE_WORMS:
             break;
     }
 
@@ -150,11 +141,14 @@ void update_main_gui_system() {
     eventsRect.y += (UI_MINIMAP_VIEW_HEIGHT*2) - 1;
     eventsRect.height = screenHeight - (UI_MINIMAP_VIEW_HEIGHT*2) - UI_TOP_NAVBAR_HEIGHT - UI_STATUS_BAR_HEIGHT + 1;
     update_recent_events_view(eventsRect);
+
+    if (mainGuiState.toolWindowState.isClosing) {
+        mainGuiState.toolWindowState.isClosing = false;
+        mainAreaViewerWindowState.camera.offset.x += UI_LEFT_TOOLWINDOW_WIDTH * mainAreaViewerWindowState.camera.zoom;
+    }
 }
 
 void render_main_gui_system() {
-    int screenWidth = GetScreenWidth();
-
     // -------------------
     // Render right panel (currently fixed to some area)
     render_area_viewer_window(&secondaryAreaViewerWindowState);
@@ -164,9 +158,6 @@ void render_main_gui_system() {
     switch (mainGuiState.activeLeftPanelMode) {
         case LEFT_PANEL_MODE_AREA_VIEWER:
             render_area_viewer_window(&mainAreaViewerWindowState);
-            break;
-        case LEFT_PANEL_MODE_WORMS:
-//            render_worms_window();
             break;
     }
 
@@ -217,8 +208,7 @@ static void render_status_bar() {
     render_device_info_drawer(statusBarRect);
 
     Rectangle logBtnRect = statusBarRect;
-    logBtnRect = statusBarRect;
-    logBtnRect.x = statusBarRect.width - 50 - UI_COMPONENT_PADDING;
+    logBtnRect.x = statusBarRect.width - 50 - PAD_8;
     logBtnRect.width = 50;
     GuiLabelButton(logBtnRect, "#177#LOG");
 }
@@ -243,7 +233,7 @@ static void render_device_info_drawer(Rectangle statusBarRect) {
     Rectangle deviceInfoSection = statusBarRect;
     deviceInfoSection.width = deviceInfoDrawerWidth;
     GuiStatusBar(deviceInfoSection, NULL);
-    deviceInfoSection.x += UI_COMPONENT_PADDING;
+    deviceInfoSection.x += PAD_8;
 
     char buffer[100];
     const char* icon = mainGuiState.selectedDevice && mainGuiState.selectedDevice->type == DEVICE_TYPE_ROUTER ? "#225#" : "#224#";
@@ -265,29 +255,35 @@ static void render_left_navbar() {
     };
     GuiPanel(rectangle, NULL);
 
-    Rectangle btnRect = (Rectangle){6, UI_TOP_NAVBAR_HEIGHT + UI_COMPONENT_PADDING, 24, 24};
+    Rectangle btnRect = (Rectangle){6, UI_TOP_NAVBAR_HEIGHT + PAD_8, 24, 24};
+
+    bool isInitToolwindow = false;
 
     if (GuiButton(btnRect, "#241#")) {
+        if (!mainGuiState.toolWindowState.activeToolWindow) isInitToolwindow = true;
         mainGuiState.activeLeftPanelMode = LEFT_PANEL_MODE_AREA_VIEWER;
         mainGuiState.toolWindowState.activeToolWindow = TOOLWINDOW_NETWORK_MAP;
-        init_tool_window(&mainGuiState.toolWindowState);
     }
     if (CheckCollisionPointRec(mousePos, btnRect)) {
         GuiTooltipCustom(btnRect, "Network Map");
     }
     btnRect.y += 30;
     if (GuiButton(btnRect, "#246#")) {
+        if (!mainGuiState.toolWindowState.activeToolWindow) isInitToolwindow = true;
         mainGuiState.toolWindowState.activeToolWindow = TOOLWINDOW_WORMS;
-        init_tool_window(&mainGuiState.toolWindowState);
     }
     if (CheckCollisionPointRec(mousePos, btnRect)) {
         GuiTooltipCustom(btnRect, "Command & Control");
+    }
+
+    if (isInitToolwindow) {
+        mainAreaViewerWindowState.camera.offset.x -= UI_LEFT_TOOLWINDOW_WIDTH * mainAreaViewerWindowState.camera.zoom;
+        init_tool_window(&mainGuiState.toolWindowState);
     }
 }
 
 static void render_top_navbar() {
     int screenWidth = GetScreenWidth();
-    Vector2 mousePos = GetMousePosition();
 
     Rectangle rectangle = (Rectangle){0, 1, screenWidth, UI_TOP_NAVBAR_HEIGHT};
     GuiPanel(rectangle, NULL);
@@ -295,7 +291,7 @@ static void render_top_navbar() {
     Rectangle topbarRect = (Rectangle){4, 5, 150, UI_TOP_NAVBAR_HEIGHT - 9};
     Rectangle textRect = (Rectangle){40, 8, 140, 14};
     GuiSetState(STATE_DISABLED); GuiPanel(topbarRect, NULL); GuiSetState(STATE_NORMAL);
-    GuiDrawIcon(244, topbarRect.x+UI_COMPONENT_PADDING, topbarRect.y+UI_COMPONENT_PADDING, 1, WHITE);
+    GuiDrawIcon(244, topbarRect.x + PAD_8, topbarRect.y + PAD_8, 1, WHITE);
     GuiLabel(textRect, "nightcity.metro");
     textRect.y += 12;
     GuiLabel(textRect, "23:00 - Day 1");
@@ -306,7 +302,7 @@ static void render_top_navbar() {
     textRect.x += 154;
     topbarRect.width = 300;
     GuiSetState(STATE_DISABLED); GuiPanel(topbarRect, NULL); GuiSetState(STATE_NORMAL);
-    GuiDrawIcon(247, topbarRect.x+UI_COMPONENT_PADDING, topbarRect.y+UI_COMPONENT_PADDING, 1, WHITE);
+    GuiDrawIcon(247, topbarRect.x + PAD_8, topbarRect.y + PAD_8, 1, WHITE);
     sprintf(buffer, "%d targets", botnetState.numTargetDevices);
     GuiLabel(textRect, buffer);
     textRect.y += 12;
@@ -325,7 +321,7 @@ static void render_top_navbar() {
     textRect.x += 304 - 120;
     topbarRect.width = 120;
     GuiSetState(STATE_DISABLED); GuiPanel(topbarRect, NULL); GuiSetState(STATE_NORMAL);
-    GuiDrawIcon(248, topbarRect.x+UI_COMPONENT_PADDING, topbarRect.y+UI_COMPONENT_PADDING, 1, WHITE);
+    GuiDrawIcon(248, topbarRect.x + PAD_8, topbarRect.y + PAD_8, 1, WHITE);
     GuiLabel(textRect, "Bitcredits");
     textRect.y += 12;
     sprintf(buffer, "%d", worldState.bitCredits);

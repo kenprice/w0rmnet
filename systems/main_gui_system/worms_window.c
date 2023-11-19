@@ -5,7 +5,7 @@
 #include "../../lib/log/log.h"
 #include "../../lib/raygui.h"
 #include "../../lib/text_rectangle_bounds.h"
-#include "../../store/exploits.h"
+#include "../../store/worms.h"
 #include "../../world/world_state.h"
 
 #define WORM_WINDOW_WIDTH 800
@@ -34,33 +34,9 @@ const char* WormsPaletteTitle[] = {
     "Palette > Trojan",
 };
 
-
-typedef enum {
-    WormSlotLocked,
-    WormSlotEmpty,
-    WormSlotRemoteExploit,
-    WormSlotExploitFileServer,
-    WormSlotCredentialAttack,
-} WormSlotType;
-
-typedef union {
-    void* pointer;
-    Exploit* exploit;
-    CredDump* credDump;
-} WormSlotContent;
-
 typedef struct {
-    WormSlotType type;
-    WormSlotContent content;
-} WormSlot;
+    bool isOpen;
 
-typedef struct {
-    WormSlot slots[12];
-    int numSlots;
-} Worm;
-
-typedef struct {
-    char wormName[20];
     bool wormNameEditMode;
     Worm worm;
 
@@ -80,7 +56,7 @@ void worms_window_draw_worm_slot(int x, int y, WormSlot wormSlot);
 void worms_window_capabilities_pane(int x, int y);
 
 void init_worms_window() {
-    strcpy(wormsWindowState.wormName, "myw0rm");
+    strcpy(wormsWindowState.worm.wormName, "myw0rm");
     wormsWindowState.wormNameEditMode = false;
     wormsWindowState.paletteMode = WormsPaletteTop;
 
@@ -91,22 +67,27 @@ void init_worms_window() {
     for (int i = 0; i < 12; i++) {
         wormsWindowState.worm.slots[i].type = (i < wormsWindowState.worm.numSlots) ? WormSlotEmpty : WormSlotLocked;
     }
+
+    wormsWindowState.isOpen = true;
 }
 
 void render_worms_window() {
+    GuiUnlock();
+    if (!wormsWindowState.isOpen) return;
+
     int screenWidth = GetScreenWidth();
     int screenHeight = GetScreenHeight();
     int x = (screenWidth / 2)  - (WORM_WINDOW_WIDTH / 2);
     int y = (screenHeight / 2) - (WORM_WINDOW_HEIGHT / 2);
-
-    GuiUnlock();
 
     // Black out main GUI
     DrawRectangle(0, 0, screenWidth, screenHeight, ColorAlpha(BLACK, 0.5f));
 
     // Pop up window
     Rectangle windowRect = { x, y, WORM_WINDOW_WIDTH, WORM_WINDOW_HEIGHT };
-    GuiWindowBox(windowRect, "#208#New w0rm");
+    if (GuiWindowBox(windowRect, "#208#New w0rm")) {
+        wormsWindowState.isOpen = false;
+    }
 
     // Top section
     worms_window_top_section(x, y + TITLEBAR_HEIGHT - 1, windowRect.width);
@@ -188,10 +169,10 @@ int worms_window_gui_draw_exploit_option(int x, int y, Exploit exploit) {
     return worms_window_gui_draw_option(x, y, 211, title, EXPLOIT_TYPE_LABEL(exploit.exploitType), exploit.id);
 }
 
-void worms_window_gui_draw_creds_option(int x, int y, CredDump credDump) {
+int worms_window_gui_draw_creds_option(int x, int y, CredDump credDump) {
     char buffer[100];
     sprintf(buffer, "%d creds", credDump.numCredentials);
-    worms_window_gui_draw_option(x, y, 211, credDump.name, credDump.shortDescription, buffer);
+    return worms_window_gui_draw_option(x, y, 220, credDump.name, credDump.shortDescription, buffer);
 }
 
 void worms_window_render_palette_top(int x, int y) {
@@ -225,7 +206,12 @@ void worms_window_render_palette_credential(int x, int y) {
     y += 48 + PAD_8;
 
     for (int i = 0; i < worldState.numCredDumps; i++) {
-        worms_window_gui_draw_creds_option(x, y, worldState.credDumps[i]);
+        if (worms_window_gui_draw_creds_option(x, y, worldState.credDumps[i])) {
+            wormsWindowState.paletteItemSelected = true;
+            wormsWindowState.selectedPaletteItem.type = WormSlotCredentialAttack;
+            wormsWindowState.selectedPaletteItem.content.credDump = &worldState.credDumps[i];
+            log_debug("Drag n drop: selected creds %s", wormsWindowState.selectedPaletteItem.content.credDump->name);
+        }
         y += 48 + PAD_8;
     }
 }
@@ -282,7 +268,7 @@ void worms_window_top_section(int x, int y, int width) {
     int paddedY = y + PAD_8;
     GuiLabel((Rectangle){paddedX,paddedY+PAD_8,100,14}, "Name:");
     paddedX += 45;
-    if (GuiTextBox((Rectangle){paddedX,paddedY+4,160,24}, wormsWindowState.wormName, 20, wormsWindowState.wormNameEditMode)) {
+    if (GuiTextBox((Rectangle){paddedX,paddedY+4,160,24}, wormsWindowState.worm.wormName, 20, wormsWindowState.wormNameEditMode)) {
         wormsWindowState.wormNameEditMode = !wormsWindowState.wormNameEditMode;
     }
     paddedX += 200;
@@ -290,6 +276,13 @@ void worms_window_top_section(int x, int y, int width) {
     paddedX += 40;
     GuiDrawIcon(208, paddedX, paddedY, 2, labelColor);
 
+    if (GuiLabelButton((Rectangle){ x+WORM_WINDOW_WIDTH-64-52-PAD_8*4, y+2+PAD_8, 52, 28 }, "Cancel")) {
+        wormsWindowState.isOpen = false;
+    }
+    if (GuiButton((Rectangle){ x+WORM_WINDOW_WIDTH-64-PAD_8*3, y+2+PAD_8, 77, 28 }, "#002# Save")) {
+        wormsWindowState.isOpen = false;
+        worldState.worms[worldState.numWorms++] = wormsWindowState.worm;
+    }
 }
 
 void worms_window_draw_worm_slot(int x, int y, WormSlot wormSlot) {
@@ -313,6 +306,13 @@ void worms_window_draw_worm_slot(int x, int y, WormSlot wormSlot) {
             GuiDrawIcon(211, x + slotSize - 64, y + slotSize - 64, 4, labelColorFaded);
             break;
         }
+        case WormSlotCredentialAttack: {
+            CredDump credDump = *wormSlot.content.credDump;
+            sprintf(buffer, "%s\n%d creds\n%s", credDump.name, credDump.numCredentials, credDump.shortDescription);
+            DrawTextBoxed(GuiGetFont(), buffer, slotTextRect, 14, 0, true, labelColor);
+            GuiDrawIcon(220, x + slotSize - 64, y + slotSize - 64, 4, labelColorFaded);
+            break;
+        }
         default:
             break;
     }
@@ -320,8 +320,6 @@ void worms_window_draw_worm_slot(int x, int y, WormSlot wormSlot) {
 
 void worms_window_render_capability_slot(int x, int y, int slotNum) {
     WormSlot currentWormSlot = wormsWindowState.worm.slots[slotNum];
-    Color labelColor = GetColor(GuiGetStyle(LABEL, TEXT_COLOR_NORMAL));
-    Color labelColorFaded = ColorAlpha(GetColor(GuiGetStyle(LABEL, TEXT_COLOR_NORMAL)), 0.5f);
     int slotSize = 120;
 
     Rectangle boundRect = { x, y, slotSize, slotSize };
@@ -345,18 +343,12 @@ void worms_window_render_capability_slot(int x, int y, int slotNum) {
 }
 
 void worms_window_capabilities_pane(int x, int y) {
-    Color labelColor = GetColor(GuiGetStyle(LABEL, TEXT_COLOR_NORMAL));
-    Color labelColorFaded = ColorAlpha(GetColor(GuiGetStyle(LABEL, TEXT_COLOR_NORMAL)), 0.5f);
     int capabilitiesY = y + 48;
 
-//    Rectangle capabilitiesRect = { x-PAD_8, capabilitiesY-PAD_8, 530+PAD_8*2, 400+PAD_8*2 };
-//    GuiPanel(capabilitiesRect, NULL);
-
     char buffer[100];
-    sprintf(buffer, "%s's Capabilities", wormsWindowState.wormName);
+    sprintf(buffer, "%s's Capabilities", wormsWindowState.worm.wormName);
     DrawTextEx(GuiGetFont(), buffer, (Vector2){ x, y+PAD_8 }, 28, 0, RAYWHITE);
 
-    int slotSize = 120;
     y = capabilitiesY;
 
     for (int i = 0; i < 12; i++) {

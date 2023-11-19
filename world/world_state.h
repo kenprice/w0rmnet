@@ -5,6 +5,7 @@
 #include "../store/files.h"
 #include "../store/exploits.h"
 #include "../store/cred_dumps.h"
+#include "../store/worms.h"
 
 /**
  * Global game state
@@ -13,11 +14,13 @@ typedef struct {
     Area* currentArea;
 
     // Player's stuff
+    int bitCredits; // Player's bit credits
     Exploit exploits[100];
     int numExploits;
     CredDump credDumps[100];
     int numCredDumps;
-    int bitCredits; // Player's bit credits
+    Worm worms[20];
+    int numWorms;
 } WorldState;
 
 extern WorldState worldState;

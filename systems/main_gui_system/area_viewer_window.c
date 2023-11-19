@@ -10,7 +10,7 @@
 #include "../../graphics/tiles.h"
 
 #define STATUSBAR_HEIGHT 18
-#define UI_COMPONENT_PADDING 8
+#define PAD_8 8
 #define WINDOW_HEIGHT 400
 #define WINDOW_WIDTH 512
 
@@ -81,10 +81,10 @@ int update_area_viewer_window(AreaViewerWindowState* state) {
 
     // Update viewport
     state->viewport = (Rectangle){
-        state->window.windowBounds.x + UI_COMPONENT_PADDING,
-        state->window.windowBounds.y + UI_COMPONENT_PADDING,
-        state->window.windowBounds.width - (UI_COMPONENT_PADDING*2),
-        state->window.windowBounds.height - (UI_COMPONENT_PADDING*2),
+            state->window.windowBounds.x + PAD_8,
+            state->window.windowBounds.y + PAD_8,
+        state->window.windowBounds.width - (PAD_8 * 2),
+        state->window.windowBounds.height - (PAD_8 * 2),
     };
 
     return update_window(&state->window);

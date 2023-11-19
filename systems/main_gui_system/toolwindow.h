@@ -7,16 +7,17 @@
 #include "../../world/world_map.h"
 
 #define UI_LEFT_TOOLWINDOW_WIDTH 240
-#define TOOLWINDOW_INACTIVE -1
+#define TOOLWINDOW_INACTIVE 0
 #define TOOLWINDOW_NETWORK_MAP 1
 #define TOOLWINDOW_WORMS 2
 
 typedef struct {
     Rectangle toolWindowRect;
     int activeToolWindow;
+    bool isClosing;
 
     NetworkMapWindowState networkMapState;
-    WormsWindowState wormsWindowState;
+    WormsToolWindowState wormsWindowState;
 
     void (*switchAreaFn)(Area*);
     void (*selectDeviceFn)(Device*);

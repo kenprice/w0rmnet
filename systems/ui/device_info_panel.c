@@ -8,7 +8,7 @@
 #include "../../world/world_map.h"
 
 #define TITLEBAR_HEIGHT 24
-#define UI_COMPONENT_PADDING 8
+#define PAD_8 8
 
 typedef struct {
     int activePanelIndex;
@@ -54,7 +54,7 @@ void init_device_info_panel() {
 
 int render_device_target_dropdown(Rectangle rect) {
     Rectangle dropdownRect = (Rectangle){
-            rect.x+100+UI_COMPONENT_PADDING, rect.y,
+            rect.x + 100 + PAD_8, rect.y,
             150, 24
     };
     char optionsBuffer[1000] = "";
@@ -96,12 +96,12 @@ int render_device_target_dropdown(Rectangle rect) {
     }
 
     dropdownRect.y = rect.y;
-    dropdownRect.x += 150 + UI_COMPONENT_PADDING;
+    dropdownRect.x += 150 + PAD_8;
     dropdownRect.height = 24;
     GuiLabel(dropdownRect, "Target:");
     dropdownRect.y += 24;
-    dropdownRect.width = rect.width - 100 - 150 - 40 + UI_COMPONENT_PADDING;
-    dropdownRect.height = rect.height - (UI_COMPONENT_PADDING*2) - 30 - 24;
+    dropdownRect.width = rect.width - 100 - 150 - 40 + PAD_8;
+    dropdownRect.height = rect.height - (PAD_8 * 2) - 30 - 24;
     optionsBuffer[0] = '\0';
     Area* selectedArea = &selectedZone->areas[state.progTargetAreaIndex];
     char addressPrefix[100] = "";
@@ -133,8 +133,8 @@ int render_device_target_dropdown(Rectangle rect) {
     GuiListView(dropdownRect, optionsBuffer, &state.progTargetEntityScrollIndex, &state.progTargetEntityIndex);
 
     Rectangle actionButtonRect = (Rectangle){
-        rect.x + rect.width-100-(UI_COMPONENT_PADDING*2),
-        rect.y + rect.height-24-(UI_COMPONENT_PADDING*2),
+        rect.x + rect.width-100-(PAD_8 * 2),
+        rect.y + rect.height-24-(PAD_8 * 2),
         100, 24
     };
 
@@ -152,9 +152,9 @@ void render_prog_options_single_target_only(Rectangle rect, Device* device) {
 
 void render_progs_login_options(Rectangle rect, Device* device) {
     Rectangle textboxRect = (Rectangle){
-        rect.x+100+UI_COMPONENT_PADDING,
-        rect.y + rect.height-24-(UI_COMPONENT_PADDING*2),
-        rect.width-200-(UI_COMPONENT_PADDING*2), 24
+            rect.x + 100 + PAD_8,
+        rect.y + rect.height-24-(PAD_8 * 2),
+        rect.width-200-(PAD_8 * 2), 24
     };
 
     if (GuiTextBox(textboxRect, state.progInputText, 100, state.progInputTextEditMode)) {
@@ -202,7 +202,7 @@ void render_device_prog_controls(Rectangle rect, Device* device) {
         return;
     }
 
-    Rectangle listviewRect = (Rectangle){rect.x, rect.y, 100, rect.height - (UI_COMPONENT_PADDING*2)};
+    Rectangle listviewRect = (Rectangle){rect.x, rect.y, 100, rect.height - (PAD_8 * 2)};
 
     char buffer[100] = "";
     if (processManager->numProcs > 0) {
@@ -241,12 +241,12 @@ void render_device_logs(Rectangle rect, Device* device) {
 
     int logLinesHeight = logger->numEntries * 16;
 
-    Rectangle scrollPanelRect = (Rectangle){ rect.x, rect.y, rect.width - (UI_COMPONENT_PADDING*2), rect.height - (UI_COMPONENT_PADDING*2) };
-    Rectangle panelContentRect = (Rectangle){ rect.x, rect.y, scrollPanelRect.width - UI_COMPONENT_PADDING, logLinesHeight};
+    Rectangle scrollPanelRect = (Rectangle){rect.x, rect.y, rect.width - (PAD_8 * 2), rect.height - (PAD_8 * 2) };
+    Rectangle panelContentRect = (Rectangle){rect.x, rect.y, scrollPanelRect.width - PAD_8, logLinesHeight};
 
     GuiScrollPanel(scrollPanelRect, NULL, panelContentRect, &state.logPanelScroll, &state.logPanelView);
 
-    Rectangle infoTextRect = (Rectangle){ rect.x + UI_COMPONENT_PADDING, rect.y + state.logPanelScroll.y, panelContentRect.width - UI_COMPONENT_PADDING, 16 };
+    Rectangle infoTextRect = (Rectangle){rect.x + PAD_8, rect.y + state.logPanelScroll.y, panelContentRect.width - PAD_8, 16 };
 
     BeginScissorMode(state.logPanelView.x, state.logPanelView.y, state.logPanelView.width, state.logPanelView.height);
     for (int i = 0; i < logger->numEntries; i++) {
@@ -260,11 +260,11 @@ void render_device_logs(Rectangle rect, Device* device) {
 void render_device_info_menu_buttons(Rectangle rect) {
     Vector2 mousePos = GetMousePosition();
 
-    GuiPanel((Rectangle){rect.x, rect.y + TITLEBAR_HEIGHT - 1,24 + (2*UI_COMPONENT_PADDING) + 1, rect.height-TITLEBAR_HEIGHT+1}, NULL);
+    GuiPanel((Rectangle){rect.x, rect.y + TITLEBAR_HEIGHT - 1, 24 + (2 * PAD_8) + 1, rect.height - TITLEBAR_HEIGHT + 1}, NULL);
 
     Rectangle btnGroupRect = (Rectangle){
-        rect.x + UI_COMPONENT_PADDING,
-        rect.y + UI_COMPONENT_PADDING + TITLEBAR_HEIGHT,
+            rect.x + PAD_8,
+            rect.y + PAD_8 + TITLEBAR_HEIGHT,
         24, 24
     };
 
@@ -299,9 +299,9 @@ int render_device_info_panel(Rectangle rect, Device* device) {
     int active = GuiWindowBox(rect, buffer);
 
     Rectangle activePanelRect = (Rectangle){
-        rect.x + 24 + (UI_COMPONENT_PADDING*3),
-        rect.y + UI_COMPONENT_PADDING + TITLEBAR_HEIGHT,
-        rect.width - 24 - (UI_COMPONENT_PADDING*2),
+        rect.x + 24 + (PAD_8 * 3),
+        rect.y + PAD_8 + TITLEBAR_HEIGHT,
+        rect.width - 24 - (PAD_8 * 2),
         rect.height - TITLEBAR_HEIGHT
     };
 

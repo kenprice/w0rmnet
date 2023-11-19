@@ -7,7 +7,7 @@
 #include "../../../world/world_map.h"
 
 #define TITLEBAR_HEIGHT 24
-#define UI_COMPONENT_PADDING 8
+#define PAD_8 8
 
 void init_network_map_toolwindow(NetworkMapWindowState* state, Rectangle toolWindowRect) {
     state->scrollPanelView = (Rectangle){ 0 };
@@ -35,14 +35,14 @@ void render_network_map_toolwindow(NetworkMapWindowState* state, Rectangle toolW
     int testNumLines = 50;
     int logLinesHeight = testNumLines * lineHeight;
 
-    Rectangle panelContentRect = (Rectangle){ scrollPanelRect.x, scrollPanelRect.y,
-                                              scrollPanelRect.width - (UI_COMPONENT_PADDING*2), logLinesHeight };
+    Rectangle panelContentRect = (Rectangle){scrollPanelRect.x, scrollPanelRect.y,
+                                              scrollPanelRect.width - (PAD_8 * 2), logLinesHeight };
 
     GuiScrollPanel(scrollPanelRect, NULL, panelContentRect, &state->scrollPanelScroll, &state->scrollPanelView);
 
-    Rectangle infoTextRect = (Rectangle){ scrollPanelRect.x + UI_COMPONENT_PADDING,
-                                          scrollPanelRect.y + state->scrollPanelScroll.y + UI_COMPONENT_PADDING,
-                                          panelContentRect.width - UI_COMPONENT_PADDING, 16 };
+    Rectangle infoTextRect = (Rectangle){scrollPanelRect.x + PAD_8,
+                                         scrollPanelRect.y + state->scrollPanelScroll.y + PAD_8,
+                                         panelContentRect.width - PAD_8, 16 };
 
     char buffer[100];
     BeginScissorMode(state->scrollPanelView.x, state->scrollPanelView.y, state->scrollPanelView.width, state->scrollPanelView.height);
