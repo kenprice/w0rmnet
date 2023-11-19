@@ -141,6 +141,8 @@ add_executable(${PROJECT_NAME} app.c
         utils/math_macros.h
         lib/text_rectangle_bounds.c
         lib/text_rectangle_bounds.h
+        systems/main_gui_system/worms_window.c
+        systems/main_gui_system/worms_window.h
 )
 #set(raylib_VERBOSE 1)
 target_link_libraries(${PROJECT_NAME} raylib)

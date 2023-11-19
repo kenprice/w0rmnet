@@ -3,8 +3,10 @@
 
 typedef struct {
     const char* name;
+    const char* shortDescription;
     const char* description;
     const char* contents;
+    int numCredentials;
 } CredDump;
 
 extern CredDump CredDumpsList[];

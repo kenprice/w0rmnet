@@ -7,6 +7,7 @@
 #include "main_gui_system/minimap.h"
 #include "main_gui_system/recent_events.h"
 #include "main_gui_system/toolwindow.h"
+#include "main_gui_system/worms_window.h"
 #include "botnet_system.h"
 #include "ui/device_info_panel.h"
 #include "../components/component_registry.h"
@@ -52,7 +53,7 @@ static void render_status_bar();
 static void render_device_info_drawer(Rectangle statusBarRect);
 static void render_left_navbar();
 static void render_top_navbar();
-static void render_worms_window();
+//static void render_worms_window();
 static void load_area_view_left_panel(Area* area);
 static void load_device_info_panel(Device* device);
 
@@ -88,6 +89,8 @@ void initialize_main_gui_system() {
     init_minimap_view(mainGuiState.rightPanelRect);
     init_device_info_panel();
     init_recent_events_view(&secondaryAreaViewerWindowState);
+
+    init_worms_window();
 }
 
 void update_main_gui_system() {
@@ -163,7 +166,7 @@ void render_main_gui_system() {
             render_area_viewer_window(&mainAreaViewerWindowState);
             break;
         case LEFT_PANEL_MODE_WORMS:
-            render_worms_window();
+//            render_worms_window();
             break;
     }
 
@@ -183,6 +186,8 @@ void render_main_gui_system() {
     // -------------------
     // Status bar
     render_status_bar();
+
+    render_worms_window();
 }
 
 static void update_panels_player_area_mode() {
@@ -320,7 +325,7 @@ static void render_top_navbar() {
     textRect.x += 304 - 120;
     topbarRect.width = 120;
     GuiSetState(STATE_DISABLED); GuiPanel(topbarRect, NULL); GuiSetState(STATE_NORMAL);
-    GuiDrawIcon(220, topbarRect.x+UI_COMPONENT_PADDING, topbarRect.y+UI_COMPONENT_PADDING, 1, WHITE);
+    GuiDrawIcon(248, topbarRect.x+UI_COMPONENT_PADDING, topbarRect.y+UI_COMPONENT_PADDING, 1, WHITE);
     GuiLabel(textRect, "Bitcredits");
     textRect.y += 12;
     sprintf(buffer, "%d", worldState.bitCredits);
@@ -342,15 +347,15 @@ static void render_top_navbar() {
     GuiLabel(textRect, "Saved");
 }
 
-static void render_worms_window() {
-    GuiPanel(mainGuiState.leftPanelRect, "w0rms");
-
-    Rectangle btnRect = (Rectangle){mainGuiState.leftPanelRect.x+20, mainGuiState.leftPanelRect.y+20, 24, 24};
-
-    if (GuiButton(btnRect, "XX")) {
-        botnet_system_test_launch_login_attack();
-    }
-}
+//static void render_worms_window() {
+//    GuiPanel(mainGuiState.leftPanelRect, "w0rms");
+//
+//    Rectangle btnRect = (Rectangle){mainGuiState.leftPanelRect.x+20, mainGuiState.leftPanelRect.y+20, 24, 24};
+//
+//    if (GuiButton(btnRect, "XX")) {
+//        botnet_system_test_launch_login_attack();
+//    }
+//}
 
 static void load_area_view_left_panel(Area* area) {
     mainAreaViewerWindowState = init_area_viewer_window(area, mainGuiState.leftPanelRect);

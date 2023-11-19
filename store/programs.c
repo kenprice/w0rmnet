@@ -43,26 +43,26 @@ Program EchoPrograms[] = {
 Program ScanPrograms[] = {
     {ProgramTypeScan, "NetRipple Scan",     100 },
     {ProgramTypeScan, "NetRipple Scan",     103 },
-    {ProgramTypeScan, "Quantum NetScanner", 103 },
-    {ProgramTypeScan, "Quantum NetScanner", 201 },
-    {ProgramTypeScan, "Bingo Network Scan", 201 },
-    {ProgramTypeScan, "Bingo Network Scan", 203 },
+    {ProgramTypeScan, "QuantumScanner", 103 },
+    {ProgramTypeScan, "QuantumScanner", 201 },
+    {ProgramTypeScan, "Netscan", 201 },
+    {ProgramTypeScan, "Netscan", 203 },
 };
 
 Program LoginPrograms[] = {
     {ProgramTypeLogin, "NetRipple Login",     100 },
     {ProgramTypeLogin, "NetRipple Login",     202 },
-    {ProgramTypeLogin, "Quantum RemoteShell", 101 },
-    {ProgramTypeLogin, "Quantum RemoteShell", 201 },
-    {ProgramTypeLogin, "Bingo Remote Login",  100 },
-    {ProgramTypeLogin, "Bingo Remote Login",  102 },
+    {ProgramTypeLogin, "QuantumShell", 101 },
+    {ProgramTypeLogin, "QuantumShell", 201 },
+    {ProgramTypeLogin, "ShTTy",  100 },
+    {ProgramTypeLogin, "ShTTy",  102 },
 };
 
 Program CheckOriginPrograms[] = {
-    { PROCESS_TYPE_CHECK_ORIGIN, "CyberBarrier FireGuard", 300 },
-    { PROCESS_TYPE_CHECK_ORIGIN, "CyberBarrier FireGuard", 401 },
-    { PROCESS_TYPE_CHECK_ORIGIN, "DataFortress Firewall",  101 },
-    { PROCESS_TYPE_CHECK_ORIGIN, "DataFortress Firewall",  102 },
-    { PROCESS_TYPE_CHECK_ORIGIN, "DigiShield InfernoWall", 102 },
-    { PROCESS_TYPE_CHECK_ORIGIN, "DigiShield InfernoWall", 302 },
+    { PROCESS_TYPE_CHECK_ORIGIN, "CyberBarrier", 300 },
+    { PROCESS_TYPE_CHECK_ORIGIN, "CyberBarrier", 401 },
+    { PROCESS_TYPE_CHECK_ORIGIN, "DataFortress",  101 },
+    { PROCESS_TYPE_CHECK_ORIGIN, "DataFortress",  102 },
+    { PROCESS_TYPE_CHECK_ORIGIN, "DigiShield", 102 },
+    { PROCESS_TYPE_CHECK_ORIGIN, "DigiShield", 302 },
 };
