@@ -144,6 +144,11 @@ add_executable(${PROJECT_NAME} app.c
         systems/main_gui_system/worms_window.c
         systems/main_gui_system/worms_window.h
         store/worms.h
+        systems/worm_system.c
+        systems/worm_system.h
+        store/worms.c
+        components/infection.h
+        components/infection.c
 )
 #set(raylib_VERBOSE 1)
 target_link_libraries(${PROJECT_NAME} raylib)

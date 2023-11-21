@@ -4,7 +4,7 @@
 #include "network_map_toolwindow.h"
 #include "../../../components/component_registry.h"
 #include "../../../lib/raygui.h"
-#include "../../../world/world_map.h"
+#include "../../main_gui_system.h"
 
 #define TITLEBAR_HEIGHT 24
 #define PAD_8 8
@@ -66,7 +66,7 @@ void render_network_map_toolwindow(NetworkMapWindowState* state, Rectangle toolW
 
                 if (state->selectedArea == area) GuiSetState(STATE_PRESSED);
                 if (GuiLabelButton(infoTextRect, buffer)) {
-                    state->switchAreaFn(area);
+                    gui_load_area_view_left_panel(area);
                     state->selectedArea = area;
                 }
                 GuiSetState(STATE_NORMAL);

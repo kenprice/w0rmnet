@@ -1,16 +1,16 @@
 #include <stdio.h>
-#include "../lib/raygui.h"
-#include "ui/custom_raygui.h"
 #include "glib.h"
+#include "../lib/raygui.h"
+#include "../world/world_state.h"
+#include "ui/custom_raygui.h"
+#include "ui/device_info_panel.h"
+#include "botnet_system.h"
 #include "main_gui_system.h"
 #include "main_gui_system/area_viewer_window.h"
 #include "main_gui_system/minimap.h"
 #include "main_gui_system/recent_events.h"
 #include "main_gui_system/toolwindow.h"
 #include "main_gui_system/worms_window.h"
-#include "botnet_system.h"
-#include "ui/device_info_panel.h"
-#include "../world/world_state.h"
 
 #define MAX_AREA_VIEWER_WINDOWS 3
 #define PAD_8 8
@@ -39,6 +39,7 @@ typedef struct {
     bool deviceDrawerActive;
 
     ToolWindowState toolWindowState;
+    Worm* selectedWorm;
 } MainGuiState;
 
 MainGuiState mainGuiState;
@@ -50,8 +51,6 @@ static void render_status_bar();
 static void render_device_info_drawer(Rectangle statusBarRect);
 static void render_left_navbar();
 static void render_top_navbar();
-static void load_area_view_left_panel(Area* area);
-static void load_device_info_panel(Device* device);
 
 void initialize_main_gui_system() {
     int screenWidth = GetScreenWidth();
@@ -65,7 +64,7 @@ void initialize_main_gui_system() {
     };
     mainAreaViewerWindowState = init_area_viewer_window(worldState.currentArea, mainGuiState.leftPanelRect);
     mainAreaViewerWindowState.camera.zoom = 1.0f;
-    mainAreaViewerWindowState.selectDeviceFn = load_device_info_panel;
+    mainAreaViewerWindowState.selectDeviceFn = gui_load_device_info_panel;
 
     mainGuiState.rightPanelRect = (Rectangle){
         mainGuiState.leftPanelRect.x + mainGuiState.leftPanelRect.width + 1,
@@ -75,12 +74,11 @@ void initialize_main_gui_system() {
     };
     secondaryAreaViewerWindowState = init_area_viewer_window(&worldMap.regions[0].zones[0].areas[0], mainGuiState.rightPanelRect);
     secondaryAreaViewerWindowState.camera.zoom = 0.5f;
-    secondaryAreaViewerWindowState.selectDeviceFn = load_device_info_panel;
+    secondaryAreaViewerWindowState.selectDeviceFn = NULL;
 
     mainGuiState.selectedDevice = NULL;
     mainGuiState.toolWindowState.activeToolWindow = TOOLWINDOW_INACTIVE;
-    mainGuiState.toolWindowState.switchAreaFn = load_area_view_left_panel;
-    mainGuiState.toolWindowState.selectDeviceFn = load_device_info_panel;
+    mainGuiState.selectedWorm = NULL;
 
     init_minimap_view(mainGuiState.rightPanelRect);
     init_device_info_panel();
@@ -223,6 +221,8 @@ static void render_device_info_drawer(Rectangle statusBarRect) {
         GuiUnlock();
         if (render_device_info_panel(drawerRect, mainGuiState.selectedDevice)) {
             mainGuiState.deviceDrawerActive = false;
+            mainGuiState.selectedDevice = NULL;
+            mainAreaViewerWindowState.selectedDevice = NULL;
         } else if (CheckCollisionPointRec(GetMousePosition(), drawerRect)) {
             GuiLock();
         } else {
@@ -343,25 +343,24 @@ static void render_top_navbar() {
     GuiLabel(textRect, "Saved");
 }
 
-//static void render_worms_window() {
-//    GuiPanel(mainGuiState.leftPanelRect, "w0rms");
-//
-//    Rectangle btnRect = (Rectangle){mainGuiState.leftPanelRect.x+20, mainGuiState.leftPanelRect.y+20, 24, 24};
-//
-//    if (GuiButton(btnRect, "XX")) {
-//        botnet_system_test_launch_login_attack();
-//    }
-//}
-
-static void load_area_view_left_panel(Area* area) {
+void gui_load_area_view_left_panel(Area* area) {
     mainAreaViewerWindowState = init_area_viewer_window(area, mainGuiState.leftPanelRect);
-    mainAreaViewerWindowState.selectDeviceFn = load_device_info_panel;
     mainGuiState.activeLeftPanelMode = LEFT_PANEL_MODE_AREA_VIEWER;
 }
 
-static void load_device_info_panel(Device* device) {
-    if (mainGuiState.selectedDevice == device) {
+void gui_load_device_info_panel(Device* device) {
+    if (!device) {
+        mainGuiState.deviceDrawerActive = false;
+    } else if (mainGuiState.selectedDevice == device) {
         mainGuiState.deviceDrawerActive = true;
     }
     mainGuiState.selectedDevice = device;
+}
+
+void gui_set_active_worm(Worm* worm) {
+    mainGuiState.selectedWorm = worm;
+}
+
+Device* gui_get_selected_device() {
+    return mainGuiState.selectedDevice;
 }

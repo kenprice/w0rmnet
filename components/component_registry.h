@@ -17,6 +17,7 @@ typedef struct {
     GHashTable* polygons;
     GHashTable* logger;
     GHashTable* loots;
+    GHashTable* infections;
 } ComponentRegistry;
 
 extern ComponentRegistry componentRegistry;

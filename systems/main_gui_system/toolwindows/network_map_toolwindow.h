@@ -10,8 +10,6 @@ typedef struct {
     Vector2 scrollPanelScroll;
 
     Area* selectedArea;
-
-    void (*switchAreaFn)(Area*);
 } NetworkMapWindowState;
 
 void init_network_map_toolwindow(NetworkMapWindowState* state, Rectangle toolWindowRect);

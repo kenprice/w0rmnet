@@ -8,7 +8,6 @@ void init_tool_window(ToolWindowState* toolWindowState) {
     switch(toolWindowState->activeToolWindow) {
         case TOOLWINDOW_NETWORK_MAP:
             init_network_map_toolwindow(&toolWindowState->networkMapState, toolWindowState->toolWindowRect);
-            toolWindowState->networkMapState.switchAreaFn = toolWindowState->switchAreaFn;
             break;
         case TOOLWINDOW_WORMS:
             init_worms_toolwindow(&toolWindowState->wormsWindowState, toolWindowState->toolWindowRect);

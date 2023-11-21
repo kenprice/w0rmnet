@@ -18,6 +18,7 @@ static unsigned int *guiIconsPtr = guiIcons;
 #include "systems/process_running_system.h"
 #include "systems/botnet_system.h"
 #include "systems/world_state_system.h"
+#include "systems/worm_system.h"
 #include "world/world_map.h"
 
 #define GLSL_VERSION 330
@@ -54,6 +55,7 @@ int main(void)
 
     initialize_main_gui_system();
     initialize_packet_routing_system();
+    init_worm_system();
     //////////////
 
     srand(time(NULL));   // Initialization, should only be called once.
@@ -74,6 +76,7 @@ int main(void)
         update_process_running_system();
         update_packet_routing_system();
         update_botnet_system();
+        update_worm_system();
 
         // Draw
         //----------------------------------------------------------------------------------

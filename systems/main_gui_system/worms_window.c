@@ -280,6 +280,14 @@ void worms_window_top_section(int x, int y, int width) {
         wormsWindowState.isOpen = false;
     }
     if (GuiButton((Rectangle){ x+WORM_WINDOW_WIDTH-64-PAD_8*3, y+2+PAD_8, 77, 28 }, "#002# Save")) {
+        // Save New Worm
+        for (int i = 0; i < worldState.numWorms; i++) {
+            if (strcmp(wormsWindowState.worm.wormName, worldState.worms[i].wormName) == 0) {
+                // TODO: Error message, no duplicate names
+                return;
+            }
+        }
+
         wormsWindowState.isOpen = false;
         worldState.worms[worldState.numWorms++] = wormsWindowState.worm;
     }

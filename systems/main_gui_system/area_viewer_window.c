@@ -2,12 +2,11 @@
 #include <stdio.h>
 #include "glib.h"
 #include "raylib.h"
-#include "../../lib/raygui.h"
 #include "area_viewer_window.h"
 #include "isometric_map_rendering.h"
-#include "../../components/components.h"
+#include "../main_gui_system.h"
+#include "../../lib/raygui.h"
 #include "../../components/component_registry.h"
-#include "../../graphics/tiles.h"
 
 #define STATUSBAR_HEIGHT 18
 #define PAD_8 8
@@ -137,9 +136,7 @@ static void update_area_viewer_selected_device(AreaViewerWindowState* state) {
         Device* device = g_hash_table_lookup(componentRegistry.devices, state->area->entities[i]);
         if (device != NULL && device->visible) {
             state->selectedDevice = device;
-            if (state->selectDeviceFn) {
-                state->selectDeviceFn(device);
-            }
+            gui_load_device_info_panel(device);
         }
     }
 }
@@ -300,6 +297,8 @@ static void render_connections(AreaViewerWindowState* state) {
 static void render_device_mouseover_hover(AreaViewerWindowState* state) {
     if (GuiIsLocked() || !CheckCollisionPointRec(GetMousePosition(), state->window.windowBounds)) return;
 
+    Color labelColor = GetColor(GuiGetStyle(LABEL, TEXT_COLOR_NORMAL));
+    Color labelColorDark = GetColor(GuiGetStyle(LABEL, TEXT_COLOR_DISABLED));
     Vector2 mousePos = GetMousePosition();
     Vector2 currentTile = isometric_map_global_to_local(state->window.windowBounds, state->camera.offset,
                                                         mousePos.x, mousePos.y, state->camera.zoom);
@@ -312,9 +311,11 @@ static void render_device_mouseover_hover(AreaViewerWindowState* state) {
         Device* device = g_hash_table_lookup(componentRegistry.devices, state->area->entities[i]);
         if (device != NULL && is_entity_in_area(state->area, device->entityId)) {
             char* label = device->visible ? device->name : "???";
-            int width = MeasureText(label, 10);
-            DrawRectangle(mousePos.x-1, mousePos.y-11, width+2, 10, BLACK);
-            DrawText(label, mousePos.x, mousePos.y - 11, 10, GREEN);
+            Vector2 labelSize = MeasureTextEx(GuiGetFont(), label, 14, 0);
+            Rectangle labelRect = { mousePos.x, mousePos.y-24, labelSize.x + 16, 24 };
+            GuiPanel(labelRect, NULL);
+            labelRect.x += 7; labelRect.y += 4; labelRect.height = 14;
+            GuiLabel(labelRect, label);
             break;
         }
     }
