@@ -2,6 +2,7 @@
 #include <string.h>
 #include "worms_window.h"
 #include "raylib.h"
+#include "../../events/worm_events.h"
 #include "../../lib/log/log.h"
 #include "../../lib/raygui.h"
 #include "../../lib/text_rectangle_bounds.h"
@@ -289,7 +290,7 @@ void worms_window_top_section(int x, int y, int width) {
         }
 
         wormsWindowState.isOpen = false;
-        worldState.worms[worldState.numWorms++] = wormsWindowState.worm;
+        events_publish_worm_created_event(wormsWindowState.worm);
     }
 }
 

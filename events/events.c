@@ -5,48 +5,43 @@
 EventLogMessage EventLogMessages[1000];
 int EventLogMessagesSize = 0;
 
-extern const char* EventLogMessageTable[] = {
-    "", //0
-    "",
-    "",
-    "",
-    "",
-    "",
-    "",
-    "",
-    "",
-    "",
-    "%s is discovered and is revealed in the map.", // 10
-    "%s is pwned and has been added to your botnet.",
-    "",
-    "",
-    "",
-    "",
-    "",
-    "",
-    "",
-    "",
-    "You receive %d Bitcredits.", // 20
-    "You find a new exploit. %s",
-    "You find a new credentials list. %s",
+const char* EventLogMessageTable[] = {
+    [DeviceDiscoveredEvent] = "%s is discovered and is revealed in the map.",
+    [DevicePwnedEvent] = "%s is pwned and has been added to your botnet.",
+    [DevicePwnedViaLogin] = "%s is pwned by %s via login.",
+    [DevicePwnedViaExploit] = "%s is pwned by %s via exploit.",
+    [PlayerReceivesBitCreditsEvent] = "You receive %d Bitcredits.",
+    [PlayerReceivesExploitEvent] = "You find a new exploit. %s",
+    [PlayerReceivesCredDumpEvent] = "You find a new credentials list. %s",
 };
 
-void events_add_event_log_message_char(enum EventType eventType, char* entityId, char* arg1) {
+void events_add_event_log_message_char(EventType eventType, char* entityId, char* arg1) {
     EventLogMessages[EventLogMessagesSize].eventType = eventType;
     EventLogMessages[EventLogMessagesSize].logMessageFormat = EventLogMessageTable[eventType];
-    strcpy(EventLogMessages[EventLogMessagesSize].arg1.string, arg1);
+    strncpy(EventLogMessages[EventLogMessagesSize].arg1.string, arg1, 50);
     if (entityId) {
-        strcpy(EventLogMessages[EventLogMessagesSize].entityId, entityId);
+        strncpy(EventLogMessages[EventLogMessagesSize].entityId, entityId, UUID_STR_LEN);
     }
     EventLogMessagesSize++;
 }
 
-void events_add_event_log_message_int(enum EventType eventType, char* entityId, int arg1) {
+void events_add_event_log_message_char_char(EventType eventType, char* entityId, char* arg1, char* arg2) {
+    EventLogMessages[EventLogMessagesSize].eventType = eventType;
+    EventLogMessages[EventLogMessagesSize].logMessageFormat = EventLogMessageTable[eventType];
+    strncpy(EventLogMessages[EventLogMessagesSize].arg1.string, arg1, 50);
+    strncpy(EventLogMessages[EventLogMessagesSize].arg2.string, arg2, 50);
+    if (entityId) {
+        strncpy(EventLogMessages[EventLogMessagesSize].entityId, entityId, UUID_STR_LEN);
+    }
+    EventLogMessagesSize++;
+}
+
+void events_add_event_log_message_int(EventType eventType, char* entityId, int arg1) {
     EventLogMessages[EventLogMessagesSize].eventType = eventType;
     EventLogMessages[EventLogMessagesSize].logMessageFormat = EventLogMessageTable[eventType];
     EventLogMessages[EventLogMessagesSize].arg1.number = arg1;
     if (entityId) {
-        strcpy(EventLogMessages[EventLogMessagesSize].entityId, entityId);
+        strncpy(EventLogMessages[EventLogMessagesSize].entityId, entityId, UUID_STR_LEN);
     }
     EventLogMessagesSize++;
 }
@@ -56,6 +51,10 @@ void event_log_message_copy_to(char* dest, EventLogMessage eventLogMessage) {
         case DevicePwnedEvent:
         case DeviceDiscoveredEvent:
             sprintf(dest, eventLogMessage.logMessageFormat, eventLogMessage.arg1.string);
+            break;
+        case DevicePwnedViaExploit:
+        case DevicePwnedViaLogin:
+            sprintf(dest, eventLogMessage.logMessageFormat, eventLogMessage.arg1.string, eventLogMessage.arg2.string);
             break;
         case PlayerReceivesBitCreditsEvent:
             sprintf(dest, eventLogMessage.logMessageFormat, eventLogMessage.arg1.number);

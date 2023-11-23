@@ -42,7 +42,7 @@ void render_recent_events_view() {
 
     char log[10000] = "";
     for (int i = 0; i < numEvents; i++) {
-        char buffer[100];
+        char buffer[100] = "";
         event_log_message_copy_to(buffer, EventLogMessages[EventLogMessagesSize-1-i]);
         buffer[strlen(buffer)] = '\0';
         buffer[strlen(buffer)-1] = '\n';
@@ -65,7 +65,7 @@ void focus_area_viewer_on_device(Device* device) {
 }
 
 void recent_events_on_device_pwned(DeviceEvent event) {
-    if (event.type == DevicePwnedEvent) {
+    if (event.type == DevicePwnedEvent || event.type == DevicePwnedViaLogin || event.type == DevicePwnedViaExploit) {
         focus_area_viewer_on_device(event.device);
     }
 }

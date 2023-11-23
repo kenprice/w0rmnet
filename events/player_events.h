@@ -10,7 +10,7 @@ typedef union {
 } PlayerEventMessage;
 
 typedef struct {
-    enum EventType type;
+    EventType type;
     PlayerEventMessage message;
 } PlayerEvent;
 

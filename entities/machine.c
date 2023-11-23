@@ -38,6 +38,7 @@ char* entity_machine_register_components(Machine* machine) {
     g_hash_table_insert(componentRegistry.positions, entityId, &machine->position);
     g_hash_table_insert(componentRegistry.sprites, entityId, &machine->sprite);
     g_hash_table_insert(componentRegistry.routeTable, entityId, &machine->routeTable);
+    g_hash_table_insert(componentRegistry.knownHosts, entityId, &machine->knownHosts);
 
     PacketBuffer* packetBuffer = calloc(1, sizeof(PacketBuffer));
     packetBuffer->sendQ = packet_queue_alloc(50);

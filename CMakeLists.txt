@@ -149,6 +149,12 @@ add_executable(${PROJECT_NAME} app.c
         store/worms.c
         components/infection.h
         components/infection.c
+        events/worm_events.c
+        events/worm_events.h
+        entities/helpers.c
+        entities/helpers.h
+        components/known_hosts.c
+        components/known_hosts.h
 )
 #set(raylib_VERBOSE 1)
 target_link_libraries(${PROJECT_NAME} raylib)

@@ -37,8 +37,6 @@ void init_worm_system();
 
 void update_worm_system();
 
-void worm_system_add_worm(Worm worm);
-
 void worm_system_deploy_worm(int wormIdx, Device* device);
 
 #endif //W0RMNET_WORM_SYSTEM_H

@@ -1,9 +1,14 @@
 #include "glib.h"
 #include "worm_system.h"
 #include "../components/component_registry.h"
+#include "../components/device.h"
 #include "../components/infection.h"
-#include "../world/world_state.h"
+#include "../components/known_hosts.h"
+#include "../entities/helpers.h"
+#include "../events/worm_events.h"
 #include "../lib/log/log.h"
+#include "../store/exploits.h"
+#include "../world/world_state.h"
 
 WormSystemState wormSystemState;
 
@@ -11,6 +16,8 @@ WormSystemState wormSystemState;
 #define WORM_SYSTEM_TIMER_INTERVAL 1
 
 void worm_system_update_worm_state(WormState* wormState);
+void worm_system_update_infection(char* entityId, Infection* infection);
+void worm_system_add_worm(WormEvent event);
 
 void init_worm_system() {
     log_debug("Initializing w0rm system");
@@ -26,36 +33,54 @@ void init_worm_system() {
         StartTimer(&wormSystemState.wormStates[i].timer, WORM_SYSTEM_TIMER_INTERVAL);
     }
     wormSystemState.numWorms = worldState.numWorms;
+
+    events_register_worm_event_listener(worm_system_add_worm);
 }
 
 void update_worm_system() {
-    for (int i = 0; i < wormSystemState.numWorms; i++) {
-        if (wormSystemState.wormStates[i].state == WORM_STATE_COOLDOWN) {
-            wormSystemState.wormStates[i].state = WORM_STATE_ACTIVE;
-            StartTimer(&wormSystemState.wormStates[i].timer, WORM_SYSTEM_TIMER_COOLDOWN);
-        } else if (TimerDone(wormSystemState.wormStates[i].timer)) {
-            worm_system_update_worm_state(&wormSystemState.wormStates[i]);
-            StartTimer(&wormSystemState.wormStates[i].timer, WORM_SYSTEM_TIMER_INTERVAL);
-        }
+    GHashTableIter iter;
+    char* entityId;
+    Infection* infection;
+
+    g_hash_table_iter_init(&iter, componentRegistry.infections);
+    while (g_hash_table_iter_next(&iter, (gpointer) &entityId, (gpointer) &infection)) {
+        worm_system_update_infection(entityId, infection);
     }
 }
 
-void worm_system_try_remote_exploit(Exploit* exploit, Device* targetDevice) {
-    ProcessManager* processManager = g_hash_table_lookup(componentRegistry.processManagers, targetDevice->entityId);
-    if (!processManager) return;
+void worm_system_try_remote_exploit(Device* fromDevice, Device* targetDevice, Exploit* exploit) {
+    Packet* packet = packet_alloc(fromDevice->entityId, fromDevice->address, targetDevice->address, exploit->flavorText);
+    packet->exploit = exploit;
+    entity_send_packet_from_entity(targetDevice->entityId, packet);
+}
 
-    for (int i = 0; i < processManager->numProcs; i++) {
-        Process proc = processManager->processes[i];
-        bool nameMatch = strcmp(proc.program.name, exploit->programName) == 0;
-        bool versionMatch = proc.program.version == exploit->programVersion;
+void worm_system_update_infection(char* entityId, Infection* infection) {
+    KnownHosts* knownHosts = g_hash_table_lookup(componentRegistry.knownHosts, entityId);
+    Device* device = g_hash_table_lookup(componentRegistry.devices, entityId);
+    if (!knownHosts || !device) return;
 
-        if (nameMatch == versionMatch) {
-            // If target is reachable, then pwnt
+    for (int i = 0; i < infection->numWorms; i++) {
+        Worm* worm = infection->worms[i];
+        int activeSlot = infection->activeSlots[i];
+
+        switch (worm->slots[activeSlot].type) {
+            case WormSlotRemoteExploit: {
+                Exploit* exploit = worm->slots[activeSlot].content.exploit;
+                for (int j = 0; j < knownHosts->numEntities; j++) {
+                    char* targetEntityId = knownHosts->entities[j];
+                    Device* targetDevice = g_hash_table_lookup(componentRegistry.devices, targetEntityId);
+                    if (!targetDevice) continue;
+
+                    worm_system_try_remote_exploit(device, targetDevice, exploit);
+                }
+                // TODO: Have packets drive remote exploit, just cuz it's cool
+                break;
+            }
+            default:
+                break;
         }
     }
 }
-
-
 
 // TODO: Rearrange logic like this?
 // 1. For each Infected device
@@ -70,6 +95,16 @@ void worm_system_update_worm_state(WormState* wormState) {
     bool isCurrentSlotDone = false;
 
     WormSlot currentWormSlot = wormState->worm->slots[wormState->curActiveSlot];
+
+    while (wormState->worm->slots[wormState->curActiveSlot].type == WormSlotEmpty) {
+        wormState->worm->numSlots++;
+        if (wormState->curActiveSlot > wormState->worm->numSlots) {
+            log_debug("Worm %s finished loop, cooling down", wormState->worm->wormName);
+            wormState->curActiveSlot = 0;
+            wormState->state = WORM_STATE_COOLDOWN;
+        }
+    }
+
     switch (currentWormSlot.type) {
         case WormSlotRemoteExploit: {
             int targetIdx = wormState->targetsCompleted-1;
@@ -77,13 +112,12 @@ void worm_system_update_worm_state(WormState* wormState) {
                 isCurrentSlotDone = true;
                 break;
             }
-            worm_system_try_remote_exploit(currentWormSlot.content.exploit, wormState->targetDevices[targetIdx]);
+//            worm_system_try_remote_exploit(currentWormSlot.content.exploit, wormState->targetDevices[targetIdx]);
             wormState->targetsCompleted++;
             break;
         }
         case WormSlotCredentialAttack:
             break;
-        case WormSlotEmpty:
         default:
             isCurrentSlotDone = true;
             break;
@@ -100,8 +134,23 @@ void worm_system_update_worm_state(WormState* wormState) {
     }
 }
 
-void worm_system_add_worm(Worm worm) {
+void worm_system_init_worm_state(Worm* worm) {
+    int i = wormSystemState.numWorms;
+    wormSystemState.wormStates[i].worm = worm;
+    wormSystemState.wormStates[i].state = WORM_STATE_INACTIVE;
+    wormSystemState.wormStates[i].curActiveSlot = 0;
+    wormSystemState.wormStates[i].numTargetDevices = 0;
+    wormSystemState.wormStates[i].numInfectedDevices = 0;
+    wormSystemState.wormStates[i].targetsInfected = 0;
+    wormSystemState.wormStates[i].targetsCompleted = 0;
+    StartTimer(&wormSystemState.wormStates[i].timer, WORM_SYSTEM_TIMER_INTERVAL);
+    wormSystemState.numWorms = i+1;
+}
 
+void worm_system_add_worm(WormEvent event) {
+    int i = worldState.numWorms;
+    worldState.worms[worldState.numWorms++] = event.worm;
+    worm_system_init_worm_state(&worldState.worms[i]);
 }
 
 void worm_system_deploy_worm(int wormIdx, Device* device) {

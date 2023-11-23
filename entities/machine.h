@@ -1,11 +1,18 @@
 #ifndef W0RMNET_MACHINE_H
 #define W0RMNET_MACHINE_H
 
-#include "../components/components.h"
+#include "../components/device.h"
+#include "../components/known_hosts.h"
+#include "../components/packet.h"
+#include "../components/position.h"
+#include "../components/process.h"
+#include "../components/route_table.h"
+#include "../components/sprite.h"
 
 typedef struct {
     char entityId[UUID_STR_LEN];
     Device device;
+    KnownHosts knownHosts;
     Position position;
     Sprite sprite;
     PacketBuffer packetBuffer;

@@ -3,14 +3,18 @@
 
 #include "../utils/uuid.h"
 
-enum EventType {
+typedef enum {
     DeviceDiscoveredEvent = 10,
     DevicePwnedEvent,
+    DevicePwnedViaLogin,
+    DevicePwnedViaExploit,
 
     PlayerReceivesBitCreditsEvent = 20,
     PlayerReceivesExploitEvent,
-    PlayerReceivesCredDumpEvent
-};
+    PlayerReceivesCredDumpEvent,
+
+    WormCreatedEvent = 30,
+} EventType ;
 
 typedef union {
     int number;
@@ -18,7 +22,7 @@ typedef union {
 } EventLogMessageArg;
 
 typedef struct {
-    enum EventType eventType;
+    EventType eventType;
     const char* logMessageFormat;
     char entityId[UUID_STR_LEN];
     EventLogMessageArg arg1;
@@ -31,9 +35,11 @@ extern const char* EventLogMessageTable[100];
 extern EventLogMessage EventLogMessages[1000];
 extern int EventLogMessagesSize;
 
-void events_add_event_log_message_char(enum EventType eventType, char* entityId, char* arg1);
+void events_add_event_log_message_char(EventType eventType, char* entityId, char* arg1);
 
-void events_add_event_log_message_int(enum EventType eventType, char* entityId, int arg1);
+void events_add_event_log_message_char_char(EventType eventType, char* entityId, char* arg1, char* arg2);
+
+void events_add_event_log_message_int(EventType eventType, char* entityId, int arg1);
 
 void event_log_message_copy_to(char* dest, EventLogMessage eventLogMessage);
 

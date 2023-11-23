@@ -36,12 +36,13 @@ void proc_login_handle_packet(char* entityId, Process* process, Packet* packet) 
 
     char* creds = packetParts[1];
 
-    PacketBuffer* packet_buffer = (PacketBuffer*)g_hash_table_lookup(componentRegistry.packetBuffers, entityId);
+    PacketBuffer* packetBuffer = (PacketBuffer*)g_hash_table_lookup(componentRegistry.packetBuffers, entityId);
     if (strcmp(creds, process->state) == 0) {
-        Device* device = (Device*)g_hash_table_lookup(componentRegistry.devices, entityId);
+        Device* device = g_hash_table_lookup(componentRegistry.devices, entityId);
+        Device* fromDevice = g_hash_table_lookup(componentRegistry.devices, packet->fromEntityId);
         if (device->owner != DEVICE_OWNER_PLAYER) {
             device->owner = DEVICE_OWNER_PLAYER;
-            events_publish_device_event(entityId, device, DevicePwnedEvent);
+            events_publish_device_pwned_device_via_login_event(fromDevice, entityId, device);
         }
 
         sprintf(buffer, "Received LOGIN from %s (success)", packet->fromAddress);
@@ -54,7 +55,7 @@ void proc_login_handle_packet(char* entityId, Process* process, Packet* packet) 
         sprintf(buffer, "LOGIN FAILURE");
     }
     Packet* returnPacket = packet_alloc(entityId, packet->toAddress, packet->fromAddress, buffer);
-    packet_queue_write(&packet_buffer->sendQ, returnPacket);
+    packet_queue_write(&packetBuffer->sendQ, returnPacket);
 
     g_strfreev(packetParts);
 }

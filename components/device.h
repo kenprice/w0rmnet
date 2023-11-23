@@ -21,7 +21,7 @@ extern const char* DeviceTypeLabel[2];
 typedef struct {
     char entityId[UUID_STR_LEN];
     char name[DEVICE_NAME_LEN];
-    char address[100]; // FQ Adress is something like nightcity::metro:d0rkyd3vel.sn0rtt0k3r.b3efsdr34d
+    char address[100]; // e.g. nightcity.metro.d0rky.sn0rt.t0ker
     DeviceType type;
 
     int owner; // 0 for nobody, 1 for player
