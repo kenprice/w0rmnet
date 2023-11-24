@@ -14,6 +14,7 @@ typedef enum {
     PlayerReceivesCredDumpEvent,
 
     WormCreatedEvent = 30,
+    WormInfectsDeviceEvent,
 } EventType ;
 
 typedef union {
@@ -30,7 +31,7 @@ typedef struct {
     EventLogMessageArg arg3;
 } EventLogMessage;
 
-extern const char* EventLogMessageTable[100];
+extern const char* EventLogMessageTable[];
 
 extern EventLogMessage EventLogMessages[1000];
 extern int EventLogMessagesSize;

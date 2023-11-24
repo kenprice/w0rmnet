@@ -13,6 +13,7 @@ const char* EventLogMessageTable[] = {
     [PlayerReceivesBitCreditsEvent] = "You receive %d Bitcredits.",
     [PlayerReceivesExploitEvent] = "You find a new exploit. %s",
     [PlayerReceivesCredDumpEvent] = "You find a new credentials list. %s",
+    [WormInfectsDeviceEvent] = "%s is infected by %s",
 };
 
 void events_add_event_log_message_char(EventType eventType, char* entityId, char* arg1) {

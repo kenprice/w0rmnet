@@ -3,15 +3,15 @@
 #include "exploits.h"
 #include "worms.h"
 
-void worms_copy_worm_summary(Worm worm, char* buffer) {
+void worms_copy_worm_summary(Worm* worm, char* buffer) {
     char buf[1000] = "";
     char summary[100] = "";
 
     int exploitCount = 0;
     int credAttackCount = 0;
 
-    for (int i = 0; i < worm.numSlots; i++) {
-        switch(worm.slots[i].type) {
+    for (int i = 0; i < worm->numSlots; i++) {
+        switch(worm->slots[i].type) {
             case WormSlotRemoteExploit: {
                 exploitCount++;
                 break;

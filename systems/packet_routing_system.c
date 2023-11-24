@@ -3,6 +3,7 @@
 #include "../components/component_registry.h"
 #include "../components/known_hosts.h"
 #include "../entities/helpers.h"
+#include "../lib/log/log.h"
 #include "../utils/timer.h"
 
 Timer timer;
@@ -73,6 +74,28 @@ void update_packet_buffer(char* entityId, PacketBuffer* packetBuffer) {
     }
 }
 
+static void wire_send_packet_to_q_a(Wire* wire, Packet* packet) {
+    Device* device = g_hash_table_lookup(componentRegistry.devices, wire->entityA);
+    PacketBuffer* packetBuffer = g_hash_table_lookup(componentRegistry.packetBuffers, wire->entityA);
+    if (packetBuffer) {
+        log_debug("Wire forwards packet to %s", device ? device->address : wire->entityA);
+        packet_queue_write(&packetBuffer->recvQ, packet);
+    } else {
+        log_debug("No packet buffer for %s", device ? device->address : wire->entityA);
+    }
+}
+
+static void wire_send_packet_to_q_b(Wire* wire, Packet* packet) {
+    Device* device = g_hash_table_lookup(componentRegistry.devices, wire->entityB);
+    PacketBuffer* packetBuffer = g_hash_table_lookup(componentRegistry.packetBuffers, wire->entityB);
+    if (packetBuffer) {
+        log_debug("Wire forwards packet to %s", device ? device->address : wire->entityB);
+        packet_queue_write(&packetBuffer->recvQ, packet);
+    } else {
+        log_debug("No packet buffer for %s", device ? device->address : wire->entityB);
+    }
+}
+
 void update_wires() {
     GHashTableIter iter;
     char* entityId;
@@ -82,13 +105,11 @@ void update_wires() {
     while (g_hash_table_iter_next (&iter, (gpointer) &entityId, (gpointer) &wire)) {
         Packet* packet = packet_queue_read(&wire->sendQtoA);
         if (packet) {
-            PacketBuffer* packetBuffer = g_hash_table_lookup(componentRegistry.packetBuffers, wire->entityA);
-            if (packetBuffer) packet_queue_write(&packetBuffer->recvQ, packet);
+            wire_send_packet_to_q_a(wire, packet);
         }
         packet = packet_queue_read(&wire->sendQtoB);
         if (packet) {
-            PacketBuffer* packetBuffer = g_hash_table_lookup(componentRegistry.packetBuffers, wire->entityB);
-            if (packetBuffer) packet_queue_write(&packetBuffer->recvQ, packet);
+            wire_send_packet_to_q_b(wire, packet);
         }
     }
 }

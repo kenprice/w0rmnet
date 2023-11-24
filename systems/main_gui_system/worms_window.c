@@ -290,7 +290,7 @@ void worms_window_top_section(int x, int y, int width) {
         }
 
         wormsWindowState.isOpen = false;
-        events_publish_worm_created_event(wormsWindowState.worm);
+        events_publish_worm_created_event(&wormsWindowState.worm);
     }
 }
 

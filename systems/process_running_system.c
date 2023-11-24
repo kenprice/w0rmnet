@@ -2,6 +2,7 @@
 #include "../components/components.h"
 #include "../components/component_registry.h"
 #include "../events/device_events.h"
+#include "../events/worm_events.h"
 #include "process_runner/ping_runner.h"
 #include "process_runner/netscan_runner.h"
 #include "process_runner/login_runner.h"
@@ -27,7 +28,7 @@ static void check_packet_for_exploit(char* entityId, Process* proc, Packet* pack
     Device* targetDevice = g_hash_table_lookup(componentRegistry.devices, entityId);
     if (!proc || !packet || !targetDevice || targetDevice->owner == DEVICE_OWNER_PLAYER) return;
 
-    Exploit* exploit = packet->exploit;
+    Exploit* exploit = packet->payload.exploit;
     if (!exploit) return;
 
     bool nameMatch = strcmp(proc->program.name, exploit->programName) == 0;
@@ -37,6 +38,10 @@ static void check_packet_for_exploit(char* entityId, Process* proc, Packet* pack
         Device* fromDevice = g_hash_table_lookup(componentRegistry.devices, packet->fromEntityId);
         targetDevice->owner = DEVICE_OWNER_PLAYER;
         events_publish_device_pwned_device_via_exploit_event(fromDevice, entityId, targetDevice);
+
+        if (packet->payload.worm) {
+            events_publish_worm_infected_device_event(packet->payload.worm, targetDevice);
+        }
     }
 }
 

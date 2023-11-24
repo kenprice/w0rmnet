@@ -12,17 +12,9 @@
 // State of single worm
 typedef struct {
     Worm* worm;
-    int curActiveSlot;
-    int state;
-    Timer timer;
 
     Device* infectedDevices[1000];
     int numInfectedDevices;
-    Device* targetDevices[1000];
-    int numTargetDevices;
-
-    int targetsCompleted;
-    int targetsInfected;
 } WormState;
 
 // State of all worms
@@ -36,7 +28,5 @@ extern WormSystemState wormSystemState;
 void init_worm_system();
 
 void update_worm_system();
-
-void worm_system_deploy_worm(int wormIdx, Device* device);
 
 #endif //W0RMNET_WORM_SYSTEM_H

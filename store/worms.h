@@ -29,6 +29,6 @@ typedef struct {
     int numSlots;
 } Worm;
 
-void worms_copy_worm_summary(Worm worm, char* buffer);
+void worms_copy_worm_summary(Worm* worm, char* buffer);
 
 #endif //W0RMNET_WORMS_H

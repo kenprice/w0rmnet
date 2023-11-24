@@ -8,13 +8,11 @@
 typedef struct {
     int numWorms;
     Worm* worms[20];
-    int activeSlots[20];
 
-    Device* infectedDevices[100];
-    int numInfectedDevices;
-    Device* targetDevices[100];
-    int numTargetDevices;
-    int numTargetsCompleted;
+    int activeSlots[20]; // One-to-one w/ worms, the worm's active slot
+    int curCred; // If active slot is credential attack, denotes current cred
+
+    Timer runnerTimer; // Timer for the worms doing their thing. Running multiple worms do not confer perf benefit
 } Infection;
 
 bool comp_infection_add_worm(char* entityId, Worm* worm);

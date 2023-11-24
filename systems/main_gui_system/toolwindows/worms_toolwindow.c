@@ -5,6 +5,8 @@
 #include "../worms_window.h"
 #include "../../main_gui_system.h"
 #include "../../ui/custom_raygui.h"
+#include "../../../events/worm_events.h"
+#include "../../../lib/log/log.h"
 #include "../../../lib/raygui.h"
 #include "../../../lib/text_rectangle_bounds.h"
 #include "../../../world/world_state.h"
@@ -13,7 +15,7 @@
 #define TITLEBAR_HEIGHT 24
 #define PAD_8 8
 
-bool worms_toolwindow_render_worm_item(WormsToolWindowState* state, int x, int y, int width, Worm worm, bool active);
+bool worms_toolwindow_render_worm_item(WormsToolWindowState* state, int x, int y, int width, Worm* worm, bool active);
 
 void init_worms_toolwindow(WormsToolWindowState* state, Rectangle toolWindowRect) {
     state->scrollPanelView = (Rectangle){ 0 };
@@ -62,7 +64,7 @@ void render_worms_toolwindow(WormsToolWindowState* state, Rectangle toolWindowRe
     }
     GuiLine(lineRect, NULL);
     for (int i = 0; i < worldState.numWorms; i++) {
-        if (worms_toolwindow_render_worm_item(state, x, y, scrollPanelRect.width, worldState.worms[i], state->selectedWormIdx == i)) {
+        if (worms_toolwindow_render_worm_item(state, x, y, scrollPanelRect.width, &worldState.worms[i], state->selectedWormIdx == i)) {
             state->selectedWormIdx = i;
         }
         y += 100;
@@ -70,7 +72,7 @@ void render_worms_toolwindow(WormsToolWindowState* state, Rectangle toolWindowRe
     EndScissorMode();
 }
 
-bool worms_toolwindow_render_worm_item(WormsToolWindowState* state, int x, int y, int width, Worm worm, bool active) {
+bool worms_toolwindow_render_worm_item(WormsToolWindowState* state, int x, int y, int width, Worm* worm, bool active) {
     Color labelColor = GetColor(GuiGetStyle(LABEL, TEXT_COLOR_NORMAL));
     Color labelHighlightColor = GetColor(GuiGetStyle(DEFAULT, BASE_COLOR_PRESSED));
 
@@ -79,7 +81,7 @@ bool worms_toolwindow_render_worm_item(WormsToolWindowState* state, int x, int y
 
     if (active) GuiSetState(STATE_PRESSED);
     Rectangle labelRect = { x+48, y, width, 14 };
-    GuiLabel(labelRect, worm.wormName);
+    GuiLabel(labelRect, worm->wormName);
     labelRect.y += 14;
 
     Device* device = gui_get_selected_device();
@@ -108,7 +110,8 @@ bool worms_toolwindow_render_worm_item(WormsToolWindowState* state, int x, int y
         targetButton.x += 88; targetButton.width = 64;
         if (GuiButton(targetButton, "#152#Send ")) {
             // Launch worm from here
-            worm_system_deploy_worm(state->selectedWormIdx, gui_get_selected_device());
+            log_debug("Launching worm from UI");
+            events_publish_worm_infected_device_event(worm, gui_get_selected_device());
             state->selectedWormIdx = -1;
         }
         GuiSetState(STATE_PRESSED);
