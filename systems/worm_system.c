@@ -1,3 +1,4 @@
+#include <math.h>
 #include "glib.h"
 #include "worm_system.h"
 #include "../components/component_registry.h"
@@ -20,6 +21,7 @@ WormSystemState wormSystemState;
 void worm_system_update_infection(char* entityId, Infection* infection);
 void worm_system_handle_add_worm_event(WormEvent event);
 void worm_system_handle_worm_infects_device_event(WormEvent event);
+static void worm_system_try_credential_attack(Device* fromDevice, Device* targetDevice, Infection* infection, Worm* worm, CredDump* credDump);
 static void worm_system_try_remote_exploit(Device* fromDevice, Device* targetDevice, Worm* worm, Exploit* exploit);
 static WormState* worm_system_get_worm_state_for_worm(Worm* worm);
 
@@ -50,33 +52,56 @@ void update_worm_system() {
 void worm_system_update_infection(char* entityId, Infection* infection) {
     KnownHosts* knownHosts = g_hash_table_lookup(componentRegistry.knownHosts, entityId);
     Device* device = g_hash_table_lookup(componentRegistry.devices, entityId);
-    if (!knownHosts || !device) return;
+    if (!knownHosts || !device || knownHosts->numEntities == 0) return;
 
     for (int i = 0; i < infection->numWorms; i++) {
+        bool nextActiveSlot = false;
         Worm* worm = infection->worms[i];
         int activeSlot = infection->activeSlots[i];
 
         if (!TimerDone(infection->runnerTimer)) return;
 
-        log_debug("Infection on %s, Worm %s, Slot %d", device->address, worm->wormName, activeSlot);
+        switch (worm->slots[activeSlot].type) {
+            case WormSlotRemoteExploit: {
+                Exploit* exploit = worm->slots[activeSlot].content.exploit;
+                for (int j = 0; j < knownHosts->numEntities; j++) {
+                    char* targetEntityId = knownHosts->entities[j];
+                    Device* targetDevice = g_hash_table_lookup(componentRegistry.devices, targetEntityId);
+                    if (!targetDevice) continue;
 
-        for (int j = 0; j < knownHosts->numEntities; j++) {
-            char* targetEntityId = knownHosts->entities[j];
-            Device* targetDevice = g_hash_table_lookup(componentRegistry.devices, targetEntityId);
-            if (!targetDevice) continue;
-
-            switch (worm->slots[activeSlot].type) {
-                case WormSlotRemoteExploit: {
-                    Exploit* exploit = worm->slots[activeSlot].content.exploit;
                     worm_system_try_remote_exploit(device, targetDevice, worm, exploit);
-                    StartTimer(&infection->runnerTimer, WORM_SYSTEM_TIMER_INTERVAL);
-                    break;
                 }
-                case WormSlotCredentialAttack: {
-                }
-                default:
-                    break;
+                StartTimer(&infection->runnerTimer, (1.0f + log(knownHosts->numEntities)) * 1.5f);
+                nextActiveSlot = true;
+                break;
             }
+            case WormSlotCredentialAttack: {
+                // TODO: Smarter credential attack; ignore target if no login; maybe worm lifecycle (start, do, end)
+                CredDump* credDump = worm->slots[activeSlot].content.credDump;
+                for (int j = 0; j < knownHosts->numEntities; j++) {
+                    char* targetEntityId = knownHosts->entities[j];
+                    Device* targetDevice = g_hash_table_lookup(componentRegistry.devices, targetEntityId);
+                    if (!targetDevice) continue;
+
+                    worm_system_try_credential_attack(device, targetDevice, infection, worm, credDump);
+                }
+                infection->curCred++;
+                if (infection->curCred >= credDump->numCredentials) {
+                    StartTimer(&infection->runnerTimer, 5.0f);
+                    infection->curCred = 0;
+                    nextActiveSlot = true;
+                }
+                StartTimer(&infection->runnerTimer, (1.0f + log(knownHosts->numEntities)) * 1.5f);
+                break;
+            }
+            default:
+                nextActiveSlot = true;
+                break;
+        }
+
+        if (nextActiveSlot) {
+            infection->activeSlots[i]++;
+            if (infection->activeSlots[i] >= worm->numSlots) infection->activeSlots[i] = 0;
         }
     }
 }
@@ -135,6 +160,7 @@ static void worm_system_try_remote_exploit(Device* fromDevice, Device* targetDev
     for (int i = 0; i <  wormState->numInfectedDevices; i++) {
         if (wormState->infectedDevices[i] == targetDevice) return;
     }
+    log_debug("Infection on %s, Worm %s, attempts exploit on %s", fromDevice->address, worm->wormName, targetDevice->address);
 
     Packet* packet = packet_alloc(fromDevice->entityId, fromDevice->address, targetDevice->address, exploit->flavorText);
     packet->payload.worm = worm;
@@ -142,11 +168,23 @@ static void worm_system_try_remote_exploit(Device* fromDevice, Device* targetDev
     entity_send_packet_from_entity(targetDevice->entityId, packet);
 }
 
-static void worm_system_try_credential_attack(Device* fromDevice, Device* targetDevice, Worm* worm, CredDump* credDump) {
+static void worm_system_try_credential_attack(Device* fromDevice, Device* targetDevice, Infection* infection, Worm* worm, CredDump* credDump) {
     WormState* wormState = worm_system_get_worm_state_for_worm(worm);
     for (int i = 0; i <  wormState->numInfectedDevices; i++) {
         if (wormState->infectedDevices[i] == targetDevice) return;
     }
+
+    char** credentialsList = g_strsplit(credDump->contents, "\n", credDump->numCredentials);
+    char* curCred = credentialsList[infection->curCred];
+    char buffer[200];
+    sprintf(buffer, "LOGIN %s", curCred);
+    Packet* packet = packet_alloc(fromDevice->entityId, fromDevice->address, targetDevice->address, buffer);
+    packet->payload.worm = worm;
+    entity_send_packet_from_entity(targetDevice->entityId, packet);
+    // TODO: event for infection via cred attack by worm
+    log_debug("Infection on %s, Worm %s, attempts LOGIN %s on %s", fromDevice->address, worm->wormName, curCred, targetDevice->address);
+
+    g_strfreev(credentialsList);
 }
 
 static WormState* worm_system_get_worm_state_for_worm(Worm* worm) {

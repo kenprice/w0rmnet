@@ -38,8 +38,8 @@ char* entity_router_register_components(Router* router) {
     g_hash_table_insert(componentRegistry.routeTable, entityId, &router->routeTable);
 
     PacketBuffer* packetBuffer = calloc(1, sizeof(PacketBuffer));
-    packetBuffer->sendQ = packet_queue_alloc(10);
-    packetBuffer->recvQ = packet_queue_alloc(10);
+    packetBuffer->sendQ = packet_queue_alloc(50);
+    packetBuffer->recvQ = packet_queue_alloc(50);
     strcpy(packetBuffer->entityId, entityId);
     g_hash_table_insert(componentRegistry.packetBuffers, entityId, packetBuffer);
 

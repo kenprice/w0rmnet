@@ -3,6 +3,7 @@
 #include "login_runner.h"
 #include "../../components/component_registry.h"
 #include "../../events/device_events.h"
+#include "../../events/worm_events.h"
 
 /**
  * Login State
@@ -43,6 +44,9 @@ void proc_login_handle_packet(char* entityId, Process* process, Packet* packet) 
         if (device->owner != DEVICE_OWNER_PLAYER) {
             device->owner = DEVICE_OWNER_PLAYER;
             events_publish_device_pwned_device_via_login_event(fromDevice, entityId, device);
+            if (packet->payload.worm) {
+                events_publish_worm_infected_device_event(packet->payload.worm, device);
+            }
         }
 
         sprintf(buffer, "Received LOGIN from %s (success)", packet->fromAddress);

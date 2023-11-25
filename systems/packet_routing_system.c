@@ -8,9 +8,7 @@
 
 Timer timer;
 
-//#define TIME_PACKET_SEND 0.025
-#define TIME_PACKET_SEND 0.075
-//#define TIME_PACKET_SEND 1.0
+#define TIME_PACKET_SEND 0.1
 
 void update_routers();
 void update_wires();
@@ -69,6 +67,9 @@ void update_packet_buffer(char* entityId, PacketBuffer* packetBuffer) {
     if (packet && device && strcmp(device->address, packet->toAddress) == 0) {
         KnownHosts* knownHosts = g_hash_table_lookup(componentRegistry.knownHosts, entityId);
         if (knownHosts) {
+            if (!comp_known_hosts_entity_in_list(knownHosts, packet->fromAddress)) {
+                log_debug("%s has %d known hosts, adding %s", device->address, knownHosts->numEntities, packet->fromAddress);
+            }
             comp_known_hosts_add_entity(knownHosts, entityId, packet->fromEntityId);
         }
     }
@@ -78,7 +79,7 @@ static void wire_send_packet_to_q_a(Wire* wire, Packet* packet) {
     Device* device = g_hash_table_lookup(componentRegistry.devices, wire->entityA);
     PacketBuffer* packetBuffer = g_hash_table_lookup(componentRegistry.packetBuffers, wire->entityA);
     if (packetBuffer) {
-        log_debug("Wire forwards packet to %s", device ? device->address : wire->entityA);
+//        log_debug("Wire forwards packet to %s", device ? device->address : wire->entityA);
         packet_queue_write(&packetBuffer->recvQ, packet);
     } else {
         log_debug("No packet buffer for %s", device ? device->address : wire->entityA);
@@ -89,7 +90,7 @@ static void wire_send_packet_to_q_b(Wire* wire, Packet* packet) {
     Device* device = g_hash_table_lookup(componentRegistry.devices, wire->entityB);
     PacketBuffer* packetBuffer = g_hash_table_lookup(componentRegistry.packetBuffers, wire->entityB);
     if (packetBuffer) {
-        log_debug("Wire forwards packet to %s", device ? device->address : wire->entityB);
+//        log_debug("Wire forwards packet to %s", device ? device->address : wire->entityB);
         packet_queue_write(&packetBuffer->recvQ, packet);
     } else {
         log_debug("No packet buffer for %s", device ? device->address : wire->entityB);
