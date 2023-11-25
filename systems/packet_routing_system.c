@@ -67,7 +67,7 @@ void update_packet_buffer(char* entityId, PacketBuffer* packetBuffer) {
     if (packet && device && strcmp(device->address, packet->toAddress) == 0) {
         KnownHosts* knownHosts = g_hash_table_lookup(componentRegistry.knownHosts, entityId);
         if (knownHosts) {
-            if (!comp_known_hosts_entity_in_list(knownHosts, packet->fromAddress)) {
+            if (!comp_known_hosts_entity_in_list(knownHosts, packet->fromEntityId)) {
                 log_debug("%s has %d known hosts, adding %s", device->address, knownHosts->numEntities, packet->fromAddress);
             }
             comp_known_hosts_add_entity(knownHosts, entityId, packet->fromEntityId);

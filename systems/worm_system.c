@@ -54,55 +54,46 @@ void worm_system_update_infection(char* entityId, Infection* infection) {
     Device* device = g_hash_table_lookup(componentRegistry.devices, entityId);
     if (!knownHosts || !device || knownHosts->numEntities == 0) return;
 
-    for (int i = 0; i < infection->numWorms; i++) {
-        bool nextActiveSlot = false;
-        Worm* worm = infection->worms[i];
-        int activeSlot = infection->activeSlots[i];
+    bool nextActiveSlot = false;
+    Worm* worm = infection->worms[infection->curWorm];
+    int activeSlot = infection->curActiveSlot;
 
-        if (!TimerDone(infection->runnerTimer)) return;
+    if (!TimerDone(infection->runnerTimer)) return;
 
-        switch (worm->slots[activeSlot].type) {
-            case WormSlotRemoteExploit: {
-                Exploit* exploit = worm->slots[activeSlot].content.exploit;
-                for (int j = 0; j < knownHosts->numEntities; j++) {
-                    char* targetEntityId = knownHosts->entities[j];
-                    Device* targetDevice = g_hash_table_lookup(componentRegistry.devices, targetEntityId);
-                    if (!targetDevice) continue;
-
-                    worm_system_try_remote_exploit(device, targetDevice, worm, exploit);
-                }
-                StartTimer(&infection->runnerTimer, (1.0f + log(knownHosts->numEntities)) * 1.5f);
-                nextActiveSlot = true;
-                break;
+    switch (worm->slots[activeSlot].type) {
+        case WormSlotRemoteExploit: {
+            Exploit* exploit = worm->slots[activeSlot].content.exploit;
+            char* targetEntityId = knownHosts->entities[infection->curKnownHost];
+            Device* targetDevice = g_hash_table_lookup(componentRegistry.devices, targetEntityId);
+            if (targetDevice) {
+                worm_system_try_remote_exploit(device, targetDevice, worm, exploit);
             }
-            case WormSlotCredentialAttack: {
-                // TODO: Smarter credential attack; ignore target if no login; maybe worm lifecycle (start, do, end)
-                CredDump* credDump = worm->slots[activeSlot].content.credDump;
-                for (int j = 0; j < knownHosts->numEntities; j++) {
-                    char* targetEntityId = knownHosts->entities[j];
-                    Device* targetDevice = g_hash_table_lookup(componentRegistry.devices, targetEntityId);
-                    if (!targetDevice) continue;
-
-                    worm_system_try_credential_attack(device, targetDevice, infection, worm, credDump);
-                }
-                infection->curCred++;
-                if (infection->curCred >= credDump->numCredentials) {
-                    StartTimer(&infection->runnerTimer, 5.0f);
-                    infection->curCred = 0;
-                    nextActiveSlot = true;
-                }
-                StartTimer(&infection->runnerTimer, (1.0f + log(knownHosts->numEntities)) * 1.5f);
-                break;
+            nextActiveSlot = comp_infection_increment_known_host(entityId, infection);
+            StartTimer(&infection->runnerTimer, 1.0f);
+            break;
+        }
+        case WormSlotCredentialAttack: {
+            CredDump* credDump = worm->slots[activeSlot].content.credDump;
+            char* targetEntityId = knownHosts->entities[infection->curKnownHost];
+            Device* targetDevice = g_hash_table_lookup(componentRegistry.devices, targetEntityId);
+            if (targetDevice) {
+                worm_system_try_credential_attack(device, targetDevice, infection, worm, credDump);
             }
-            default:
-                nextActiveSlot = true;
-                break;
+            infection->curCred++;
+            if (infection->curCred >= credDump->numCredentials) {
+                infection->curCred = 0;
+                nextActiveSlot = comp_infection_increment_known_host(entityId, infection);
+            }
+            StartTimer(&infection->runnerTimer, 0.5f);
+            break;
         }
+        default:
+            nextActiveSlot = true;
+            break;
+    }
 
-        if (nextActiveSlot) {
-            infection->activeSlots[i]++;
-            if (infection->activeSlots[i] >= worm->numSlots) infection->activeSlots[i] = 0;
-        }
+    if (nextActiveSlot) {
+        comp_infection_increment_active_slot(infection);
     }
 }
 
