@@ -268,12 +268,12 @@ static void render_left_navbar() {
         GuiTooltipCustom(btnRect, "Network Map");
     }
     btnRect.y += 30;
-    if (GuiButton(btnRect, "#246#")) {
+    if (GuiButton(btnRect, "#208#")) {
         if (!mainGuiState.toolWindowState.activeToolWindow) isInitToolwindow = true;
         mainGuiState.toolWindowState.activeToolWindow = TOOLWINDOW_WORMS;
     }
     if (CheckCollisionPointRec(mousePos, btnRect)) {
-        GuiTooltipCustom(btnRect, "Command & Control");
+        GuiTooltipCustom(btnRect, "w0rms");
     }
 
     if (isInitToolwindow) {
