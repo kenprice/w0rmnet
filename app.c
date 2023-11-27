@@ -34,11 +34,22 @@ int main(void)
     const int initScreenHeight = 847;
     const int minScreenWidth = 1024;
     const int minScreenHeight = 768;
+    int lastScreenWidth = initScreenWidth;
+    int lastScreenHeight = initScreenHeight;
     log_debug("Starting w0rmnet...");
 
     SetConfigFlags(FLAG_WINDOW_RESIZABLE | FLAG_VSYNC_HINT);
     InitWindow(minScreenWidth, minScreenHeight, "w0rmnet");
     SetWindowSize(initScreenWidth, initScreenHeight);
+    SetWindowMinSize(minScreenWidth, minScreenHeight);
+    RenderTexture2D renderTexture = LoadRenderTexture(initScreenWidth, initScreenHeight);
+
+    Shader postShader = LoadShader(NULL, TextFormat("resources/shaders/scanlines.fs", GLSL_VERSION));
+    int resolutionLoc = GetShaderLocation(postShader, "iResolution");
+    int timeLoc = GetShaderLocation(postShader, "iTime");
+    float totalTime = 0.0f;
+    float resolution[2] = { (float)initScreenWidth, (float)initScreenHeight };
+    SetShaderValue(postShader, resolutionLoc, resolution, SHADER_UNIFORM_VEC2);
 
     // NOTE: Textures MUST be loaded after Window initialization (OpenGL context is required)
     load_sprite_sheet();
@@ -67,8 +78,20 @@ int main(void)
         int curScreenWidth = GetScreenWidth();
         int curScreenHeight = GetScreenHeight();
         if (curScreenWidth < minScreenWidth || curScreenHeight < minScreenHeight) {
-            SetWindowSize(curScreenWidth >= minScreenWidth ? curScreenWidth : minScreenWidth,
-                          curScreenHeight >= minScreenHeight ? curScreenHeight : minScreenHeight);
+            curScreenWidth = curScreenWidth >= minScreenWidth ? curScreenWidth : minScreenWidth;
+            curScreenHeight = curScreenHeight >= minScreenHeight ? curScreenHeight : minScreenHeight;
+            SetWindowSize(curScreenWidth, curScreenHeight);
+        }
+        if (curScreenWidth != lastScreenWidth || curScreenHeight != lastScreenHeight) {
+            lastScreenWidth = curScreenWidth;
+            lastScreenHeight = curScreenHeight;
+
+            UnloadRenderTexture(renderTexture);
+            renderTexture = LoadRenderTexture(curScreenWidth, curScreenHeight);
+            while (!IsRenderTextureReady(renderTexture));
+
+            float resolution[2] = { (float)curScreenWidth, (float)curScreenHeight };
+            SetShaderValue(postShader, resolutionLoc, resolution, SHADER_UNIFORM_VEC2);
         }
 
         // Update
@@ -80,12 +103,23 @@ int main(void)
 
         // Draw
         //----------------------------------------------------------------------------------
+        BeginTextureMode(renderTexture);
+            ClearBackground(BLACK);
+            render_main_gui_system();
+        EndTextureMode();
+
+        totalTime += GetFrameTime();
+        SetShaderValue(postShader, timeLoc, &totalTime, SHADER_UNIFORM_FLOAT);
+
         BeginDrawing();
-
-        ClearBackground(BLACK);
-
-        render_main_gui_system();
-
+            BeginShaderMode(postShader);
+                DrawTexturePro(renderTexture.texture,
+                               (Rectangle){0, 0, curScreenWidth, -curScreenHeight},
+                               (Rectangle){0, 0, curScreenWidth, curScreenHeight},
+                               (Vector2){ 0 },
+                               0.0f,
+                               WHITE);
+            EndShaderMode();
         EndDrawing();
         //----------------------------------------------------------------------------------
     }

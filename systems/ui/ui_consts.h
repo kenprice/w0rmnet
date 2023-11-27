@@ -1,0 +1,7 @@
+#ifndef W0RMNET_UI_CONSTS_H
+#define W0RMNET_UI_CONSTS_H
+
+#define TITLEBAR_HEIGHT 24
+#define PAD_8 8
+
+#endif //W0RMNET_UI_CONSTS_H
