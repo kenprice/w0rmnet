@@ -207,10 +207,10 @@ void worms_window_render_palette_credential(int x, int y) {
     y += 48 + PAD_8;
 
     for (int i = 0; i < worldState.numCredDumps; i++) {
-        if (worms_window_gui_draw_creds_option(x, y, worldState.credDumps[i])) {
+        if (worms_window_gui_draw_creds_option(x, y, *worldState.credDumps[i])) {
             wormsWindowState.paletteItemSelected = true;
             wormsWindowState.selectedPaletteItem.type = WormSlotCredentialAttack;
-            wormsWindowState.selectedPaletteItem.content.credDump = &worldState.credDumps[i];
+            wormsWindowState.selectedPaletteItem.content.credDump = worldState.credDumps[i];
             log_debug("Drag n drop: selected creds %s", wormsWindowState.selectedPaletteItem.content.credDump->name);
         }
         y += 48 + PAD_8;
@@ -222,11 +222,11 @@ void worms_window_render_palette_exploits(int x, int y) {
     y += 48 + PAD_8;
 
     for (int i = 0; i < worldState.numExploits; i++) {
-        if (worldState.exploits[i].exploitScope != ExploitScopeRemote) continue;
-        if (worms_window_gui_draw_exploit_option(x, y, worldState.exploits[i])) {
+        if (worldState.exploits[i]->exploitScope != ExploitScopeRemote) continue;
+        if (worms_window_gui_draw_exploit_option(x, y, *worldState.exploits[i])) {
             wormsWindowState.paletteItemSelected = true;
             wormsWindowState.selectedPaletteItem.type = WormSlotRemoteExploit;
-            wormsWindowState.selectedPaletteItem.content.exploit = &worldState.exploits[i];
+            wormsWindowState.selectedPaletteItem.content.exploit = worldState.exploits[i];
             log_debug("Drag n drop: selected exploit %s", wormsWindowState.selectedPaletteItem.content.exploit->programName);
         }
         y += 48 + PAD_8;
@@ -238,9 +238,9 @@ void worms_window_render_palette_file(int x, int y) {
     y += 48 + PAD_8;
 
     for (int i = 0; i < worldState.numExploits; i++) {
-        if (worldState.exploits[i].exploitScope != ExploitScopeLocalAuto) continue;
-        if (worldState.exploits[i].exploitScope != ExploitScopeLocalOpen) continue;
-        worms_window_gui_draw_exploit_option(x, y, worldState.exploits[i]);
+        if (worldState.exploits[i]->exploitScope != ExploitScopeLocalAuto) continue;
+        if (worldState.exploits[i]->exploitScope != ExploitScopeLocalOpen) continue;
+        worms_window_gui_draw_exploit_option(x, y, *worldState.exploits[i]);
         y += 48 + PAD_8;
     }
 }
@@ -283,7 +283,7 @@ void worms_window_top_section(int x, int y, int width) {
     if (GuiButton((Rectangle){ x+WORM_WINDOW_WIDTH-64-PAD_8*3, y+2+PAD_8, 77, 28 }, "#002# Save")) {
         // Save New Worm
         for (int i = 0; i < worldState.numWorms; i++) {
-            if (strcmp(wormsWindowState.worm.wormName, worldState.worms[i].wormName) == 0) {
+            if (strcmp(wormsWindowState.worm.wormName, worldState.worms[i]->wormName) == 0) {
                 // TODO: Error message, no duplicate names
                 return;
             }

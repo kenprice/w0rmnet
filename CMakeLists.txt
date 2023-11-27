@@ -155,6 +155,7 @@ add_executable(${PROJECT_NAME} app.c
         entities/helpers.h
         components/known_hosts.c
         components/known_hosts.h
+        systems/ui/ui_consts.h
 )
 #set(raylib_VERBOSE 1)
 target_link_libraries(${PROJECT_NAME} raylib)

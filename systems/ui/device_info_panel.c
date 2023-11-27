@@ -2,13 +2,11 @@
 #include <string.h>
 #include "glib.h"
 #include "device_info_panel.h"
+#include "custom_raygui.h"
+#include "ui_consts.h"
 #include "../../components/component_registry.h"
 #include "../../lib/raygui.h"
-#include "custom_raygui.h"
 #include "../../world/world_map.h"
-
-#define TITLEBAR_HEIGHT 24
-#define PAD_8 8
 
 typedef struct {
     int activePanelIndex;

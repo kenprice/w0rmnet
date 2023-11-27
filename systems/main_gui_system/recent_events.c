@@ -44,9 +44,8 @@ void render_recent_events_view() {
     for (int i = 0; i < numEvents; i++) {
         char buffer[100] = "";
         event_log_message_copy_to(buffer, EventLogMessages[EventLogMessagesSize-1-i]);
-        buffer[strlen(buffer)] = '\0';
-        buffer[strlen(buffer)-1] = '\n';
         strcat(log, buffer);
+        strcat(log, "\n\n");
     }
 
     DrawTextBoxed(GuiGetFont(), log, textRect, 14, 0, true, WHITE);

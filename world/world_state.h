@@ -15,11 +15,11 @@ typedef struct {
 
     // Player's stuff
     int bitCredits; // Player's bit credits
-    Exploit exploits[100];
+    Exploit* exploits[100];
     int numExploits;
-    CredDump credDumps[100];
+    CredDump* credDumps[100];
     int numCredDumps;
-    Worm worms[20];
+    Worm* worms[20];
     int numWorms;
 } WorldState;
 
@@ -28,6 +28,8 @@ extern WorldState* worldStatePtr;
 
 void init_world_state();
 
-void update_world_state();
+bool world_state_add_exploit(Exploit* exploit);
+
+bool world_state_add_cred_dump(CredDump* credDump);
 
 #endif //W0RMNET_WORLD_STATE_H

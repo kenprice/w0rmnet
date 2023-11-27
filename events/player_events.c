@@ -23,14 +23,14 @@ void events_publish_player_bitcredit_event(int bitCredits) {
     events_publish_player_event(event);
 }
 
-void events_publish_player_exploit_event(const char* exploit) {
+void events_publish_player_exploit_event(Exploit* exploit) {
     PlayerEventMessage message;
     message.exploit = exploit;
     PlayerEvent event = (PlayerEvent){ PlayerReceivesExploitEvent, message };
     events_publish_player_event(event);
 }
 
-void events_publish_player_cred_dump_event(const char* credDump) {
+void events_publish_player_cred_dump_event(CredDump* credDump) {
     PlayerEventMessage message;
     message.credDump = credDump;
     PlayerEvent event = (PlayerEvent){ PlayerReceivesCredDumpEvent, message };

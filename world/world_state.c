@@ -8,21 +8,32 @@ void init_world_state() {
     worldState.currentArea = worldMap.playerArea;
 
     worldState.numExploits = 0;
-//    worldState.exploits[0] = ExploitsList[0];
-//    worldState.exploits[1] = ExploitsList[1];
-
     worldState.numCredDumps = 0;
-//    worldState.credDumps[0] = CredDumpsList[0];
-
     worldState.numWorms = 0;
-//    strcpy(worldState.worms[0].wormName, "myw0rm");
-//    worldState.worms[0].numSlots = 2;
-//    worldState.worms[0].slots[0].type = WormSlotRemoteExploit;
-//    worldState.worms[0].slots[0].content.exploit = &ExploitsList[0];
-//    worldState.worms[0].slots[1].type = WormSlotRemoteExploit;
-//    worldState.worms[0].slots[1].content.exploit = &ExploitsList[1];
 }
 
-void update_world_state() {
+/**
+ * Add exploit to player's collection; skip if exists
+ * @param exploit
+ * @return true if added new
+ */
+bool world_state_add_exploit(Exploit* exploit) {
+    for (int i = 0; i < worldState.numExploits; i++) {
+        if (worldState.exploits[i] == exploit) return false;
+    }
+    worldState.exploits[worldState.numExploits++] = exploit;
+    return true;
+}
 
+/**
+ * Add cred dump to player's collection; skip if exists
+ * @param credDump
+ * @return true if added new
+ */
+bool world_state_add_cred_dump(CredDump* credDump) {
+    for (int i = 0; i < worldState.numCredDumps; i++) {
+        if (worldState.credDumps[i] == credDump) return false;
+    }
+    worldState.credDumps[worldState.numCredDumps++] = credDump;
+    return true;
 }

@@ -28,7 +28,7 @@ static WormState* worm_system_get_worm_state_for_worm(Worm* worm);
 void init_worm_system() {
     log_debug("Initializing w0rm system");
     for (int i = 0; i < worldState.numWorms; i++) {
-        log_debug("Initialized worm %s", worldState.worms[i].wormName);
+        log_debug("Initialized worm %s", worldState.worms[i]->wormName);
         wormSystemState.wormStates[i].worm = &worldState.worms[i];
         wormSystemState.wormStates[i].numInfectedDevices = 0;
     }
@@ -98,18 +98,17 @@ void worm_system_update_infection(char* entityId, Infection* infection) {
 }
 
 void worm_system_init_worm_state(Worm* worm) {
-    int i = wormSystemState.numWorms;
-    wormSystemState.wormStates[i].worm = worm;
-    wormSystemState.wormStates[i].numInfectedDevices = 0;
-    wormSystemState.numWorms = i+1;
+    wormSystemState.wormStates[wormSystemState.numWorms].worm = worm;
+    wormSystemState.wormStates[wormSystemState.numWorms].numInfectedDevices = 0;
+    wormSystemState.numWorms++;
 }
 
 void worm_system_handle_add_worm_event(WormEvent event) {
     if (event.type != WormCreatedEvent) return;
 
-    int i = worldState.numWorms;
-    worldState.worms[worldState.numWorms++] = *event.worm;
-    worm_system_init_worm_state(&worldState.worms[i]);
+    worldState.worms[worldState.numWorms] = event.worm;
+    worm_system_init_worm_state(worldState.worms[worldState.numWorms]);
+    worldState.numWorms++;
 }
 
 void worm_system_handle_worm_infects_device_event(WormEvent event) {
@@ -184,4 +183,5 @@ static WormState* worm_system_get_worm_state_for_worm(Worm* worm) {
             return &wormSystemState.wormStates[i];
         }
     }
+    return NULL;
 }

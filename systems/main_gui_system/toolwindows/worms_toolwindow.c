@@ -44,8 +44,8 @@ void render_worms_toolwindow(WormsToolWindowState* state, Rectangle toolWindowRe
     int testNumLines = 50;
     int logLinesHeight = testNumLines * lineHeight;
 
-    Rectangle panelContentRect = (Rectangle){scrollPanelRect.x, scrollPanelRect.y,
-                                              scrollPanelRect.width - (PAD_8 * 2), logLinesHeight };
+    Rectangle panelContentRect = { scrollPanelRect.x, scrollPanelRect.y,
+                                   scrollPanelRect.width - (PAD_8 * 2), logLinesHeight };
 
     GuiScrollPanel(scrollPanelRect, NULL, panelContentRect, &state->scrollPanelScroll, &state->scrollPanelView);
 
@@ -64,7 +64,7 @@ void render_worms_toolwindow(WormsToolWindowState* state, Rectangle toolWindowRe
     }
     GuiLine(lineRect, NULL);
     for (int i = 0; i < worldState.numWorms; i++) {
-        if (worms_toolwindow_render_worm_item(state, x, y, scrollPanelRect.width, &worldState.worms[i], state->selectedWormIdx == i)) {
+        if (worms_toolwindow_render_worm_item(state, x, y, scrollPanelRect.width, worldState.worms[i], state->selectedWormIdx == i)) {
             state->selectedWormIdx = i;
         }
         y += 100;

@@ -11,8 +11,8 @@ const char* EventLogMessageTable[] = {
     [DevicePwnedViaLogin] = "%s is pwned by %s via login.",
     [DevicePwnedViaExploit] = "%s is pwned by %s via exploit.",
     [PlayerReceivesBitCreditsEvent] = "You receive %d Bitcredits.",
-    [PlayerReceivesExploitEvent] = "You find a new exploit. %s",
-    [PlayerReceivesCredDumpEvent] = "You find a new credentials list. %s",
+    [PlayerReceivesExploitEvent] = "New exploit: %s",
+    [PlayerReceivesCredDumpEvent] = "New cred dump: %s",
     [WormInfectsDeviceEvent] = "%s is infected by %s",
 };
 
@@ -51,6 +51,8 @@ void event_log_message_copy_to(char* dest, EventLogMessage eventLogMessage) {
     switch (eventLogMessage.eventType) {
         case DevicePwnedEvent:
         case DeviceDiscoveredEvent:
+        case PlayerReceivesExploitEvent:
+        case PlayerReceivesCredDumpEvent:
             sprintf(dest, eventLogMessage.logMessageFormat, eventLogMessage.arg1.string);
             break;
         case DevicePwnedViaExploit:

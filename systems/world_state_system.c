@@ -1,3 +1,4 @@
+#include <stdio.h>
 #include "world_state_system.h"
 #include "../components/component_registry.h"
 #include "../components/loot.h"
@@ -35,6 +36,17 @@ void world_state_system_on_device_event(DeviceEvent event) {
             events_publish_player_bitcredit_event(loot->bitCredits);
         }
 
+        for (int i = 0; i < loot->numExploits; i++) {
+            if (world_state_add_exploit(loot->exploits[i])) {
+                events_publish_player_exploit_event(loot->exploits[i]);
+            }
+        }
+
+        for (int i = 0; i < loot->numCredDumps; i++) {
+            if (world_state_add_cred_dump(loot->credDumps[i])) {
+                events_publish_player_cred_dump_event(loot->credDumps[i]);
+            }
+        }
 
         g_hash_table_remove(componentRegistry.loots, event.deviceId);
     }
@@ -46,8 +58,19 @@ void world_state_system_on_player_event(PlayerEvent event) {
             events_add_event_log_message_int(PlayerReceivesBitCreditsEvent, NULL, event.message.bitCredits);
             break;
 
-        case PlayerReceivesExploitEvent:
-        case PlayerReceivesCredDumpEvent:
+        case PlayerReceivesExploitEvent: {
+            char buffer[100] = "";
+            sprintf(buffer, "%s %s", event.message.exploit->id, EXPLOIT_TYPE_LABEL(event.message.exploit->exploitType));
+            events_add_event_log_message_char(PlayerReceivesExploitEvent, NULL, buffer);
+            break;
+        }
+
+        case PlayerReceivesCredDumpEvent: {
+            char buffer[100] = "";
+            strcpy(buffer, event.message.credDump->name);
+            events_add_event_log_message_char(PlayerReceivesCredDumpEvent, NULL, buffer);
+            break;
+        }
         default:
             break;
     }
