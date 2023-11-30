@@ -10,6 +10,7 @@ static unsigned int *guiIconsPtr = guiIcons;
 #undef RAYGUI_IMPLEMENTATION            // Avoid including raygui implementation again
 #include "lib/log/log.h"
 
+#include "graphics/shaders.h"
 #include "graphics/sprites.h"
 #include "graphics/tiles.h"
 #include "components/component_registry.h"
@@ -32,8 +33,8 @@ int main(void)
     //--------------------------------------------------------------------------------------
     const int initScreenWidth = 1440;
     const int initScreenHeight = 847;
-    const int minScreenWidth = 1024;
-    const int minScreenHeight = 768;
+    const int minScreenWidth = 1280;
+    const int minScreenHeight = 720;
     int lastScreenWidth = initScreenWidth;
     int lastScreenHeight = initScreenHeight;
     log_debug("Starting w0rmnet...");
@@ -50,6 +51,7 @@ int main(void)
     float totalTime = 0.0f;
     float resolution[2] = { (float)initScreenWidth, (float)initScreenHeight };
     SetShaderValue(postShader, resolutionLoc, resolution, SHADER_UNIFORM_VEC2);
+    init_outline_shader();
 
     // NOTE: Textures MUST be loaded after Window initialization (OpenGL context is required)
     load_sprite_sheet();
@@ -74,14 +76,9 @@ int main(void)
     // Main game loop
     while (!WindowShouldClose())    // Detect window close button or ESC key
     {
-        // Window resizing, set minimum
+        // Window resizing, reset render texture
         int curScreenWidth = GetScreenWidth();
         int curScreenHeight = GetScreenHeight();
-        if (curScreenWidth < minScreenWidth || curScreenHeight < minScreenHeight) {
-            curScreenWidth = curScreenWidth >= minScreenWidth ? curScreenWidth : minScreenWidth;
-            curScreenHeight = curScreenHeight >= minScreenHeight ? curScreenHeight : minScreenHeight;
-            SetWindowSize(curScreenWidth, curScreenHeight);
-        }
         if (curScreenWidth != lastScreenWidth || curScreenHeight != lastScreenHeight) {
             lastScreenWidth = curScreenWidth;
             lastScreenHeight = curScreenHeight;

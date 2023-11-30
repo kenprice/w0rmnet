@@ -19,7 +19,7 @@ NetworkSwitch* entity_network_switch_create_blank() {
     networkSwitch->position.coord.x = 0;
     networkSwitch->position.coord.y = 0;
 
-    networkSwitch->sprite.spriteId = SPRITE_SWITCH_GENERIC;
+    networkSwitch->sprite.spriteId = SPRITE_SWITCH_FIREWALL;
 
     networkSwitch->wire.sendQtoA = packet_queue_alloc(50);
     networkSwitch->wire.sendQtoB = packet_queue_alloc(50);

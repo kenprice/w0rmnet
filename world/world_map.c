@@ -15,6 +15,7 @@ void initialize_world() {
     Router* areaRouter = entity_router_create_blank();
     Router* router = entity_router_create_blank();
     Machine* machine1 = entity_machine_create_blank();
+    machine1->sprite.spriteId = SPRITE_DESKTOP;
     Machine* machine2 = entity_machine_create_blank();
     Machine* machine3 = entity_machine_create_blank();
 

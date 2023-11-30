@@ -22,7 +22,7 @@ Machine* entity_machine_create_blank() {
     machine->position.coord.x = 0;
     machine->position.coord.y = 0;
 
-    machine->sprite.spriteId = SPRITE_SERVER;
+    machine->sprite.spriteId = SPRITE_LAPTOP;
 
     strncpy(machine->packetBuffer.entityId, entity_id, UUID_STR_LEN);
     machine->packetBuffer.sendQ = packet_queue_alloc(50);

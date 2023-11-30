@@ -156,6 +156,8 @@ add_executable(${PROJECT_NAME} app.c
         components/known_hosts.c
         components/known_hosts.h
         systems/ui/ui_consts.h
+        graphics/shaders.h
+        graphics/shaders.c
 )
 #set(raylib_VERBOSE 1)
 target_link_libraries(${PROJECT_NAME} raylib)

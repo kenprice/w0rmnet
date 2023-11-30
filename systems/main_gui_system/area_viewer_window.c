@@ -5,8 +5,9 @@
 #include "area_viewer_window.h"
 #include "isometric_map_rendering.h"
 #include "../main_gui_system.h"
-#include "../../lib/raygui.h"
 #include "../../components/component_registry.h"
+#include "../../lib/raygui.h"
+#include "../../graphics/shaders.h"
 
 #define STATUSBAR_HEIGHT 18
 #define PAD_8 8
@@ -61,7 +62,7 @@ int render_area_viewer_window(AreaViewerWindowState* state) {
     render_connections(state);
     render_devices(state);
 //    render_area_packet_messages(state);
-    render_area_window_selected_device(state);
+//    render_area_window_selected_device(state);
     EndMode2D();
 
     render_device_mouseover_hover(state);
@@ -148,13 +149,26 @@ static void draw_device_sprite(AreaViewerWindowState* state, SpriteRect spriteRe
 
     Rectangle rect = spriteRect.rect;
     Vector2 offset = spriteRect.offset;
-    offset = (Vector2){-rect.width/2-offset.x, -offset.y};
-    Vector2 position = (Vector2){globalX + offset.x, globalY + offset.y};
+    offset = (Vector2){ rect.width/2-offset.x, offset.y };
+    Vector2 position = (Vector2){ globalX + offset.x, globalY + offset.y };
 
-    DrawTextureRec(textureSpriteSheet, rect, position, WHITE);
+    DrawTexturePro(textureSpriteSheet, rect,
+                   (Rectangle){ globalX, globalY, rect.height, rect.width },
+                   offset, 0, WHITE);
 }
 
-static void render_area_device_sprites(AreaViewerWindowState* state, char* entityId, Device* device) {
+static void render_area_device_label(Device* device, float globalX, float globalY) {
+    Vector2 labelSize = MeasureTextEx(GuiGetFont(), device->name, 14, 0);
+    const float offsetY = 24;
+    DrawTextEx(GuiGetFont(), device->name, (Vector2){ globalX-(labelSize.x/2)+1, globalY+offsetY-1 }, 14, 1, BLACK);
+    DrawTextEx(GuiGetFont(), device->name, (Vector2){ globalX-(labelSize.x/2)-2, globalY+offsetY-1 }, 14, 1, BLACK);
+    DrawTextEx(GuiGetFont(), device->name, (Vector2){ globalX-(labelSize.x/2)+1, globalY+offsetY+1 }, 14, 1, BLACK);
+    DrawTextEx(GuiGetFont(), device->name, (Vector2){ globalX-(labelSize.x/2)-2, globalY+offsetY+1 }, 14, 1, BLACK);
+    DrawTextEx(GuiGetFont(), device->name, (Vector2){ globalX-(labelSize.x/2), globalY+offsetY }, 14, 1, RAYWHITE);
+    DrawTextEx(GuiGetFont(), device->name, (Vector2){ globalX-(labelSize.x/2)-1, globalY+offsetY }, 14, 1, RAYWHITE);
+}
+
+static void render_area_device_sprites(AreaViewerWindowState* state, char* entityId, Device* device, bool outline) {
     Sprite* sprite = (Sprite*)g_hash_table_lookup(componentRegistry.sprites, entityId);
 
     // Render Sprite
@@ -164,13 +178,17 @@ static void render_area_device_sprites(AreaViewerWindowState* state, char* entit
         draw_device_sprite(state, spriteSheet[SPRITE_UNKNOWN], position->coord);
         return;
     } else {
+        if (outline) BeginShaderMode(shaderOutline);
         draw_device_sprite(state, spriteSheet[sprite->spriteId], position->coord);
+        if (outline) EndShaderMode();
     }
 
+    Vector2 globalCoord = isometric_map_local_to_global(state->window.windowBounds, position->coord.x, position->coord.y, state->camera.zoom);
+    float globalX = globalCoord.x;
+    float globalY = globalCoord.y;
+    render_area_device_label(device, globalX, globalY);
+
     if (device->owner != DEVICE_OWNER_PLAYER) {
-        Vector2 globalCoord = isometric_map_local_to_global(state->window.windowBounds, position->coord.x, position->coord.y, state->camera.zoom);
-        float globalX = globalCoord.x;
-        float globalY = globalCoord.y;
         DrawText("L", globalX, globalY, 10, BLUE);
     }
 }
@@ -179,9 +197,10 @@ static void render_devices(AreaViewerWindowState* state) {
     Area* currentArea = state->area;
 
     for (int i = 0; i < currentArea->numEntities; i++) { char* entityId = currentArea->entities[i];
-        Device* device = (Device*)g_hash_table_lookup(componentRegistry.devices, entityId);
+        Device* device = g_hash_table_lookup(componentRegistry.devices, entityId);
         if (device == NULL) continue;
-        render_area_device_sprites(state, entityId, device);
+
+        render_area_device_sprites(state, entityId, device, device == state->selectedDevice);
     }
 }
 
