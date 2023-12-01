@@ -1,27 +1,20 @@
-# raylib CMake Project
+# w0rmnet
 
-This provides a base project template which builds with [CMake](https://cmake.org).
+A hacking sim game built with Raylib.
 
-## Usage
+Craft w0rms to unleash onto the world, build a botnet, and take over the world!
 
-To compile the example, use one of the following dependending on your build target...
+Another abandoned side-project brought to you by yours truly.
 
-### Desktop
+![](screenshot1.png)
 
-Use the following to build for desktop:
+![](screenshot2.png)
 
-``` bash
-cmake -B build
-cmake --build build
-```
+## ???
 
-### Web
+To break the monotony of my day-to-day as a web dev, I decided that I miss C enough to try to write something cool with it. That's when I discovered Raylib.
 
-Compiling for the web requires the [Emscripten SDK](https://emscripten.org/docs/getting_started/downloads.html):
+A lot of classic mistakes were made in this project. Unclear vision, the game is more about demonstrating mechanics than having fun, and I totally gave in to the temptation to overengineer with component-entity-system architecture, which in hindsight may have not been appropriate for my needs.
 
-``` bash
-mkdir build
-cd build
-emcmake cmake .. -DPLATFORM=Web -DCMAKE_BUILD_TYPE=Release -DCMAKE_EXE_LINKER_FLAGS="-s USE_GLFW=3" -DCMAKE_EXECUTABLE_SUFFIX=".html"
-emmake make
-```
+Regardless, I'm proud to inaugurate this to my side-project graveyard! May this inspire me to pick up game dev in the future!
+
